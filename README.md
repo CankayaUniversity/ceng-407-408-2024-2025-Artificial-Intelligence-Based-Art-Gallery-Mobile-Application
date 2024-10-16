@@ -15,11 +15,11 @@ did they produce their artworks in detail. Thanks to the applications user-frien
 
 |                        |                       |
 |-------------------------------|-----------------------------|
-[Mehmet Emre KILINÇ](http://)         |202111058            |
-[Mertcan ZAFER](http://)         |202011076            |
-[Batuhan ÖZER](http://)         |202011072|
-[Emre Şahin DEMİRBAŞ](http://)        |202011020|
-[Tunahan GÜLTEKİN](http://)         |202011005|
+[Mehmet Emre KILINÇ](https://github.com/MhmtEmrKlnc)         |202111058            |
+[Mertcan ZAFER](https://github.com/mertcanzafer)         |202011076            |
+[Batuhan ÖZER](https://github.com/batuhanozzer)         |202011072|
+[Emre Şahin DEMİRBAŞ](https://github.com/emrethedemirbas)        |202011020|
+[Tunahan GÜLTEKİN](https://github.com/tunahangultekin)         |202011005|
 
 
 ## Advisor
