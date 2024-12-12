@@ -25,3 +25,7 @@ did they produce their artworks in detail. Thanks to the applications user-frien
 ## Advisor
 
 - Ayşe Nurdan SARAN
+
+
+## Project Web Page
+https://mindsart2.wixsite.com/my-site-6
