@@ -380,7 +380,7 @@ class ProfileFragment : Fragment() {
         val pickPictureIntent =
             Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
        // if (pickPictureIntent.resolveActivity(requireActivity().packageManager) != null) {
-              startActivityForResult(pickPictureIntent, Utils.PROFILE_IMAGE_PICK)
+        startActivityForResult(pickPictureIntent, Utils.PROFILE_IMAGE_PICK)
       //  }
 
     }

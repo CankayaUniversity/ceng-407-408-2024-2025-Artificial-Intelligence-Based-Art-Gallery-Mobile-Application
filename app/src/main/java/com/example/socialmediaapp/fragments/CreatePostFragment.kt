@@ -156,7 +156,7 @@ class CreatePostFragment : Fragment() {
         val pickPictureIntent =
             Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
        // if (pickPictureIntent.resolveActivity(requireActivity().packageManager) != null) {
-            startActivityForResult(pickPictureIntent, Utils.REQUEST_IMAGE_PICK)
+        startActivityForResult(pickPictureIntent, Utils.REQUEST_IMAGE_PICK)
       //  }
     }
 
