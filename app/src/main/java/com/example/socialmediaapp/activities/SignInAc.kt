@@ -44,19 +44,19 @@ class SignInAc : AppCompatActivity() {
 
         binding.loginButton.setOnClickListener {
 
-            if(binding.loginetemail.text.toString().isNotEmpty() &&
-                binding.loginetpassword.text.toString().isNotEmpty())
+            if(binding.loginetemail.text.isNotEmpty() &&
+                binding.loginetpassword.text.isNotEmpty())
             {
                 val email = binding.loginetemail.text.toString()
-                val password = binding.loginetemail.text.toString()
+                val password = binding.loginetpassword.text.toString()
 
                 signIn(email, password)
 
             }
 
 
-            if(binding.loginetemail.text.toString().isEmpty() ||
-                binding.loginetpassword.text.toString().isEmpty())
+            if(binding.loginetemail.text.isEmpty() ||
+                binding.loginetpassword.text.isEmpty())
             {
                 Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show()
             }
