@@ -65,7 +65,7 @@ class SignUpAc : AppCompatActivity() {
 
 
 
-        }
+    }
 
 
     private fun signInUp(name: String, email: String, password: String)
@@ -90,11 +90,23 @@ class SignUpAc : AppCompatActivity() {
 
 
 
-                firestore.collection("Users").document(user.uid).set(hashMap)
-                pd.dismiss()
-                startActivity(Intent(this, SignInAc::class.java))
-                
+                firestore.collection("Users").document(user.uid).set(hashMap).addOnSuccessListener {
+                    pd.dismiss()
 
+                    // Sign out the user before navigating
+                    auth.signOut()
+
+                    // Navigate back to Sign In page
+                    val intent = Intent(this, SignInAc::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    startActivity(intent)
+                    finish() // Ensure the sign-up screen is closed
+                }
+
+
+            }else{
+                pd.dismiss()
+                Toast.makeText(this, task.exception.toString(), Toast.LENGTH_SHORT).show()
             }
 
 
