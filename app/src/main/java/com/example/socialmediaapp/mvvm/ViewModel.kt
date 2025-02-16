@@ -58,6 +58,11 @@ class ViewModel: ViewModel() {
         val posts = MutableLiveData<List<Posts>>()
         val firestore = FirebaseFirestore.getInstance()
 
+        // on the background thread
+        // ! Using coroutines here might be unnecessary,
+        // Since Firestore is already launching another thread to perform the operation
+        // So in terms of performance, using less threads as possible is better for
+        // reducing the thread overheads
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 firestore.collection("Posts")
@@ -86,6 +91,45 @@ class ViewModel: ViewModel() {
         return posts
     }
 
+
+    fun getAllUsers(): LiveData<List<Users>> {
+
+        val users = MutableLiveData<List<Users>>()
+
+        val firestore = FirebaseFirestore.getInstance()
+
+        // on the background thread
+        // ! Using coroutines here might be unnecessary,
+        // Since Firestore is already launching another thread to perform the operation
+        // So in terms of performance, using less threads as possible is better for
+        // reducing the thread overheads
+        viewModelScope.launch(Dispatchers.IO)
+        {
+            try {
+                firestore.collection("Users").addSnapshotListener { snapshot, exception ->
+                    if (exception != null) {
+                        // Handle the exception here
+                        return@addSnapshotListener
+                    }
+
+                    val usersList = mutableListOf<Users>()
+                    snapshot?.documents?.forEach { document ->
+                        val user = document.toObject(Users::class.java)
+                        // gets the userlist that is not the current user
+                        if (user != null && user.userid != Utils.getUiLoggedIn()) {
+                            usersList.add(user)
+                        }
+                    }
+
+                    users.postValue(usersList) // Switch back to the main thread
+                }
+            } catch (e: Exception) {
+                // Handle any exceptions that occur during the Firestore operation
+            }
+        }
+
+        return users
+    }
 
 
 }
