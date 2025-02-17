@@ -1,4 +1,5 @@
 package com.example.socialmediaapp.mvvm
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -7,6 +8,7 @@ import com.example.socialmediaapp.modal.Posts
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Dispatchers
 import androidx.lifecycle.viewModelScope
+import com.example.socialmediaapp.modal.Feed
 import com.example.socialmediaapp.modal.Users
 import kotlinx.coroutines.launch
 
@@ -129,6 +131,76 @@ class ViewModel: ViewModel() {
         }
 
         return users
+    }
+
+
+    fun loadMyFeed(): LiveData<List<Feed>>
+    {
+        val firestore = FirebaseFirestore.getInstance()
+
+        val feeds = MutableLiveData<List<Feed>>()
+
+
+        viewModelScope.launch(Dispatchers.IO)
+        {
+            getThePeopleIFollow{list->
+
+                try {
+
+                    firestore.collection("Posts").whereIn("userid", list)
+                        .addSnapshotListener{value,error->
+
+                            if (error != null) {
+                                return@addSnapshotListener
+                            }
+
+                            val feed = mutableListOf<Feed>()
+                            value?.documents?.forEach{ documentSnapshot->
+                                val pModal = documentSnapshot.toObject(Feed::class.java)
+                                pModal?.let {
+                                    feed.add(it)
+                                }
+                            }
+                            // Displaying the latest posts first
+                            val sortedFeed = feed.sortedByDescending { it.time }
+                            feeds.postValue(sortedFeed)
+
+                        }
+
+                }catch (e: Exception){}
+
+
+            }
+
+        }
+
+
+        return feeds
+    }
+
+    // get the ids of those who I follow
+    fun getThePeopleIFollow(callback: (List<String>) -> Unit)
+    {
+        val firestore = FirebaseFirestore.getInstance()
+
+        val ifollowlist = mutableListOf<String>()
+        ifollowlist.add(Utils.getUiLoggedIn())
+
+        firestore.collection("Follow").document(Utils.getUiLoggedIn())
+            .get()
+            .addOnSuccessListener { documentSnapshot ->
+                if (documentSnapshot.exists()) {
+                    val followingIds = documentSnapshot.get("following_id") as? List<String>
+                    val updatedList = followingIds?.toMutableList() ?: mutableListOf()
+
+                    ifollowlist.addAll(updatedList)
+
+                    Log.e("ListOfFeed", ifollowlist.toString())
+                    callback(ifollowlist)
+                } else {
+                    callback(ifollowlist)
+                }
+            }
     }
 
 
