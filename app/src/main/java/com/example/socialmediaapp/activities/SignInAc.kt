@@ -35,6 +35,11 @@ class SignInAc : AppCompatActivity() {
 
         }
 
+        binding.tvForgotPassword.setOnClickListener {
+            startActivity(Intent(this, ForgotPasswordAc::class.java))
+
+        }
+
         if(auth.currentUser != null)
         {
             startActivity(Intent(this, MainActivity::class.java))
@@ -92,11 +97,9 @@ class SignInAc : AppCompatActivity() {
 
 
 
-
-
-
-
     }
+
+
 
 
 }

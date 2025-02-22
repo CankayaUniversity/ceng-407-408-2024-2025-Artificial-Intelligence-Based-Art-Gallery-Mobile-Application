@@ -171,16 +171,16 @@
         app:layout_constraintBottom_toBottomOf="parent"
         android:orientation="horizontal">
 
+
         <ImageView
-            android:layout_width="0dp"
+            android:id="@+id/feed"
+            android:layout_width="30dp"
             android:layout_height="30dp"
             android:layout_weight="1"
-            android:id="@+id/feed"
-            android:src="@drawable/ic_home_active"/>
-
+            android:src="@drawable/ic_home_active" />
 
         <ImageView
-            android:layout_width="0dp"
+            android:layout_width="30dp"
             android:layout_height="30dp"
             android:layout_weight="1"
             android:id="@+id/addPost"
