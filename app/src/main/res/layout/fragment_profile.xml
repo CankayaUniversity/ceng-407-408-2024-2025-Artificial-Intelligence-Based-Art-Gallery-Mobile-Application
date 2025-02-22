@@ -52,7 +52,7 @@
             <ImageView
                 android:id="@+id/settings_image"
                 style="@style/icon"
-                android:src="@drawable/logout"
+                android:src="@drawable/settings"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />

@@ -1,8 +1,12 @@
 package com.example.socialmediaapp.fragments
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
@@ -17,6 +21,7 @@ import androidx.navigation.findNavController
 import androidx.lifecycle.Observer
 import com.bumptech.glide.Glide
 import com.example.socialmediaapp.Utils
+import com.example.socialmediaapp.activities.ForgotPasswordAc
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -142,5 +147,8 @@ class HomeFragment : Fragment(),onDoubleTapClickListener  {
 
 
     }
+
+
+
 
 }
