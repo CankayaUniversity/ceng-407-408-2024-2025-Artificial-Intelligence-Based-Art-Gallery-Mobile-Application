@@ -11,6 +11,7 @@ import com.example.socialmediaapp.R
 import com.example.socialmediaapp.databinding.ActivityForgotPasswordBinding
 import com.example.socialmediaapp.databinding.ActivitySignInBinding
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 class ForgotPasswordAc : AppCompatActivity() {
 
@@ -32,17 +33,39 @@ class ForgotPasswordAc : AppCompatActivity() {
                     Toast.LENGTH_SHORT
                 ).show()
             }else{
-                FirebaseAuth.getInstance().sendPasswordResetEmail(email)
-                    .addOnCompleteListener{task ->
-                        if(task.isSuccessful){
-                            Toast.makeText(
-                                this@ForgotPasswordAc,
-                                "Email sent successfully to reset your password!",
-                                Toast.LENGTH_SHORT
-                            ).show()
 
-                            finish()
-                        }else{
+                val db = FirebaseFirestore.getInstance()
+
+                db.collection("Users").whereEqualTo("email", email).get()
+                    .addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            val documents = task.result
+                            if (documents != null && !documents.isEmpty) {
+                                FirebaseAuth.getInstance().sendPasswordResetEmail(email)
+                                    .addOnCompleteListener { resetTask ->
+                                        if (resetTask.isSuccessful) {
+                                            Toast.makeText(
+                                                this@ForgotPasswordAc,
+                                                "Email sent successfully to reset your password!",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            finish()
+                                        } else {
+                                            Toast.makeText(
+                                                this@ForgotPasswordAc,
+                                                resetTask.exception!!.message.toString(),
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    }
+                            } else {
+                                Toast.makeText(
+                                    this@ForgotPasswordAc,
+                                    "There is no user connected to this email address.",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        } else {
                             Toast.makeText(
                                 this@ForgotPasswordAc,
                                 task.exception!!.message.toString(),
@@ -50,8 +73,31 @@ class ForgotPasswordAc : AppCompatActivity() {
                             ).show()
                         }
                     }
+
             }
         }
 
     }
 }
+
+
+
+
+/*FirebaseAuth.getInstance().sendPasswordResetEmail(email)
+.addOnCompleteListener{task ->
+    if(task.isSuccessful){
+        Toast.makeText(
+            this@ForgotPasswordAc,
+            "Email sent successfully to reset your password!",
+            Toast.LENGTH_SHORT
+        ).show()
+
+        finish()
+    }else{
+        Toast.makeText(
+            this@ForgotPasswordAc,
+            task.exception!!.message.toString(),
+            Toast.LENGTH_SHORT
+        ).show()
+    }
+}*/
