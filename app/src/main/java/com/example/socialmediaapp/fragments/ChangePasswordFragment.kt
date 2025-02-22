@@ -63,7 +63,7 @@ class ChangePasswordFragment : Fragment() {
             }
 
 
-            // Yeni şifre ve onaylanan şifre eşleşiyor mu kontrol et
+            // Eşleşme kontrol
             if (!newpass.equals(confpass)) {
                 Toast.makeText(activity, "Passwords are not matching.", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener

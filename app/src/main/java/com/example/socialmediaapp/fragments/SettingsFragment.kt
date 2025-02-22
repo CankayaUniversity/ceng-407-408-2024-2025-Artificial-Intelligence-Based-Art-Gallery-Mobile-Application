@@ -64,6 +64,12 @@ class SettingsFragment : Fragment() {
 
         }
 
+        binding.backButton.setOnClickListener {
+
+            view.findNavController().navigate(R.id.action_settingsFragment_to_profileFragment)
+
+        }
+
 
 
     }
