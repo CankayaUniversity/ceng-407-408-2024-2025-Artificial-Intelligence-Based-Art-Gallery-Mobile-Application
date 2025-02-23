@@ -43,57 +43,40 @@ class SignInAc : AppCompatActivity() {
         pd = ProgressDialog(this)
 
         binding.loginButton.setOnClickListener {
+            val email = binding.loginetemail.text.toString().trim()
+            val password = binding.loginetpassword.text.toString().trim()
 
-            if(binding.loginetemail.text.isNotEmpty() &&
-                binding.loginetpassword.text.isNotEmpty())
-            {
-                val email = binding.loginetemail.text.toString()
-                val password = binding.loginetpassword.text.toString()
-
-                signIn(email, password)
-
-            }
-
-
-            if(binding.loginetemail.text.isEmpty() ||
-                binding.loginetpassword.text.isEmpty())
-            {
+            if (email.isEmpty() || password.isEmpty()) {
                 Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
             }
 
+            signIn(email, password)
         }
-
 
     }
 
     private fun signIn(email: String, password: String)
     {
         pd.show()
-        pd.setMessage("Signing In")
-        auth.signInWithEmailAndPassword(email,password).addOnCompleteListener{task->
+        pd.setMessage("Signing In...")
 
-            if(task.isSuccessful)
-            {
-                startActivity(Intent(this, MainActivity::class.java))
-                Toast.makeText(this, "Logged In", Toast.LENGTH_SHORT).show()
+        auth.signInWithEmailAndPassword(email, password).addOnCompleteListener { task ->
+            if (task.isSuccessful) {
                 pd.dismiss()
+                Toast.makeText(this, "Logged In", Toast.LENGTH_SHORT).show()
+                val intent = Intent(this, MainActivity::class.java)
+                intent.putExtra("fromSignIn",true) // Add Extra flag
+
+                startActivity(intent)
+                finish()
             }
-
-        }.addOnFailureListener {
-
+        }.addOnFailureListener { exception ->
             pd.dismiss()
-            // Toast.makeText(this, it.toString().substring(0, 5), Toast.LENGTH_SHORT).show()
-            Log.e("Authentication", "Auth Failed ${it.toString()}")
-
-            return@addOnFailureListener
-
-
+            val errorMessage = exception.message ?: "Authentication failed"
+            Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
+            Log.e("Authentication", "Auth Failed: $errorMessage")
         }
-
-
-
-
-
 
 
     }

@@ -1,6 +1,7 @@
 package com.example.socialmediaapp.fragments
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -17,6 +18,8 @@ import androidx.navigation.findNavController
 import androidx.lifecycle.Observer
 import com.bumptech.glide.Glide
 import com.example.socialmediaapp.Utils
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -89,6 +92,14 @@ class HomeFragment : Fragment(),onDoubleTapClickListener  {
 
 
         })
+        println("HomeFragment,  Post not clicked!")
+        adapter.setOnItemClickListener{feed->
+            // Show the post in a BottomSheet when clicked
+            // Log if the click is detected
+            println("HomeFragment,  Post clicked!")
+            val previewSheet = PostPreviewBottomSheet(feed.image ?: "")
+            previewSheet.show(parentFragmentManager, "PostPreview")
+        }
 
 
     }
@@ -104,42 +115,22 @@ class HomeFragment : Fragment(),onDoubleTapClickListener  {
         // Fetch current like count and likers from Firestore
 
         postRef.get()
-            .addOnSuccessListener{document->
-
-                if (document != null && document.exists()){
-
-
+            .addOnSuccessListener { document ->
+                if (document != null && document.exists()) {
                     val likes = document.getLong("likes")?.toInt() ?: 0
                     val likers = document.get("likers") as? List<String>
 
-                    if (!likers.isNullOrEmpty() && likers.contains(currentUserId)){
-
-                        // User has already liked the post
-                        println("You have already liked this post!")
-                    }else{
-                        // Increment like count and update likers
+                    if (likers.isNullOrEmpty() || !likers.contains(currentUserId)) {
                         postRef.update(
                             "likes", likes + 1,
                             "likers", FieldValue.arrayUnion(currentUserId)
                         )
-
-                            .addOnSuccessListener {
-                                println("Post liked!")
-                            }
-
-                            .addOnFailureListener { exception ->
-                                println("Failed to update like: $exception")
-                            }
-
+                        println("Post liked!")
+                    } else {
+                        println("You have already liked this post!")
                     }
-
-
-
                 }
-
-
             }
-
 
     }
 

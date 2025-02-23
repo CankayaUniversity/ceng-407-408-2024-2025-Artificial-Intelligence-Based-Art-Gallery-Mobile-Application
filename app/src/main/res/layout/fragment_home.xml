@@ -76,18 +76,7 @@
             android:src="@mipmap/ic_launcher"/>
 
 
-
-
-
-
-
-
-
-
     </LinearLayout>
-
-
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 
