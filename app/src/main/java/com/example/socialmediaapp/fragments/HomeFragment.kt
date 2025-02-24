@@ -92,15 +92,6 @@ class HomeFragment : Fragment(),onDoubleTapClickListener  {
 
 
         })
-        println("HomeFragment,  Post not clicked!")
-        adapter.setOnItemClickListener{feed->
-            // Show the post in a BottomSheet when clicked
-            // Log if the click is detected
-            println("HomeFragment,  Post clicked!")
-            val previewSheet = PostPreviewBottomSheet(feed.image ?: "")
-            previewSheet.show(parentFragmentManager, "PostPreview")
-        }
-
 
     }
 

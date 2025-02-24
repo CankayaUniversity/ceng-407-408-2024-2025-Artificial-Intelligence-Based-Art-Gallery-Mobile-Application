@@ -26,7 +26,6 @@ import java.util.Date
 class MyFeedAdapter: RecyclerView.Adapter<FeedHolder>() {
     var feedlist = listOf<Feed>()
     private  var listener : onDoubleTapClickListener ?=  null
-    private var itemClickListener: ((Feed) -> Unit)? = null  // Single-click listener
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreateViewHolder(
@@ -82,11 +81,6 @@ class MyFeedAdapter: RecyclerView.Adapter<FeedHolder>() {
             true
         }
 
-        // Single click listener
-        holder.itemView.setOnClickListener {
-            itemClickListener?.invoke(feed)
-        }
-
     }
 
     override fun getItemCount(): Int {
@@ -100,10 +94,6 @@ class MyFeedAdapter: RecyclerView.Adapter<FeedHolder>() {
 
     fun setListener(listener: onDoubleTapClickListener){
         this.listener = listener
-    }
-
-    fun setOnItemClickListener(listener: (Feed) -> Unit) {
-        this.itemClickListener = listener
     }
 
 }
