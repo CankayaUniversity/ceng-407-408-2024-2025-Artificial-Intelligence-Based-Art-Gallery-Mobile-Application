@@ -75,6 +75,14 @@
             android:id="@+id/imageViewBottom"
             android:src="@mipmap/ic_launcher"/>
 
+        <!-- Search Icon -->
+        <ImageView
+            android:id="@+id/imageViewSearch"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_weight="1"
+            android:src="@drawable/search"
+            android:contentDescription="Search Icon"/>
 
     </LinearLayout>
 

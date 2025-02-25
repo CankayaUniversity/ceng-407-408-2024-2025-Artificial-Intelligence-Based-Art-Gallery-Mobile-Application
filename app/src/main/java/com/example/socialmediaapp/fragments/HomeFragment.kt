@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import com.example.socialmediaapp.R
@@ -83,6 +84,11 @@ class HomeFragment : Fragment(),onDoubleTapClickListener  {
 
             view.findNavController().navigate(R.id.action_homeFragment_to_profileFragment)
 
+        }
+
+        binding.imageViewSearch.setOnClickListener {
+            Toast.makeText(requireContext(), "Search clicked!", Toast.LENGTH_SHORT).show()
+            view.findNavController().navigate(R.id.action_homeFragment_to_searchFragment)
         }
 
         vm.image.observe(viewLifecycleOwner, Observer {

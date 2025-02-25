@@ -1,6 +1,7 @@
 package com.example.socialmediaapp.adapters
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,15 +20,12 @@ import com.google.firebase.firestore.FirebaseFirestore
 
 class UsersAdapter: RecyclerView.Adapter<UserHolder>() {
 
-
     var listofusers = listOf<Users>()
     private var listener: OnFriendClicked? = null
     var clickedOn: Boolean = false
     var follower_id = ""
     var following_id = ""
     var followingcount : Int= 0
-
-
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
@@ -85,6 +83,7 @@ class UsersAdapter: RecyclerView.Adapter<UserHolder>() {
     override fun getItemCount(): Int {
         return listofusers.size
     }
+
 
     // For follow
 
