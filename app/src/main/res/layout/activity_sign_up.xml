@@ -21,16 +21,9 @@
                 android:layout_width="150dp"
                 android:layout_height="150dp"
                 android:layout_marginBottom="20dp"
-                android:src="@drawable/instagram"/>
+                android:src="@drawable/mindsartlogo"/>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="Developed by Developer Sam 2023 ©"
-                android:textColor="@color/black"
-                android:textSize="16sp"
-                android:layout_marginBottom="20dp"/>
+
 
 
             <TextView
