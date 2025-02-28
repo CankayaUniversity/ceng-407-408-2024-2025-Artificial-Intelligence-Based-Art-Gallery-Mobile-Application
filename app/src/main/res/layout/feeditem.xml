@@ -1,110 +1,105 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
-    app:cardCornerRadius="8dp"
+    android:layout_width="match_parent"
+    android:layout_height="450dp"
     android:layout_margin="10dp"
-    android:layout_weight="1"
-    android:layout_height="wrap_content"
-    app:cardElevation="8dp">
 
+    app:cardCornerRadius="8dp"
+    app:cardElevation="8dp">
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:padding="10dp"
 
 
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        >
 
+        <!-- Sol Sütun: Resim -->
         <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="280dp"
             android:id="@+id/feedImage"
-            android:src="@drawable/image_placeholder"/>
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:scaleType="centerCrop"
+            android:src="@drawable/image_placeholder"
+            android:foreground="@drawable/border_background"
+            />
 
-            <de.hdodenhof.circleimageview.CircleImageView
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:src="@mipmap/ic_launcher"
-                android:layout_margin="10dp"
-                app:civ_border_color="#FF4081"
-                app:civ_border_width="1dp"
-                android:id="@+id/userimage"/>
+        <!-- Sağ Sütun: Kullanıcı Bilgileri -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:padding="8dp">
 
+            <!-- Row 1: Kullanıcı Fotoğrafı ve Kullanıcı Adı -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="90dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/userimage"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:src="@mipmap/ic_launcher"
+                    app:civ_border_color="#FF4081"
+                    app:civ_border_width="1dp"
+                    android:layout_marginEnd="8dp" />
+
+                <TextView
+                    android:id="@+id/feedtopusername"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="username"
+                    android:textColor="@color/black"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Row 2: Caption -->
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="username"
-                android:layout_toRightOf="@id/userimage"
-                android:layout_centerVertical="true"
-                android:id="@+id/feedtopusername"
-                android:textSize="18sp"
-                android:layout_margin="5dp"
-                android:textStyle="bold"
-                android:textColor="@color/black"/>
+                android:id="@+id/feedusernamecaption"
+                android:layout_width="match_parent"
+                android:layout_height="270dp"
+                android:layout_marginVertical="8dp"
 
-        </RelativeLayout>
+                android:textColor="@color/black"
+                android:textSize="16sp" />
 
-    </FrameLayout>
+            <!-- Row 3: Like Count ve Feed Time -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="90dp"
+                android:layout_marginBottom="8dp"
+                android:orientation="horizontal">
 
+                <TextView
+                    android:id="@+id/likecount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="16dp"
+                    android:text="0 Likes"
+                    android:textColor="@color/black"
+                    android:textStyle="bold" />
 
+                <TextView
+                    android:id="@+id/feedtime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="time"
+                    android:textColor="@color/black"
+                    android:textSize="14sp" />
+            </LinearLayout>
 
-
-
-
-
-        <TextView
-            android:id="@+id/likecount"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="0 Likes"
-            android:layout_margin="12dp"
-            android:textColor="@color/black"
-            android:layout_gravity="center_vertical"
-            android:textStyle="bold"/>
-
-
-
-
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/feedusernamecaption"
-            android:textSize="18sp"
-            android:text="username"
-            android:layout_margin="10dp"
-            android:textColor="@color/black"/>
-
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="time"
-            android:textSize="16sp"
-            android:id="@+id/feedtime"
-            android:layout_margin="10dp"
-            android:textStyle="bold"
-            android:textColor="@color/black"/>
-
-
-
-
+        </LinearLayout>
 
     </LinearLayout>
-
-
-
-
-
-
-
 
 </androidx.cardview.widget.CardView>
