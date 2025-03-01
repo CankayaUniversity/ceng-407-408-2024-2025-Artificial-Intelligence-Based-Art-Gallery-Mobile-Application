@@ -106,4 +106,8 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
 
     implementation("com.rengwuxian.materialedittext:library:2.1.4")
+
+
+
+    implementation ("androidx.viewpager2:viewpager2:1.0.0")
 }
