@@ -7,6 +7,49 @@
     android:layout_height="match_parent"
     tools:context=".fragments.DiscoverPage">
 
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:elevation="4dp"
+        android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+        android:layout_marginTop="30dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageButton
+            android:id="@+id/left_icon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="challenge"
+            android:src="@drawable/challenge_icon"
+            android:layout_gravity="start|center_vertical"
+            android:layout_marginStart="8dp" />
+
+        <TextView
+            android:id="@+id/logo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="MindsArt"
+            android:textSize="24sp"
+            android:textColor="@android:color/white"
+            android:layout_gravity="center" />
+
+        <ImageButton
+            android:id="@+id/right_icon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="menu"
+            android:src="@drawable/menu_8220629"
+            android:layout_gravity="end|center_vertical"
+            android:layout_marginEnd="8dp" />
+
+    </androidx.appcompat.widget.Toolbar>
 
     <SearchView
         android:layout_width="match_parent"
