@@ -5,53 +5,46 @@
     android:layout_width="match_parent"
     android:layout_height="450dp"
     android:layout_margin="10dp"
-
     app:cardCornerRadius="8dp"
     app:cardElevation="8dp">
+
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="horizontal"
-        android:padding="10dp"
+        android:layout_height="494dp"
+        android:orientation="vertical"
+        android:padding="10dp">
 
-
-        >
-
-        <!-- Sol Sütun: Resim -->
+        <!-- İlk Satır: Resim -->
         <ImageView
             android:id="@+id/feedImage"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-
-            android:scaleType="centerCrop"
-            android:src="@drawable/image_placeholder"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
             android:foreground="@drawable/border_background"
-            />
+            android:scaleType="centerCrop"
+            android:src="@drawable/image_placeholder" />
 
-        <!-- Sağ Sütun: Kullanıcı Bilgileri -->
+        <!-- İkinci Satır: Kullanıcı Bilgileri -->
         <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
             android:orientation="vertical"
             android:padding="8dp">
 
-            <!-- Row 1: Kullanıcı Fotoğrafı ve Kullanıcı Adı -->
+            <!-- Row 1: Kullanıcı Fotoğrafı ve Kullanıcı Adı (30dp) -->
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="90dp"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
+                android:layout_height="30dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
                 <de.hdodenhof.circleimageview.CircleImageView
                     android:id="@+id/userimage"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_marginEnd="8dp"
                     android:src="@mipmap/ic_launcher"
                     app:civ_border_color="#FF4081"
-                    app:civ_border_width="1dp"
-                    android:layout_marginEnd="8dp" />
+                    app:civ_border_width="1dp" />
 
                 <TextView
                     android:id="@+id/feedtopusername"
@@ -59,25 +52,24 @@
                     android:layout_height="wrap_content"
                     android:text="username"
                     android:textColor="@color/black"
-                    android:textSize="18sp"
+                    android:textSize="16sp"
                     android:textStyle="bold" />
             </LinearLayout>
 
-            <!-- Row 2: Caption -->
+            <!-- Row 2: Caption (90dp) -->
             <TextView
                 android:id="@+id/feedusernamecaption"
                 android:layout_width="match_parent"
-                android:layout_height="270dp"
+                android:layout_height="90dp"
                 android:layout_marginVertical="8dp"
-
                 android:textColor="@color/black"
                 android:textSize="16sp" />
 
-            <!-- Row 3: Like Count ve Feed Time -->
+            <!-- Row 3: Like Count ve Feed Time (30dp) -->
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="90dp"
-                android:layout_marginBottom="8dp"
+                android:layout_height="30dp"
+                android:gravity="center_vertical"
                 android:orientation="horizontal">
 
                 <TextView
