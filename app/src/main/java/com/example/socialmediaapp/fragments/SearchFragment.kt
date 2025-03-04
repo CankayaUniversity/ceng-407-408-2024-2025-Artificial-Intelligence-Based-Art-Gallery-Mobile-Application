@@ -14,20 +14,21 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.socialmediaapp.adapters.UsersAdapter
+import com.example.socialmediaapp.adapters.SearchUsersAdapter
 import com.example.socialmediaapp.modal.Users
 import com.example.socialmediaapp.R
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.firestore.FirebaseFirestore
 import java.util.Locale
 
 
 class SearchFragment:Fragment() {
 
     private var recyclerView:RecyclerView?=null
-    private var userAdapter:UsersAdapter?=null
+    private var userAdapter: SearchUsersAdapter?=null
     private var mUser:MutableList<Users>?=null
     private var  searchItem:EditText?=null
 
@@ -44,8 +45,7 @@ class SearchFragment:Fragment() {
         mUser = ArrayList()
         //to show a user on search
         // FIXME: Find a better way to init UsersAdapter Better
-        userAdapter = context?.let{ UsersAdapter() }
-        userAdapter?.setUserLIST(mUser as ArrayList<Users>)
+        userAdapter = context?.let { SearchUsersAdapter(it,mUser as ArrayList<Users>,true) }
         recyclerView?.adapter = userAdapter
 
         searchItem = view.findViewById(R.id.searchitem)
@@ -76,61 +76,52 @@ class SearchFragment:Fragment() {
         return view
     }
 
-    private fun searchUser(input:String)
-    {
-        val query = FirebaseDatabase.getInstance().reference
-            .child("Users")
-            .orderByChild("username")
+    private fun searchUser(input: String) {
+        val query = FirebaseFirestore.getInstance().collection("Users")
+            .orderBy("username")
             .startAt(input)
             .endAt(input + "\uf8ff")
 
-        query.addValueEventListener(object:ValueEventListener
-        {
-            override fun onCancelled(error: DatabaseError) {
-
+        query.addSnapshotListener { value, error ->
+            if (error != null) {
+                Log.e("Firestore Error", error.message.toString())
+                return@addSnapshotListener
             }
-            override fun onDataChange(datasnapshot: DataSnapshot) {
-                mUser?.clear()
 
-                for(snapshot in datasnapshot.children)
-                {
-                    //searching all users
-                    val user=snapshot.getValue(Users::class.java)
-                    if(user!=null)
-                    {
+            mUser?.clear()
+
+            for (document in value?.documents ?: emptyList()) {
+                val user = document.toObject(Users::class.java)
+                if (user != null) {
+                    mUser?.add(user)
+                }
+            }
+            userAdapter?.notifyDataSetChanged()
+        }
+    }
+
+    private fun retrieveUser() {
+        val usersCollection = FirebaseFirestore.getInstance().collection("Users") // Firestore collection: "Users"
+
+        usersCollection.addSnapshotListener { value, error ->
+            if (error != null) {
+                Toast.makeText(context, "Could not read from Database", Toast.LENGTH_LONG).show()
+                return@addSnapshotListener
+            }
+
+            if (searchItem!!.text.toString().isEmpty()) {
+                mUser?.clear()
+                for (document in value?.documents ?: emptyList()) {
+                    val user = document.toObject(Users::class.java)
+                    if (user != null) {
                         mUser?.add(user)
                     }
                 }
                 userAdapter?.notifyDataSetChanged()
             }
-        })
-
+        }
     }
 
-    private fun retrieveUser()
-    {
 
-        val usersSearchRef=FirebaseDatabase.getInstance().reference.child("Users")//table name:Users
-        usersSearchRef.addValueEventListener(object:ValueEventListener
-        {
-            override fun onCancelled(error: DatabaseError) {
-                Toast.makeText(context,"Could not read from Database",Toast.LENGTH_LONG).show()
-            }
-
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                if (searchItem!!.text.toString() == "") {
-                    mUser?.clear()
-                    for (snapShot in dataSnapshot.children) {
-                        val user = snapShot.getValue(Users::class.java)
-                        if (user != null) {
-                            mUser?.add(user)
-                        }
-                        userAdapter?.notifyDataSetChanged()
-                    }
-                }
-            }
-        })
-
-    }
 
 }
