@@ -16,22 +16,13 @@
             android:layout_height="match_parent">
 
 
-            <ImageView
-                android:layout_marginTop="30dp"
-                android:layout_width="150dp"
-                android:layout_height="150dp"
-                android:layout_marginBottom="20dp"
-                android:src="@drawable/instagram"/>
-
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="Developed by Developer Sam 2023 ©"
                 android:textColor="@color/black"
                 android:textSize="16sp"
                 android:layout_marginBottom="20dp"/>
-
 
             <TextView
                 android:id="@+id/titleText"
@@ -41,7 +32,6 @@
                 android:gravity="start"
                 android:textColor="@color/black"
                 android:text="Register your account"
-                android:layout_marginLeft="10dp"
                 android:textSize="30sp" />
 
             <com.google.android.material.textfield.TextInputLayout
