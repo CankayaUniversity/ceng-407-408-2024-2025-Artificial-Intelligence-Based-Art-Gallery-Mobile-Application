@@ -1,16 +1,16 @@
 package com.example.artminds_ai
 
-
+import org.json.JSONArray
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
+import android.widget.CheckBox
 import android.widget.EditText
-import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import com.bumptech.glide.Glide
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -25,13 +25,17 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var promptEditText: EditText
     private lateinit var generateButton: Button
-    private lateinit var resultImageView: ImageView
+    private lateinit var generateStoryCheckBox: CheckBox
     private lateinit var progressBar: ProgressBar
 
     // Your Azure OpenAI API credentials
     private val AZURE_OPENAI_DALLE_ENDPOINT = "https://mindsart-storygeneration.openai.azure.com/openai/deployments/mindsArt-ImageGeneration/images/generations?api-version=2024-02-01"
     private val AZURE_OPENAI_DALLE_API_KEY = "lGsXrBI6BLLSaVNeTk6ILqt24GSpT0koiqRP7iINuB5aqKqzf5XDJQQJ99BCACfhMk5XJ3w3AAABACOGWSmU"
     private val AZURE_ENDPOINT = "https://mindsart-storygeneration.openai.azure.com/"
+
+    // Add the Azure OpenAI GPT endpoint for story generation
+    // Change the deployment name and API version as needed for your setup
+    private val AZURE_OPENAI_GPT_ENDPOINT = "https://mindsart-storygeneration.openai.azure.com/openai/deployments/mindsArt-StoryGeneration-GPT4/chat/completions?api-version=2024-08-01-preview"
 
     private val client = OkHttpClient.Builder()
         .connectTimeout(60, TimeUnit.SECONDS)
@@ -45,7 +49,7 @@ class MainActivity : AppCompatActivity() {
 
         promptEditText = findViewById(R.id.promptEditText)
         generateButton = findViewById(R.id.generateButton)
-        resultImageView = findViewById(R.id.resultImageView)
+        generateStoryCheckBox = findViewById(R.id.generateStoryCheckBox)
         progressBar = findViewById(R.id.progressBar)
 
         generateButton.setOnClickListener {
@@ -68,7 +72,6 @@ class MainActivity : AppCompatActivity() {
                     put("prompt", prompt)
                     put("n", 1)  // Number of images to generate
                     put("size", "1024x1024")  // Image size
-                    // Other parameters can be added as needed
                 }.toString()
 
                 val request = Request.Builder()
@@ -82,7 +85,6 @@ class MainActivity : AppCompatActivity() {
                 val responseData = response.body?.string()
 
                 if (response.isSuccessful && !responseData.isNullOrEmpty()) {
-                    // The response format might be different based on your Azure setup
                     val jsonResponse = JSONObject(responseData)
 
                     // Check if the response has direct image data
@@ -90,44 +92,35 @@ class MainActivity : AppCompatActivity() {
                         val data = jsonResponse.getJSONArray("data")
                         val imageObj = data.getJSONObject(0)
 
-                        // Extract image URL or base64 data depending on response format
-                        val imageUrl = when {
-                            imageObj.has("url") -> imageObj.getString("url")
-                            imageObj.has("b64_json") -> {
-                                // If it's base64, we'd need to convert it to displayable format
-                                // For simplicity, we're assuming URL-based response here
-                                withContext(Dispatchers.Main) {
-                                    showLoading(false)
-                                    Toast.makeText(
-                                        this@MainActivity,
-                                        "Received base64 image data, handling not implemented in this example",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                }
-                                return@launch
-                            }
-                            else -> {
-                                withContext(Dispatchers.Main) {
-                                    showLoading(false)
-                                    Toast.makeText(
-                                        this@MainActivity,
-                                        "Unexpected response format",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                }
-                                return@launch
-                            }
-                        }
+                        // Extract image URL
+                        if (imageObj.has("url")) {
+                            val imageUrl = imageObj.getString("url")
 
-                        withContext(Dispatchers.Main) {
-                            loadImage(imageUrl)
+                            if (generateStoryCheckBox.isChecked) {
+                                // Generate a story based on the prompt
+                                generateStory(prompt, imageUrl)
+                            } else {
+                                // Just show the image result
+                                withContext(Dispatchers.Main) {
+                                    navigateToResultActivity(imageUrl, null)
+                                    showLoading(false)
+                                }
+                            }
+                        } else {
+                            withContext(Dispatchers.Main) {
+                                showLoading(false)
+                                Toast.makeText(
+                                    this@MainActivity,
+                                    "Image URL not found in response",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
                         }
                     }
                     // Check if this is an asynchronous operation that requires polling
                     else if (jsonResponse.has("id") || jsonResponse.has("operation")) {
                         val operationId = jsonResponse.optString("id", jsonResponse.optString("operation"))
-                        // You would call a polling method here if needed
-                        pollForResult(operationId)
+                        pollForResult(operationId, prompt)
                     } else {
                         withContext(Dispatchers.Main) {
                             showLoading(false)
@@ -162,7 +155,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private suspend fun pollForResult(operationId: String) {
+    private suspend fun pollForResult(operationId: String, prompt: String) {
         try {
             // Base polling URL for checking operation status
             val url = "${AZURE_ENDPOINT}openai/operations/images/$operationId?api-version=2024-02-01"
@@ -193,8 +186,15 @@ class MainActivity : AppCompatActivity() {
                         val data = result.getJSONArray("data")
                         val imageUrl = data.getJSONObject(0).getString("url")
 
-                        withContext(Dispatchers.Main) {
-                            loadImage(imageUrl)
+                        if (generateStoryCheckBox.isChecked) {
+                            // Generate a story based on the prompt
+                            generateStory(prompt, imageUrl)
+                        } else {
+                            // Just show the image result
+                            withContext(Dispatchers.Main) {
+                                navigateToResultActivity(imageUrl, null)
+                                showLoading(false)
+                            }
                         }
                     } else if (status == "failed") {
                         withContext(Dispatchers.Main) {
@@ -208,9 +208,6 @@ class MainActivity : AppCompatActivity() {
                         isCompleted = true
                     } else {
                         // Still processing, wait and try again
-                        withContext(Dispatchers.Main) {
-                            // Optional: Update UI to show waiting status
-                        }
                         kotlinx.coroutines.delay(2000) // 2-second delay before polling again
                     }
                 } else {
@@ -249,12 +246,84 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadImage(imageUrl: String) {
-        Glide.with(this)
-            .load(imageUrl)
-            .into(resultImageView)
+    private suspend fun generateStory(prompt: String, imageUrl: String) {
+        try {
+            val storyPrompt = """
+            Write a short creative story based on this image description: "$prompt". 
+            The story should be engaging, between 150-250 words, and suitable for general audiences.
+            Make it vivid and descriptive, capturing the essence of the image.
+        """.trimIndent()
 
-        showLoading(false)
+            // The issue is here - messages should be an array, not an object
+            val requestBody = JSONObject().apply {
+                put("messages", JSONArray().apply {
+                    put(JSONObject().apply {
+                        put("role", "user")
+                        put("content", storyPrompt)
+                    })
+                })
+                put("max_tokens", 500)
+                put("temperature", 0.7)
+            }.toString()
+
+            val request = Request.Builder()
+                .url(AZURE_OPENAI_GPT_ENDPOINT)
+                .addHeader("Content-Type", "application/json")
+                .addHeader("api-key", AZURE_OPENAI_DALLE_API_KEY)
+                .post(requestBody.toRequestBody("application/json".toMediaTypeOrNull()))
+                .build()
+
+            val response = client.newCall(request).execute()
+            val responseData = response.body?.string()
+
+            if (response.isSuccessful && !responseData.isNullOrEmpty()) {
+                val jsonResponse = JSONObject(responseData)
+
+                // Extract the story from the GPT response
+                val story = if (jsonResponse.has("choices")) {
+                    val choices = jsonResponse.getJSONArray("choices")
+                    if (choices.length() > 0) {
+                        val firstChoice = choices.getJSONObject(0)
+                        if (firstChoice.has("message")) {
+                            val message = firstChoice.getJSONObject("message")
+                            message.getString("content")
+                        } else {
+                            "Failed to extract story from response"
+                        }
+                    } else {
+                        "No story was generated"
+                    }
+                } else {
+                    "Failed to generate a story"
+                }
+
+                withContext(Dispatchers.Main) {
+                    navigateToResultActivity(imageUrl, story)
+                    showLoading(false)
+                }
+            } else {
+                withContext(Dispatchers.Main) {
+                    // If story generation fails, still show the image
+                    navigateToResultActivity(imageUrl, "Failed to generate a story. Error: ${response.code} - ${responseData ?: "Unknown error"}")
+                    showLoading(false)
+                }
+            }
+        } catch (e: Exception) {
+            withContext(Dispatchers.Main) {
+                // If story generation fails, still show the image
+                navigateToResultActivity(imageUrl, "Failed to generate a story. Error: ${e.message}")
+                showLoading(false)
+            }
+        }
+    }
+
+    private fun navigateToResultActivity(imageUrl: String, story: String?) {
+        val intent = Intent(this, ResultActivity::class.java).apply {
+            putExtra("IMAGE_URL", imageUrl)
+            putExtra("STORY", story)
+            putExtra("PROMPT", promptEditText.text.toString().trim())
+        }
+        startActivity(intent)
     }
 
     private fun showLoading(isLoading: Boolean) {
