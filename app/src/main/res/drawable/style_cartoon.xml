@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="60dp"
+    android:height="70dp"
+    android:viewportWidth="60"
+    android:viewportHeight="70">
+
+    <!-- Background color -->
+    <path
+        android:fillColor="#FFCC99"
+        android:pathData="M0,0h60v70h-60z" />
+
+    <!-- Sun -->
+    <path
+        android:fillColor="#FFDD55"
+        android:pathData="M45,15m-8,0a8,8 0,1 1,16 0a8,8 0,1 1,-16 0" />
+
+    <!-- Ground -->
+    <path
+        android:fillColor="#66AA66"
+        android:pathData="M0,50h60v20h-60z" />
+
+    <!-- Cartoon house -->
+    <path
+        android:fillColor="#FF8866"
+        android:pathData="M10,35L25,25L40,35V55H10Z" />
+    <path
+        android:fillColor="#996644"
+        android:pathData="M20,45h10v10h-10z" />
+    <path
+        android:fillColor="#88CCFF"
+        android:pathData="M15,40h5v5h-5z" />
+    <path
+        android:fillColor="#88CCFF"
+        android:pathData="M30,40h5v5h-5z" />
+    <path
+        android:fillColor="#AA4433"
+        android:pathData="M10,35L25,25L40,35L25,30Z" />
+
+    <!-- Cartoon character -->
+    <path
+        android:fillColor="#FFDD55"
+        android:pathData="M50,40m-5,0a5,5 0,1 1,10 0a5,5 0,1 1,-10 0" />
+    <path
+        android:fillColor="#3388FF"
+        android:pathData="M45,50h10v10h-10z" />
+    <path
+        android:strokeColor="#000000"
+        android:strokeWidth="1"
+        android:pathData="M48,38h1v1h-1zM51,38h1v1h-1z" />
+    <path
+        android:strokeColor="#000000"
+        android:strokeWidth="1"
+        android:pathData="M49,42c1,0 2,-1 2,-1" />
+
+    <!-- Tree -->
+    <path
+        android:fillColor="#996644"
+        android:pathData="M10,55L10,40L5,40L5,55Z" />
+    <path
+        android:fillColor="#44AA44"
+        android:pathData="M5,40L1,30L5,25L10,30L15,25L20,30L15,40Z" />
+
+</vector>

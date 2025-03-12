@@ -9,4 +9,21 @@
     <color name="dark_blue">#1A2342</color>
     <color name="light_blue">#1E90FF</color>
     <color name="gray">#888888</color>
+    <color name="white">#FFFFFF</color>
+    <color name="button_blue">#4662EB</color>
+    <color name="toggle_on">#4662EB</color>
+    <color name="toggle_off">#2C2C2C</color>
+    <color name="blue_accent">#3389FF</color>
+    <color name="purple_accent">#5B68FF</color>
+    <color name="purple_dark">#4452E8</color>
+    <color name="yellow">#FFD700</color>
+    <color name="hint_color">#80FFFFFF</color>
+    <color name="card_background">#102548</color>
+    <color name="selected_style">#283B5E</color>
+
+    <!-- Switch colors -->
+    <color name="switch_thumb_on">#FFFFFF</color>
+    <color name="switch_thumb_off">#AAAAAA</color>
+    <color name="switch_track_on">#5B68FF</color>
+    <color name="switch_track_off">#30FFFFFF</color>
 </resources>

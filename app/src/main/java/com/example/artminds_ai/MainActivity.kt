@@ -3,14 +3,19 @@ package com.example.artminds_ai
 import org.json.JSONArray
 import android.content.Intent
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.View
 import android.widget.Button
-import android.widget.CheckBox
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.ProgressBar
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.cardview.widget.CardView
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.switchmaterial.SwitchMaterial
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -24,17 +29,26 @@ import java.util.concurrent.TimeUnit
 class MainActivity : AppCompatActivity() {
 
     private lateinit var promptEditText: EditText
+    private lateinit var negativePromptEditText: EditText
     private lateinit var generateButton: Button
-    private lateinit var generateStoryCheckBox: CheckBox
+    private lateinit var storySwitch: SwitchMaterial
     private lateinit var progressBar: ProgressBar
+    private lateinit var promptCounter: TextView
+    private lateinit var negativePromptCounter: TextView
+    private lateinit var promptClearButton: ImageButton
+    private lateinit var negativePromptClearButton: ImageButton
+    private lateinit var styleCardCyberpunk: CardView
+    private lateinit var styleCardCartoon: CardView
+    private lateinit var styleCardAnime: CardView
+    private lateinit var styleCardHyperrealistic: CardView
 
-    // Your Azure OpenAI API credentials
+    private var selectedStyle: String = "none"
+    private val MAX_PROMPT_LENGTH = 300
+
+    // Your Azure OpenAI API credentials - replace with actual keys in production
     private val AZURE_OPENAI_DALLE_ENDPOINT = "YOUR_DALLE3_ENDPOINT_KEY"
     private val AZURE_OPENAI_DALLE_API_KEY = "YOUR_DALLE3_API_KEY"
     private val AZURE_ENDPOINT = "YOUR_AZURE_ENDPOINT_KEY"
-
-    // Add the Azure OpenAI GPT endpoint for story generation
-    // Change the deployment name and API version as needed for your setup
     private val AZURE_OPENAI_GPT_ENDPOINT = "YOUR_GPT_ENDPOINT_KEY"
 
     private val client = OkHttpClient.Builder()
@@ -47,38 +61,133 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        promptEditText = findViewById(R.id.promptEditText)
-        generateButton = findViewById(R.id.generateButton)
-        generateStoryCheckBox = findViewById(R.id.generateStoryCheckBox)
-        progressBar = findViewById(R.id.progressBar)
+        initializeViews()
+        setupListeners()
+    }
 
+    private fun initializeViews() {
+        promptEditText = findViewById(R.id.promptEditText)
+        negativePromptEditText = findViewById(R.id.negativePromptEditText)
+        generateButton = findViewById(R.id.generateButton)
+        storySwitch = findViewById(R.id.storySwitch)
+        progressBar = findViewById(R.id.progressBar)
+        promptCounter = findViewById(R.id.promptCounter)
+        negativePromptCounter = findViewById(R.id.negativePromptCounter)
+        promptClearButton = findViewById(R.id.promptClearButton)
+        negativePromptClearButton = findViewById(R.id.negativePromptClearButton)
+
+        // Style cards
+        styleCardCyberpunk = findViewById(R.id.styleCardCyberpunk)
+        styleCardCartoon = findViewById(R.id.styleCardCartoon)
+        styleCardAnime = findViewById(R.id.styleCardAnime)
+        styleCardHyperrealistic = findViewById(R.id.styleCardHyperrealistic)
+
+        // Initialize counters
+        promptCounter.text = "0/${MAX_PROMPT_LENGTH}"
+        negativePromptCounter.text = "0/${MAX_PROMPT_LENGTH}"
+    }
+
+    private fun setupListeners() {
+        // Generate button click listener
         generateButton.setOnClickListener {
             val prompt = promptEditText.text.toString().trim()
+            val negativePrompt = negativePromptEditText.text.toString().trim()
+
             if (prompt.isNotEmpty()) {
-                generateImage(prompt)
+                // Build the final prompt with style if selected
+                var finalPrompt = prompt
+                if (selectedStyle != "none") {
+                    finalPrompt = "$prompt, in $selectedStyle style"
+                }
+
+                generateImage(finalPrompt, negativePrompt)
             } else {
                 Toast.makeText(this, "Please enter a prompt", Toast.LENGTH_SHORT).show()
             }
         }
+
+        // Prompt text change listener for counter
+        promptEditText.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                val length = s?.length ?: 0
+                promptCounter.text = "$length/$MAX_PROMPT_LENGTH"
+                promptClearButton.visibility = if (length > 0) View.VISIBLE else View.INVISIBLE
+            }
+        })
+
+        // Negative prompt text change listener for counter
+        negativePromptEditText.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                val length = s?.length ?: 0
+                negativePromptCounter.text = "$length/$MAX_PROMPT_LENGTH"
+                negativePromptClearButton.visibility = if (length > 0) View.VISIBLE else View.INVISIBLE
+            }
+        })
+
+        // Clear buttons
+        promptClearButton.setOnClickListener {
+            promptEditText.setText("")
+        }
+
+        negativePromptClearButton.setOnClickListener {
+            negativePromptEditText.setText("")
+        }
+
+        // Style card click listeners
+        styleCardCyberpunk.setOnClickListener { selectStyle("cyberpunk") }
+        styleCardCartoon.setOnClickListener { selectStyle("cartoon") }
+        styleCardAnime.setOnClickListener { selectStyle("anime") }
+        styleCardHyperrealistic.setOnClickListener { selectStyle("hyperrealistic") }
     }
 
-    private fun generateImage(prompt: String) {
+    private fun selectStyle(style: String) {
+        // Reset all card backgrounds
+        styleCardCyberpunk.setCardBackgroundColor(getColor(R.color.card_background))
+        styleCardCartoon.setCardBackgroundColor(getColor(R.color.card_background))
+        styleCardAnime.setCardBackgroundColor(getColor(R.color.card_background))
+        styleCardHyperrealistic.setCardBackgroundColor(getColor(R.color.card_background))
+
+        // Set selected style
+        selectedStyle = if (selectedStyle == style) "none" else style
+
+        // Highlight selected card if any
+        when (selectedStyle) {
+            "cyberpunk" -> styleCardCyberpunk.setCardBackgroundColor(getColor(R.color.selected_style))
+            "cartoon" -> styleCardCartoon.setCardBackgroundColor(getColor(R.color.selected_style))
+            "anime" -> styleCardAnime.setCardBackgroundColor(getColor(R.color.selected_style))
+            "hyperrealistic" -> styleCardHyperrealistic.setCardBackgroundColor(getColor(R.color.selected_style))
+        }
+    }
+
+    private fun generateImage(prompt: String, negativePrompt: String = "") {
         showLoading(true)
 
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                // Using your exact endpoint for DALL-E image generation
-                val requestBody = JSONObject().apply {
+                // Create the request body for DALL-E
+                val requestBodyObj = JSONObject().apply {
                     put("prompt", prompt)
                     put("n", 1)  // Number of images to generate
                     put("size", "1024x1024")  // Image size
-                }.toString()
+
+                    // Add negative prompt if provided
+                    if (negativePrompt.isNotEmpty()) {
+                        put("negative_prompt", negativePrompt)
+                    }
+                }
+
+                val requestBody = requestBodyObj.toString()
+                    .toRequestBody("application/json".toMediaTypeOrNull())
 
                 val request = Request.Builder()
                     .url(AZURE_OPENAI_DALLE_ENDPOINT)
                     .addHeader("Content-Type", "application/json")
                     .addHeader("api-key", AZURE_OPENAI_DALLE_API_KEY)
-                    .post(requestBody.toRequestBody("application/json".toMediaTypeOrNull()))
+                    .post(requestBody)
                     .build()
 
                 val response = client.newCall(request).execute()
@@ -87,16 +196,15 @@ class MainActivity : AppCompatActivity() {
                 if (response.isSuccessful && !responseData.isNullOrEmpty()) {
                     val jsonResponse = JSONObject(responseData)
 
-                    // Check if the response has direct image data
+                    // Handle direct image data response
                     if (jsonResponse.has("data")) {
                         val data = jsonResponse.getJSONArray("data")
                         val imageObj = data.getJSONObject(0)
 
-                        // Extract image URL
                         if (imageObj.has("url")) {
                             val imageUrl = imageObj.getString("url")
 
-                            if (generateStoryCheckBox.isChecked) {
+                            if (storySwitch.isChecked) {
                                 // Generate a story based on the prompt
                                 generateStory(prompt, imageUrl)
                             } else {
@@ -107,50 +215,21 @@ class MainActivity : AppCompatActivity() {
                                 }
                             }
                         } else {
-                            withContext(Dispatchers.Main) {
-                                showLoading(false)
-                                Toast.makeText(
-                                    this@MainActivity,
-                                    "Image URL not found in response",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
+                            handleError("Image URL not found in response")
                         }
                     }
-                    // Check if this is an asynchronous operation that requires polling
+                    // Handle asynchronous response that requires polling
                     else if (jsonResponse.has("id") || jsonResponse.has("operation")) {
                         val operationId = jsonResponse.optString("id", jsonResponse.optString("operation"))
                         pollForResult(operationId, prompt)
                     } else {
-                        withContext(Dispatchers.Main) {
-                            showLoading(false)
-                            Toast.makeText(
-                                this@MainActivity,
-                                "Unexpected response format: $responseData",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
+                        handleError("Unexpected response format: $responseData")
                     }
                 } else {
-                    // Handle error
-                    withContext(Dispatchers.Main) {
-                        showLoading(false)
-                        Toast.makeText(
-                            this@MainActivity,
-                            "Error: ${response.code} - ${responseData ?: "Unknown error"}",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
+                    handleError("Error: ${response.code} - ${responseData ?: "Unknown error"}")
                 }
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    showLoading(false)
-                    Toast.makeText(
-                        this@MainActivity,
-                        "Exception: ${e.message}",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
+                handleError("Exception: ${e.message}")
             }
         }
     }
@@ -180,81 +259,53 @@ class MainActivity : AppCompatActivity() {
                     val jsonResponse = JSONObject(responseData)
                     val status = jsonResponse.getString("status")
 
-                    if (status == "succeeded") {
-                        isCompleted = true
-                        val result = jsonResponse.getJSONObject("result")
-                        val data = result.getJSONArray("data")
-                        val imageUrl = data.getJSONObject(0).getString("url")
+                    when (status) {
+                        "succeeded" -> {
+                            isCompleted = true
+                            val result = jsonResponse.getJSONObject("result")
+                            val data = result.getJSONArray("data")
+                            val imageUrl = data.getJSONObject(0).getString("url")
 
-                        if (generateStoryCheckBox.isChecked) {
-                            // Generate a story based on the prompt
-                            generateStory(prompt, imageUrl)
-                        } else {
-                            // Just show the image result
-                            withContext(Dispatchers.Main) {
-                                navigateToResultActivity(imageUrl, null)
-                                showLoading(false)
+                            if (storySwitch.isChecked) {
+                                generateStory(prompt, imageUrl)
+                            } else {
+                                withContext(Dispatchers.Main) {
+                                    navigateToResultActivity(imageUrl, null)
+                                    showLoading(false)
+                                }
                             }
                         }
-                    } else if (status == "failed") {
-                        withContext(Dispatchers.Main) {
-                            showLoading(false)
-                            Toast.makeText(
-                                this@MainActivity,
-                                "Image generation failed: ${jsonResponse.optString("error", "Unknown error")}",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                        "failed" -> {
+                            isCompleted = true
+                            handleError("Image generation failed: ${jsonResponse.optString("error", "Unknown error")}")
                         }
-                        isCompleted = true
-                    } else {
-                        // Still processing, wait and try again
-                        kotlinx.coroutines.delay(2000) // 2-second delay before polling again
+                        else -> {
+                            // Still processing, wait and try again
+                            kotlinx.coroutines.delay(2000) // 2-second delay
+                        }
                     }
                 } else {
-                    withContext(Dispatchers.Main) {
-                        showLoading(false)
-                        Toast.makeText(
-                            this@MainActivity,
-                            "Error checking status: ${response.code}",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
                     isCompleted = true
+                    handleError("Error checking status: ${response.code}")
                 }
             }
 
             if (attempts >= maxAttempts) {
-                withContext(Dispatchers.Main) {
-                    showLoading(false)
-                    Toast.makeText(
-                        this@MainActivity,
-                        "Timeout: Image generation is taking too long",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
+                handleError("Timeout: Image generation is taking too long")
             }
-
         } catch (e: Exception) {
-            withContext(Dispatchers.Main) {
-                showLoading(false)
-                Toast.makeText(
-                    this@MainActivity,
-                    "Error polling for result: ${e.message}",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
+            handleError("Error polling for result: ${e.message}")
         }
     }
 
     private suspend fun generateStory(prompt: String, imageUrl: String) {
         try {
             val storyPrompt = """
-            Write a short creative story based on this image description: "$prompt". 
-            The story should be engaging, between 150-250 words, and suitable for general audiences.
-            Make it vivid and descriptive, capturing the essence of the image.
-        """.trimIndent()
+                Write a short creative story based on this image description: "$prompt". 
+                The story should be engaging, between 150-250 words, and suitable for general audiences.
+                Make it vivid and descriptive, capturing the essence of the image.
+            """.trimIndent()
 
-            // The issue is here - messages should be an array, not an object
             val requestBody = JSONObject().apply {
                 put("messages", JSONArray().apply {
                     put(JSONObject().apply {
@@ -302,18 +353,25 @@ class MainActivity : AppCompatActivity() {
                     showLoading(false)
                 }
             } else {
+                // If story generation fails, still show the image
                 withContext(Dispatchers.Main) {
-                    // If story generation fails, still show the image
                     navigateToResultActivity(imageUrl, "Failed to generate a story. Error: ${response.code} - ${responseData ?: "Unknown error"}")
                     showLoading(false)
                 }
             }
         } catch (e: Exception) {
+            // If story generation fails, still show the image
             withContext(Dispatchers.Main) {
-                // If story generation fails, still show the image
                 navigateToResultActivity(imageUrl, "Failed to generate a story. Error: ${e.message}")
                 showLoading(false)
             }
+        }
+    }
+
+    private suspend fun handleError(message: String) {
+        withContext(Dispatchers.Main) {
+            showLoading(false)
+            Toast.makeText(this@MainActivity, message, Toast.LENGTH_LONG).show()
         }
     }
 
