@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#CCCCCC" />
+    <size
+        android:width="100dp"
+        android:height="100dp" />
+
+    <padding
+        android:bottom="4dp"
+        android:left="4dp"
+        android:right="4dp"
+        android:top="4dp" />
+
+    <!-- Add a border -->
+    <stroke
+        android:width="1dp"
+        android:color="#999999" />
+
+    <!-- Optional inner elements like a centered image icon -->
+    <gradient
+        android:angle="90"
+        android:endColor="#CCCCCC"
+        android:startColor="#AAAAAA"
+        android:type="linear" />
+</shape>
