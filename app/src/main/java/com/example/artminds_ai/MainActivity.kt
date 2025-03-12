@@ -29,13 +29,13 @@ class MainActivity : AppCompatActivity() {
     private lateinit var progressBar: ProgressBar
 
     // Your Azure OpenAI API credentials
-    private val AZURE_OPENAI_DALLE_ENDPOINT = "https://mindsart-storygeneration.openai.azure.com/openai/deployments/mindsArt-ImageGeneration/images/generations?api-version=2024-02-01"
-    private val AZURE_OPENAI_DALLE_API_KEY = "lGsXrBI6BLLSaVNeTk6ILqt24GSpT0koiqRP7iINuB5aqKqzf5XDJQQJ99BCACfhMk5XJ3w3AAABACOGWSmU"
-    private val AZURE_ENDPOINT = "https://mindsart-storygeneration.openai.azure.com/"
+    private val AZURE_OPENAI_DALLE_ENDPOINT = "YOUR_DALLE3_ENDPOINT_KEY"
+    private val AZURE_OPENAI_DALLE_API_KEY = "YOUR_DALLE3_API_KEY"
+    private val AZURE_ENDPOINT = "YOUR_AZURE_ENDPOINT_KEY"
 
     // Add the Azure OpenAI GPT endpoint for story generation
     // Change the deployment name and API version as needed for your setup
-    private val AZURE_OPENAI_GPT_ENDPOINT = "https://mindsart-storygeneration.openai.azure.com/openai/deployments/mindsArt-StoryGeneration-GPT4/chat/completions?api-version=2024-08-01-preview"
+    private val AZURE_OPENAI_GPT_ENDPOINT = "YOUR_GPT_ENDPOINT_KEY"
 
     private val client = OkHttpClient.Builder()
         .connectTimeout(60, TimeUnit.SECONDS)
