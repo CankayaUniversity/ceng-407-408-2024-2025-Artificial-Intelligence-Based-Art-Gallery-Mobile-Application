@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "506001680465",
-    "project_id": "socialmediaapp-1d958",
-    "storage_bucket": "socialmediaapp-1d958.firebasestorage.app"
+    "project_number": "122171583718",
+    "project_id": "socialmediaimagegen",
+    "storage_bucket": "socialmediaimagegen.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:506001680465:android:3bdb390870198844a8b070",
+        "mobilesdk_app_id": "1:122171583718:android:c6898b2011803277aadf27",
         "android_client_info": {
           "package_name": "com.example.socialmediaapp"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCMhU2qeHxp__3cUhpxc21RTcJwoB8kRCc"
+          "current_key": "key"
         }
       ],
       "services": {
