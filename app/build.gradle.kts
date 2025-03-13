@@ -62,6 +62,7 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.preference)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -105,4 +106,8 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
 
     implementation("com.rengwuxian.materialedittext:library:2.1.4")
+
+
+
+    implementation ("androidx.viewpager2:viewpager2:1.0.0")
 }

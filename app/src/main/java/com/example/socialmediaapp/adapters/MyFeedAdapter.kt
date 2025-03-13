@@ -38,50 +38,33 @@ class MyFeedAdapter: RecyclerView.Adapter<FeedHolder>() {
     }
 
     @SuppressLint("SetTextI18n")
-    override fun onBindViewHolder(
-        holder: FeedHolder,
-        position: Int
-    ) {
+    override fun onBindViewHolder(holder: FeedHolder, position: Int) {
         val feed = feedlist[position]
-        val boldText = "<b>${feed.username}</b>" // Username will be displayed in bold text
-        val additionalText = ": ${feed.caption}"
-        val combinedText = boldText + additionalText
-        val formattedText: Spanned = Html.fromHtml(combinedText)
 
+        // Set username in Row-1
+        holder.userNamePoster.text = feed.username
 
-        holder.userNamePoster.text = formattedText
+        // Set Caption in Row-2
+        holder.userNameCaption.text = feed.caption
 
-        val date = Date(feed.time!!.toLong()* 1000)
-
+        // Set time in Row-3
+        val date = Date(feed.time!!.toLong() * 1000)
         val instagramTimeFormat = DateUtils.getRelativeTimeSpanString(
             date.time,
             System.currentTimeMillis(),
             DateUtils.MINUTE_IN_MILLIS,
             DateUtils.FORMAT_ABBREV_RELATIVE
         )
+        holder.time.text = instagramTimeFormat
 
-
-        holder.time.setText(instagramTimeFormat)
-        holder.userNamePoster.setText(feed.username)
-
+        // Set Image and Profile Picture
         Glide.with(holder.itemView.context).load(feed.image).into(holder.feedImage)
         Glide.with(holder.itemView.context).load(feed.imageposter).into(holder.userPosterImage)
 
-        holder.likecount.setText("${feed.likes} Likes")
-
-        val doubleClickGestureDetector = GestureDetectorCompat(holder.itemView.context, object : GestureDetector.SimpleOnGestureListener() {
-            override fun onDoubleTap(e: MotionEvent): Boolean {
-                listener?.onDoubleTap(feed)
-                return true
-            }
-        })
-
-        holder.itemView.setOnTouchListener { _, event ->
-            doubleClickGestureDetector.onTouchEvent(event)
-            true
-        }
-
+        // Set Likes
+        holder.likecount.text = "${feed.likes} Likes"
     }
+
 
     override fun getItemCount(): Int {
         return feedlist.size
@@ -89,31 +72,24 @@ class MyFeedAdapter: RecyclerView.Adapter<FeedHolder>() {
 
     fun setFeedList(list: List<Feed>){
         this.feedlist = list
-        notifyDataSetChanged()
     }
 
     fun setListener(listener: onDoubleTapClickListener){
         this.listener = listener
     }
 
+
 }
 
 
 
-class FeedHolder(itemView: View) : ViewHolder(itemView)
-{
-    init {
-        itemView.isClickable = true // Make sure the item is clickable
-    }
-
-    val userNamePoster : TextView = itemView.findViewById(R.id.feedtopusername)
-    val userNameCaption : TextView = itemView.findViewById(R.id.feedusernamecaption)
-
-    val userPosterImage : CircleImageView = itemView.findViewById(R.id.userimage)
-    val feedImage : ImageView = itemView.findViewById(R.id.feedImage)
+class FeedHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    val userNamePoster: TextView = itemView.findViewById(R.id.feedtopusername)
+    val userNameCaption: TextView = itemView.findViewById(R.id.feedusernamecaption) // Caption text
+    val userPosterImage: CircleImageView = itemView.findViewById(R.id.userimage)
+    val feedImage: ImageView = itemView.findViewById(R.id.feedImage)
     val time: TextView = itemView.findViewById(R.id.feedtime)
     val likecount: TextView = itemView.findViewById(R.id.likecount)
-
 }
 
 
