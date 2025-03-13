@@ -1,39 +1,36 @@
 package com.example.artminds_ai
 
-import android.content.Intent
 import android.os.Bundle
-import android.widget.Button
+import android.view.LayoutInflater
+import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
-import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
-//Inherits BaseActivity layout
-class MainActivity : BaseActivity() {
-    override fun getContentLayoutId(): Int {
-        return R.layout.activity_main
-    }
+abstract class BaseActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
-        // Find the button by ID
-        val navigateButton = findViewById<Button>(R.id.navigateButton)
-
-        // Set click listener
-        navigateButton.setOnClickListener {
-            val intent = Intent(this, ImageGenerationPageActivity::class.java)
-            startActivity(intent)
-        }
+        setContentView(R.layout.activity_base)
 
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayShowTitleEnabled(false)
 
+        val contentFrame = findViewById<FrameLayout>(R.id.fragment_container)
+        val contentView = LayoutInflater.from(this).inflate(getContentLayoutId(), contentFrame, false)
+        contentFrame.addView(contentView)
+
+        setupBottomNavigation()
+    }
+
+    abstract fun getContentLayoutId(): Int
+
+    private fun setupBottomNavigation() {
         val bottomNavigation = findViewById<BottomNavigationView>(R.id.bottom_navigation)
         bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.nav_notifications -> {
+                    // Handle notifications click
                     true
                 }
                 R.id.nav_search -> {
