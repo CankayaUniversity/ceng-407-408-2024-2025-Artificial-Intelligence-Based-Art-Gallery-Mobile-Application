@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/navy_blue"
-    tools:context=".ResultActivity">
+    tools:context=".StoryGenerationPageActivity">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"

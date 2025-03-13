@@ -37,7 +37,12 @@
         </activity>
 
         <activity
-            android:name=".ResultActivity"
+            android:name=".StoryGenerationPageActivity"
+            android:exported="false"
+            android:parentActivityName=".ImageGenerationPageActivity" />
+
+        <activity
+            android:name=".ImageGenerationPageActivity"
             android:exported="false"
             android:parentActivityName=".MainActivity" />
 

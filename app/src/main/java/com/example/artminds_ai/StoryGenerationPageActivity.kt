@@ -3,10 +3,8 @@ package com.example.artminds_ai
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
-import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
-import android.view.View
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -23,11 +21,9 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import java.text.SimpleDateFormat
-import java.util.Date
 import java.util.Locale
 
-class ResultActivity : AppCompatActivity() {
+class StoryGenerationPageActivity: AppCompatActivity() {
 
     private lateinit var resultImageView: ImageView
     private lateinit var storyTitleTextView: TextView
@@ -44,7 +40,7 @@ class ResultActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_result)
+        setContentView(R.layout.activity_story_generation_page)
 
         // Initialize views
         resultImageView = findViewById(R.id.resultImageView)
@@ -136,7 +132,7 @@ class ResultActivity : AppCompatActivity() {
 
                     withContext(Dispatchers.Main) {
                         Toast.makeText(
-                            this@ResultActivity,
+                            this@StoryGenerationPageActivity,
                             "Image saved to: ${file.absolutePath}",
                             Toast.LENGTH_LONG
                         ).show()
@@ -144,7 +140,7 @@ class ResultActivity : AppCompatActivity() {
                 } else {
                     withContext(Dispatchers.Main) {
                         Toast.makeText(
-                            this@ResultActivity,
+                            this@StoryGenerationPageActivity,
                             "Failed to save image: Image not loaded",
                             Toast.LENGTH_SHORT
                         ).show()
@@ -153,7 +149,7 @@ class ResultActivity : AppCompatActivity() {
             } catch (e: IOException) {
                 withContext(Dispatchers.Main) {
                     Toast.makeText(
-                        this@ResultActivity,
+                        this@StoryGenerationPageActivity,
                         "Failed to save image: ${e.message}",
                         Toast.LENGTH_SHORT
                     ).show()
@@ -176,7 +172,7 @@ class ResultActivity : AppCompatActivity() {
                     }
 
                     val uri = FileProvider.getUriForFile(
-                        this@ResultActivity,
+                        this@StoryGenerationPageActivity,
                         "${packageName}.fileprovider",
                         file
                     )
@@ -195,7 +191,7 @@ class ResultActivity : AppCompatActivity() {
                 } else {
                     withContext(Dispatchers.Main) {
                         Toast.makeText(
-                            this@ResultActivity,
+                            this@StoryGenerationPageActivity,
                             "Failed to share: Image not loaded",
                             Toast.LENGTH_SHORT
                         ).show()
@@ -204,7 +200,7 @@ class ResultActivity : AppCompatActivity() {
             } catch (e: IOException) {
                 withContext(Dispatchers.Main) {
                     Toast.makeText(
-                        this@ResultActivity,
+                        this@StoryGenerationPageActivity,
                         "Failed to share: ${e.message}",
                         Toast.LENGTH_SHORT
                     ).show()
