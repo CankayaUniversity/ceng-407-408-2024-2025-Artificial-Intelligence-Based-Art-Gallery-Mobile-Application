@@ -35,6 +35,11 @@ class SignInAc : AppCompatActivity() {
 
         }
 
+        binding.tvForgotPassword.setOnClickListener {
+            startActivity(Intent(this, ForgotPasswordAc::class.java))
+
+        }
+
         if(auth.currentUser != null)
         {
             startActivity(Intent(this, MainActivity::class.java))
@@ -43,43 +48,58 @@ class SignInAc : AppCompatActivity() {
         pd = ProgressDialog(this)
 
         binding.loginButton.setOnClickListener {
-            val email = binding.loginetemail.text.toString().trim()
-            val password = binding.loginetpassword.text.toString().trim()
 
-            if (email.isEmpty() || password.isEmpty()) {
-                Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
+            if(binding.loginetemail.text.isNotEmpty() &&
+                binding.loginetpassword.text.isNotEmpty())
+            {
+                val email = binding.loginetemail.text.toString()
+                val password = binding.loginetpassword.text.toString()
+
+                signIn(email, password)
+
             }
 
-            signIn(email, password)
+
+            if(binding.loginetemail.text.isEmpty() ||
+                binding.loginetpassword.text.isEmpty())
+            {
+                Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show()
+            }
+
         }
+
 
     }
 
     private fun signIn(email: String, password: String)
     {
         pd.show()
-        pd.setMessage("Signing In...")
+        pd.setMessage("Signing In")
+        auth.signInWithEmailAndPassword(email,password).addOnCompleteListener{task->
 
-        auth.signInWithEmailAndPassword(email, password).addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                pd.dismiss()
+            if(task.isSuccessful)
+            {
+                startActivity(Intent(this, MainActivity::class.java))
                 Toast.makeText(this, "Logged In", Toast.LENGTH_SHORT).show()
-                val intent = Intent(this, MainActivity::class.java)
-                intent.putExtra("fromSignIn",true) // Add Extra flag
-
-                startActivity(intent)
-                finish()
+                pd.dismiss()
             }
-        }.addOnFailureListener { exception ->
+
+        }.addOnFailureListener {
+
             pd.dismiss()
-            val errorMessage = exception.message ?: "Authentication failed"
-            Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
-            Log.e("Authentication", "Auth Failed: $errorMessage")
+            // Toast.makeText(this, it.toString().substring(0, 5), Toast.LENGTH_SHORT).show()
+            Log.e("Authentication", "Auth Failed ${it.toString()}")
+
+            return@addOnFailureListener
+
+
         }
 
 
+
     }
+
+
 
 
 }

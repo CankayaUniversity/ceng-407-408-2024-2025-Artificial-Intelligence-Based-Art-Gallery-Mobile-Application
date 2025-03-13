@@ -18,6 +18,9 @@
         <action
             android:id="@+id/action_profileFragment_to_userToFollowFragment"
             app:destination="@id/userToFollowFragment" />
+        <action
+            android:id="@+id/action_profileFragment_to_settingsFragment"
+            app:destination="@id/settingsFragment" />
     </fragment>
     <fragment
         android:id="@+id/homeFragment"
@@ -30,8 +33,8 @@
             android:id="@+id/action_homeFragment_to_profileFragment2"
             app:destination="@id/profileFragment" />
         <action
-            android:id="@+id/action_homeFragment_to_searchFragment"
-            app:destination="@id/searchFragment" />
+            android:id="@+id/action_homeFragment_to_settingsFragment"
+            app:destination="@id/settingsFragment" />
     </fragment>
     <fragment
         android:id="@+id/createPostFragment"
@@ -50,12 +53,19 @@
             app:destination="@id/profileFragment" />
     </fragment>
     <fragment
-        android:id="@+id/searchFragment"
-        android:name="com.example.socialmediaapp.fragments.SearchFragment"
-        android:label="fragment_search"
-        tools:layout="@layout/fragment_search" >
+        android:id="@+id/settingsFragment"
+        android:name="com.example.socialmediaapp.fragments.SettingsFragment"
+        android:label="fragment_settings"
+        tools:layout="@layout/fragment_settings" >
         <action
-            android:id="@+id/action_searchFragment_to_homeFragment"
-            app:destination="@id/homeFragment" />
+            android:id="@+id/action_settingsFragment_to_changePasswordFragment"
+            app:destination="@id/changePasswordFragment" />
+        <action
+            android:id="@+id/action_settingsFragment_to_profileFragment"
+            app:destination="@id/profileFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/changePasswordFragment"
+        android:name="com.example.socialmediaapp.fragments.ChangePasswordFragment"
+        android:label="ChangePasswordFragment" />
 </navigation>

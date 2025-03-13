@@ -105,6 +105,9 @@ class ProfileFragment : Fragment() {
 
         binding.settingsImage.setOnClickListener{
 
+            view.findNavController().navigate(R.id.action_profileFragment_to_settingsFragment)
+
+            /*
             fbauth.signOut()
 
             // Start the login or sign-in activity
@@ -112,7 +115,7 @@ class ProfileFragment : Fragment() {
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
             requireActivity().finish()
-
+            */
 
 
         }

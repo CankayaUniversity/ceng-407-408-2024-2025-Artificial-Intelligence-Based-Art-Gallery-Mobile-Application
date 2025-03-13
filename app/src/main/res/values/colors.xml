@@ -9,4 +9,8 @@
     <color name="grey">#BBB</color>
     <color name="blue">#3897F0</color>
     <color name="red">#D9555A</color>
+    <color name="background">#001F4E</color>
+    <color name="recview">#DC52D1</color>
+
+
 </resources>
