@@ -28,9 +28,11 @@ class MainActivity : AppCompatActivity() {
         navController = navHostFragment.navController
 
 
-
-
-
+        // Force navigation to HomeFragment if coming from SignIn
+        if(intent.getBooleanExtra("fromSignIn", false))
+        {
+            navController.navigate(R.id.action_profileFragment_to_homeFragment)
+        }
     }
 
 

@@ -89,12 +89,12 @@ class MyFeedAdapter: RecyclerView.Adapter<FeedHolder>() {
 
     fun setFeedList(list: List<Feed>){
         this.feedlist = list
+        notifyDataSetChanged()
     }
 
     fun setListener(listener: onDoubleTapClickListener){
         this.listener = listener
     }
-
 
 }
 
@@ -102,6 +102,10 @@ class MyFeedAdapter: RecyclerView.Adapter<FeedHolder>() {
 
 class FeedHolder(itemView: View) : ViewHolder(itemView)
 {
+    init {
+        itemView.isClickable = true // Make sure the item is clickable
+    }
+
     val userNamePoster : TextView = itemView.findViewById(R.id.feedtopusername)
     val userNameCaption : TextView = itemView.findViewById(R.id.feedusernamecaption)
 
