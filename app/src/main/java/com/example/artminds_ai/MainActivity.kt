@@ -3,9 +3,7 @@ package com.example.artminds_ai
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
-import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 //Inherits BaseActivity layout
@@ -22,7 +20,7 @@ class MainActivity : BaseActivity() {
 
         // Set click listener
         navigateButton.setOnClickListener {
-            val intent = Intent(this, ImageGenerationPageActivity::class.java)
+            val intent = Intent(this, StoryGenerationPageActivity::class.java)
             startActivity(intent)
         }
 

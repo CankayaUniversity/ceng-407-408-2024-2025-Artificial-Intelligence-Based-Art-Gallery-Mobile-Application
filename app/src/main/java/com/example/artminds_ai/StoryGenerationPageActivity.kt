@@ -23,8 +23,10 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.util.Locale
 
-class StoryGenerationPageActivity: AppCompatActivity() {
-
+class StoryGenerationPageActivity: BaseActivity() {
+    override fun getContentLayoutId(): Int {
+        return R.layout.activity_story_generation_page
+    }
     private lateinit var resultImageView: ImageView
     private lateinit var storyTitleTextView: TextView
     private lateinit var storyContentTextView: TextView
@@ -40,7 +42,6 @@ class StoryGenerationPageActivity: AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_story_generation_page)
 
         // Initialize views
         resultImageView = findViewById(R.id.resultImageView)
@@ -84,27 +85,6 @@ class StoryGenerationPageActivity: AppCompatActivity() {
 
         addTagsButton.setOnClickListener {
             Toast.makeText(this, "Add tags feature coming soon!", Toast.LENGTH_SHORT).show()
-        }
-
-        // Bottom navigation buttons
-        findViewById<ImageView>(R.id.homeButton).setOnClickListener {
-            finish() // Go back to main activity
-        }
-
-        findViewById<ImageView>(R.id.notificationsButton).setOnClickListener {
-            Toast.makeText(this, "Notifications feature coming soon!", Toast.LENGTH_SHORT).show()
-        }
-
-        findViewById<ImageView>(R.id.searchButton).setOnClickListener {
-            Toast.makeText(this, "Search feature coming soon!", Toast.LENGTH_SHORT).show()
-        }
-
-        findViewById<ImageView>(R.id.addButton).setOnClickListener {
-            finish() // Go back to create new content
-        }
-
-        findViewById<ImageView>(R.id.profileButton).setOnClickListener {
-            Toast.makeText(this, "Profile feature coming soon!", Toast.LENGTH_SHORT).show()
         }
     }
 

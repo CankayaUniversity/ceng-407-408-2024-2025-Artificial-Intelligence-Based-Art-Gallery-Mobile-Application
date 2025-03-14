@@ -12,7 +12,6 @@ import android.widget.ImageButton
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.switchmaterial.SwitchMaterial
@@ -27,7 +26,10 @@ import org.json.JSONObject
 import java.util.concurrent.TimeUnit
 
 
-class ImageGenerationPageActivity : AppCompatActivity() {
+class ImageGenerationPageActivity : BaseActivity() {
+    override fun getContentLayoutId(): Int {
+        return R.layout.activity_image_generation_page
+    }
 
     private lateinit var promptEditText: EditText
     private lateinit var negativePromptEditText: EditText
@@ -60,13 +62,15 @@ class ImageGenerationPageActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_image_generation_page)
+        // Set title for this activity
+        setToolbarTitle("Image Generation")
 
         initializeViews()
         setupListeners()
     }
 
     private fun initializeViews() {
+        // Initialize your views here
         promptEditText = findViewById(R.id.promptEditText)
         negativePromptEditText = findViewById(R.id.negativePromptEditText)
         generateButton = findViewById(R.id.generateButton)

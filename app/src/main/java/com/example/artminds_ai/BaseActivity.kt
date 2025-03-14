@@ -3,6 +3,7 @@ package com.example.artminds_ai
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.widget.FrameLayout
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -16,9 +17,9 @@ abstract class BaseActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayShowTitleEnabled(false)
 
+        // Inflate child layout into container
         val contentFrame = findViewById<FrameLayout>(R.id.fragment_container)
-        val contentView = LayoutInflater.from(this).inflate(getContentLayoutId(), contentFrame, false)
-        contentFrame.addView(contentView)
+        LayoutInflater.from(this).inflate(getContentLayoutId(), contentFrame, true)
 
         setupBottomNavigation()
     }
@@ -52,5 +53,10 @@ abstract class BaseActivity : AppCompatActivity() {
                 else -> false
             }
         }
+    }
+
+    // Method to update toolbar title
+    fun setToolbarTitle(title: String) {
+        findViewById<TextView>(R.id.toolbar_title)?.text = title
     }
 }
