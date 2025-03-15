@@ -38,6 +38,9 @@
         <action
             android:id="@+id/action_homeFragment_to_searchFragment"
             app:destination="@id/searchFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_otherUsersFragment"
+            app:destination="@id/otherUsersFragment" />
     </fragment>
     <fragment
         android:id="@+id/createPostFragment"
@@ -76,4 +79,28 @@
         android:name="com.example.socialmediaapp.fragments.SearchFragment"
         android:label="fragment_search"
         tools:layout="@layout/fragment_search" />
+    <fragment
+        android:id="@+id/otherUsersFragment"
+        android:name="com.example.socialmediaapp.fragments.OtherUsersFragment"
+        android:label="OtherUsersFragment" >
+
+        <argument
+            android:name="userId"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_otherUsersFragment_to_profileFragment"
+            app:destination="@id/profileFragment" />
+        <action
+            android:id="@+id/action_otherUsersFragment_to_homeFragment"
+            app:destination="@id/homeFragment" />
+        <action
+            android:id="@+id/action_otherUsersFragment_to_createPostFragment"
+            app:destination="@id/createPostFragment" />
+        <action
+            android:id="@+id/action_otherUsersFragment_to_userToFollowFragment"
+            app:destination="@id/userToFollowFragment" />
+        <action
+            android:id="@+id/action_otherUsersFragment_to_settingsFragment"
+            app:destination="@id/settingsFragment" />
+    </fragment>
 </navigation>

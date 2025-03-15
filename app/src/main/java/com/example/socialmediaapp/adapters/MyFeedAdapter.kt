@@ -26,6 +26,7 @@ import java.util.Date
 class MyFeedAdapter: RecyclerView.Adapter<FeedHolder>() {
     var feedlist = listOf<Feed>()
     private  var listener : onDoubleTapClickListener ?=  null
+    private var userClickListener: onUserClickListener? = null
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreateViewHolder(
@@ -63,6 +64,14 @@ class MyFeedAdapter: RecyclerView.Adapter<FeedHolder>() {
 
         // Set Likes
         holder.likecount.text = "${feed.likes} Likes"
+
+        holder.userNamePoster.setOnClickListener {
+            userClickListener?.onUserClick(feed.userid!!) // Kullanıcı ID'sini gönder
+        }
+
+        holder.userPosterImage.setOnClickListener {
+            userClickListener?.onUserClick(feed.userid!!) // Kullanıcı ID'sini gönder
+        }
     }
 
 
@@ -76,6 +85,10 @@ class MyFeedAdapter: RecyclerView.Adapter<FeedHolder>() {
 
     fun setListener(listener: onDoubleTapClickListener){
         this.listener = listener
+    }
+
+    fun setUserClickListener(listener: onUserClickListener) {
+        this.userClickListener = listener
     }
 
 
@@ -97,4 +110,9 @@ interface onDoubleTapClickListener{
 
     // Create feed modal
     fun onDoubleTap(feed: Feed)
+}
+
+
+interface onUserClickListener {
+    fun onUserClick(userId: String)
 }

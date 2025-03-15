@@ -10,6 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import androidx.lifecycle.viewModelScope
 import com.example.socialmediaapp.modal.Feed
 import com.example.socialmediaapp.modal.Users
+import com.google.firebase.firestore.auth.User
 import kotlinx.coroutines.launch
 
 class ViewModel: ViewModel() {
@@ -202,6 +203,77 @@ class ViewModel: ViewModel() {
                 }
             }
     }
+
+
+    fun getOtherUser(userId: String): LiveData<Users> {
+        val user = MutableLiveData<Users>()
+        val firestore = FirebaseFirestore.getInstance()
+
+        firestore.collection("Users").document(userId).get()
+            .addOnSuccessListener { documentSnapshot ->
+                val userInfo = documentSnapshot.toObject(Users::class.java) ?: Users(username = "Unknown", image = "")
+                    user.postValue(userInfo)
+
+            }
+            .addOnFailureListener { exception ->
+                Log.e("Firebase", "Kullanıcı bilgisi alınırken hata oluştu: ${exception.message}")
+            }
+
+        return user
+    }
+
+    fun getOtherUserPosts(userId: String): LiveData<List<Posts>> {
+        val posts = MutableLiveData<List<Posts>>()
+        val firestore = FirebaseFirestore.getInstance()
+
+        firestore.collection("Posts").whereEqualTo("userid", userId).addSnapshotListener { snapshot, exception ->
+            if (exception != null) {
+                Log.e("Firebase", "Gönderiler alınırken hata oluştu: ${exception.message}")
+                return@addSnapshotListener
+            }
+
+            val postList = snapshot?.documents?.mapNotNull {
+                it.toObject(Posts::class.java)
+            }?.sortedByDescending { it.time }
+
+            posts.postValue(postList ?: emptyList())
+        }
+
+        return posts
+    }
+
+    fun getOtherUserStats(userId: String): LiveData<Map<String, Int>> {
+        val stats = MutableLiveData<Map<String, Int>>()
+        val firestore = FirebaseFirestore.getInstance()
+
+        firestore.collection("Users").document(userId).get()
+            .addOnSuccessListener { documentSnapshot ->
+                val followers = documentSnapshot.getLong("followers")?.toInt() ?: 0
+                val following = documentSnapshot.getLong("following")?.toInt() ?: 0
+                stats.postValue(mapOf("followers" to followers, "following" to following))
+            }
+            .addOnFailureListener { exception ->
+                Log.e("Firebase", "Kullanıcı istatistikleri alınırken hata oluştu: ${exception.message}")
+            }
+
+        return stats
+    }
+
+    fun getOtherUserPostCount(userId: String): LiveData<Int> {
+        val postCount = MutableLiveData<Int>()
+        val firestore = FirebaseFirestore.getInstance()
+
+        firestore.collection("Posts").whereEqualTo("userid", userId).get()
+            .addOnSuccessListener { querySnapshot ->
+                postCount.postValue(querySnapshot.size())
+            }
+            .addOnFailureListener { exception ->
+                Log.e("Firebase", "Post sayısı alınırken hata oluştu: ${exception.message}")
+            }
+
+        return postCount
+    }
+
 
 
 }

@@ -19,6 +19,7 @@ import androidx.navigation.findNavController
 import androidx.lifecycle.Observer
 import com.bumptech.glide.Glide
 import com.example.socialmediaapp.Utils
+import com.example.socialmediaapp.adapters.onUserClickListener
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.firebase.firestore.DocumentSnapshot
@@ -35,7 +36,7 @@ private const val ARG_PARAM2 = "param2"
  * Use the [HomeFragment.newInstance] factory method to
  * create an instance of this fragment.
  */
-class HomeFragment : Fragment(),onDoubleTapClickListener  {
+class HomeFragment : Fragment(),onDoubleTapClickListener, onUserClickListener  {
 
 
     // Parameters
@@ -67,6 +68,12 @@ class HomeFragment : Fragment(),onDoubleTapClickListener  {
 
         vm = ViewModelProvider(this).get(ViewModel::class.java)
         adapter = MyFeedAdapter()
+
+
+
+        adapter.setUserClickListener(this)
+
+
 
         binding.lifecycleOwner = viewLifecycleOwner
 
@@ -129,6 +136,14 @@ class HomeFragment : Fragment(),onDoubleTapClickListener  {
                 }
             }
 
+    }
+
+
+
+    override fun onUserClick(userId: String) {
+        // Safe Args kullanarak OtherUsersFragment'a yönlendirme yap
+        val action = HomeFragmentDirections.actionHomeFragmentToOtherUsersFragment(userId)
+        view?.findNavController()?.navigate(action)
     }
 
 }
