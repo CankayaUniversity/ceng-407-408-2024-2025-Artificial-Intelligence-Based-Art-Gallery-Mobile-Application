@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Selected state -->
+    <item android:state_checked="true">
+        <shape android:shape="rectangle">
+            <!-- Background color when selected -->
+            <solid android:color="#3897f0" /> <!-- Replace with desired color -->
+            <!-- Rounded corners -->
+            <corners android:radius="20dp" /> <!-- Adjust radius as needed -->
+        </shape>
+    </item>
+
+    <!-- Default state -->
+    <item>
+        <shape android:shape="rectangle">
+            <!-- Background color when not selected -->
+            <solid android:color="#d8d8d8" /> <!-- Replace with desired color -->
+            <!-- Rounded corners -->
+            <corners android:radius="20dp" /> <!-- Adjust radius as needed -->
+        </shape>
+    </item>
+</selector>

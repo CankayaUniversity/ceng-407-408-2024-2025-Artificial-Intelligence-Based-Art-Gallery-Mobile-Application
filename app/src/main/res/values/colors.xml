@@ -1,11 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Colors for the ArtMinds UI -->
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+    <color name="whiteish">#FAFAFA</color>
+    <color name="white">#FFF</color>
+    <color name="black">#000</color>
+    <color name="grey">#BBB</color>
+    <color name="blue">#3897F0</color>
+    <color name="red">#D9555A</color>
+    <color name="background">#001F4E</color>
+    <color name="recview">#DC52D1</color>
+
     <color name="navy_blue">#10142F</color>
     <color name="dark_blue">#1A2342</color>
     <color name="light_blue">#1E90FF</color>
     <color name="gray">#888888</color>
-    <color name="white">#FFFFFF</color>
     <color name="button_blue">#4662EB</color>
     <color name="toggle_on">#4662EB</color>
     <color name="toggle_off">#888888</color>
@@ -18,7 +28,4 @@
     <color name="selected_style">#283B5E</color>
     <color name="navy_blue_dark">#071029</color>
     <color name="gold">#FFD700</color>
-    <color name="black">#000000</color>
-
-
 </resources>
