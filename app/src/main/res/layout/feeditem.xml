@@ -104,9 +104,9 @@
                     android:id="@+id/commentButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="9dp"
                     android:text="Comment"
-                    android:textColor="@color/white" />
+                    android:textColor="@color/white"
+                    android:textSize="9dp" />
 
 
             </LinearLayout>

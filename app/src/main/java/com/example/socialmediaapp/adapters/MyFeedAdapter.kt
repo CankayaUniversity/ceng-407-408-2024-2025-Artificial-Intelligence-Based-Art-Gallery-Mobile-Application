@@ -4,6 +4,7 @@ package com.example.socialmediaapp.adapters
 
 import android.annotation.SuppressLint
 import android.text.format.DateUtils
+import android.view.GestureDetector
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -12,12 +13,14 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.socialmediaapp.R
 import de.hdodenhof.circleimageview.CircleImageView
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import com.bumptech.glide.Glide
 import com.example.socialmediaapp.modal.Feed
 import java.util.Date
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
+import androidx.core.view.GestureDetectorCompat
 
 class MyFeedAdapter: RecyclerView.Adapter<FeedHolder>() {
     var feedlist = listOf<Feed>()
@@ -41,7 +44,7 @@ class MyFeedAdapter: RecyclerView.Adapter<FeedHolder>() {
 
     }
 
-    @SuppressLint("SetTextI18n")
+    @SuppressLint("SetTextI18n", "ClickableViewAccessibility")
     override fun onBindViewHolder(holder: FeedHolder, position: Int) {
         val feed = feedlist[position]
 
@@ -67,6 +70,19 @@ class MyFeedAdapter: RecyclerView.Adapter<FeedHolder>() {
 
         // Set Likes
         holder.likecount.text = "${feed.likes} Likes"
+
+        val doubleClickGestureDetector = GestureDetector(holder.itemView.context, object : GestureDetector.SimpleOnGestureListener() {
+            override fun onDoubleTap(e: MotionEvent): Boolean {
+                listener?.onDoubleTap(feed)
+                return true
+            }
+        })
+
+
+        holder.itemView.setOnTouchListener { _, event ->
+            doubleClickGestureDetector.onTouchEvent(event)
+            true
+        }
 
         holder.userNamePoster.setOnClickListener {
             userClickListener?.onUserClick(feed.userid!!)

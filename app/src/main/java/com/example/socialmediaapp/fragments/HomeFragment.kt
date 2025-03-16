@@ -134,20 +134,37 @@ class HomeFragment : Fragment(),onDoubleTapClickListener, onUserClickListener  {
 
         postRef.get()
             .addOnSuccessListener { document ->
-                if (document != null && document.exists()) {
+                if (document != null && document.exists()){
+
+
                     val likes = document.getLong("likes")?.toInt() ?: 0
                     val likers = document.get("likers") as? List<String>
 
-                    if (likers.isNullOrEmpty() || !likers.contains(currentUserId)) {
+                    if (!likers.isNullOrEmpty() && likers.contains(currentUserId)){
+
+                        // User has already liked the post
+                        println("You have already liked this post!")
+                    }else{
+                        // Increment like count and update likers
                         postRef.update(
                             "likes", likes + 1,
                             "likers", FieldValue.arrayUnion(currentUserId)
                         )
-                        println("Post liked!")
-                    } else {
-                        println("You have already liked this post!")
+
+                            .addOnSuccessListener {
+                                println("Post liked!")
+                            }
+
+                            .addOnFailureListener { exception ->
+                                println("Failed to update like: $exception")
+                            }
+
                     }
+
+
+
                 }
+
             }
 
     }
