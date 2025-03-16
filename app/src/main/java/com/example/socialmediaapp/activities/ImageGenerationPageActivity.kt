@@ -54,7 +54,7 @@ class ImageGenerationPageActivity : BaseActivity() {
     private val AZURE_OPENAI_DALLE_API_KEY = "YOUR_DALLE3_API_KEY"
     private val AZURE_ENDPOINT = "YOUR_AZURE_ENDPOINT_KEY"
     private val AZURE_OPENAI_GPT_ENDPOINT = "YOUR_GPT_ENDPOINT_KEY"
-    
+
     private val client = OkHttpClient.Builder()
         .connectTimeout(60, TimeUnit.SECONDS)
         .readTimeout(60, TimeUnit.SECONDS)
