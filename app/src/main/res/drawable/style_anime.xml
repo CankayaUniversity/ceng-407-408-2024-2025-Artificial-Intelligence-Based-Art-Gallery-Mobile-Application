@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="60dp"
+    android:height="70dp"
+    android:viewportWidth="60"
+    android:viewportHeight="70">
+
+    <!-- Background gradient -->
+    <path
+        android:fillColor="#E0F7FF"
+        android:pathData="M0,0h60v70h-60z" />
+
+    <!-- Anime sky effect -->
+    <path
+        android:fillColor="#FFE6F0"
+        android:pathData="M0,0L60,0L60,20L0,20Z" />
+
+    <!-- Anime character face outline -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M30,32m-15,0a15,15 0,1 1,30 0a15,15 0,1 1,-30 0" />
+
+    <!-- Hair -->
+    <path
+        android:fillColor="#3366FF"
+        android:pathData="M15,25C15,25 20,12 30,15C40,18 45,25 45,25C45,25 45,15 30,12C15,15 15,25 15,25Z" />
+    <path
+        android:fillColor="#3366FF"
+        android:pathData="M15,25C15,25 11,30 16,40C16,40 15,25 15,25Z" />
+    <path
+        android:fillColor="#3366FF"
+        android:pathData="M45,25C45,25 49,30 44,40C44,40 45,25 45,25Z" />
+
+    <!-- Eyes -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M24,30m-4,0a4,4 0,1 1,8 0a4,4 0,1 1,-8 0" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M36,30m-4,0a4,4 0,1 1,8 0a4,4 0,1 1,-8 0" />
+    <path
+        android:fillColor="#000000"
+        android:pathData="M24,30m-2,0a2,2 0,1 1,4 0a2,2 0,1 1,-4 0" />
+    <path
+        android:fillColor="#000000"
+        android:pathData="M36,30m-2,0a2,2 0,1 1,4 0a2,2 0,1 1,-4 0" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M23,29m-0.8,0a0.8,0.8 0,1 1,1.6 0a0.8,0.8 0,1 1,-1.6 0" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M35,29m-0.8,0a0.8,0.8 0,1 1,1.6 0a0.8,0.8 0,1 1,-1.6 0" />
+
+    <!-- Blush -->
+    <path
+        android:fillColor="#FFCCCC"
+        android:pathData="M21,35m-2,0a2,2 0,1 1,4 0a2,2 0,1 1,-4 0" />
+    <path
+        android:fillColor="#FFCCCC"
+        android:pathData="M39,35m-2,0a2,2 0,1 1,4 0a2,2 0,1 1,-4 0" />
+
+    <!-- Mouth -->
+    <path
+        android:strokeColor="#FF6699"
+        android:strokeWidth="1"
+        android:pathData="M28,38C28,38 30,40 32,38" />
+
+    <!-- Sparkles -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M10,10L12,12L10,14L8,12Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M50,15L52,17L50,19L48,17Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M15,60L17,62L15,64L13,62Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M45,55L47,57L45,59L43,57Z" />
+
+</vector>
