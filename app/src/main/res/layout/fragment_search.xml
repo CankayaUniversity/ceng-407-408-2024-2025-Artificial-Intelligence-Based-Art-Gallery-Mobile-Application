@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".fragments.SearchFragment">
@@ -9,15 +10,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@android:color/white"
-        android:id="@+id/app_bar_layout_search"
-        >
+        android:id="@+id/app_bar_layout_search">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/search_toolbar"
             android:layout_height="50dp"
             android:layout_width="match_parent"
-            android:layout_marginTop="2dp"
-            >
+            android:layout_marginTop="2dp">
+
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
@@ -28,7 +28,6 @@
                     android:layout_height="30dp"
                     android:layout_alignParentLeft="true"
                     android:layout_marginTop="10dp"
-
                     android:src="@drawable/search" />
 
                 <EditText
@@ -39,18 +38,39 @@
                     android:layout_centerInParent="true"
                     android:layout_marginStart="35dp"
                     android:layout_marginEnd="1dp"
-                    android:hint="Search"
+                    android:hint="Search users..."
                     android:inputType="text" />
             </RelativeLayout>
         </androidx.appcompat.widget.Toolbar>
     </com.google.android.material.appbar.AppBarLayout>
 
+    <!-- User Search Results -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerview_search"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@+id/app_bar_layout_search"
-        >
-    </androidx.recyclerview.widget.RecyclerView>
+        android:visibility="visible" />
+
+    <!-- All Posts From Other Users -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerview_all_posts"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/app_bar_layout_search"
+        android:visibility="gone"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp" />
+
+    <!-- Toggle Button for View Mode -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/toggle_view_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_margin="16dp"
+        android:src="@drawable/ic_home_active"
+        app:fabSize="normal" />
 
 </RelativeLayout>

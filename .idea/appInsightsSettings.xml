@@ -10,9 +10,9 @@
               <option name="connection">
                 <ConnectionSetting>
                   <option name="appId" value="com.example.socialmediaapp" />
-                  <option name="mobileSdkAppId" value="1:586872396485:android:c5a9f9be587d3dbb8eaeac" />
-                  <option name="projectId" value="imagegeneratorsocialmedia" />
-                  <option name="projectNumber" value="586872396485" />
+                  <option name="mobileSdkAppId" value="1:122171583718:android:c6898b2011803277aadf27" />
+                  <option name="projectId" value="socialmediaimagegen" />
+                  <option name="projectNumber" value="122171583718" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />
