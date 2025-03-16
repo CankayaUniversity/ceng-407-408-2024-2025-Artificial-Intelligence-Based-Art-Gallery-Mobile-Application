@@ -7,134 +7,141 @@
     android:orientation="vertical"
     tools:context=".activities.StoryGenerationPageActivity">
 
-    <ScrollView
+    <androidx.cardview.widget.CardView
+        android:id="@+id/imageCard"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fillViewport="true">
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        app:cardCornerRadius="16dp">
+
+        <ImageView
+            android:id="@+id/resultImageView"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:scaleType="centerCrop"
+            tools:src="@tools:sample/backgrounds/scenic" />
+
+        <ImageView
+            android:id="@+id/downloadButton"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="8dp"
+            android:background="@drawable/circle_background"
+            android:padding="8dp"
+            android:src="@drawable/ic_download" />
+    </androidx.cardview.widget.CardView>
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/storyCard"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="16dp"
+        app:cardBackgroundColor="@color/dark_blue"
+        app:cardCornerRadius="12dp">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="16dp">
 
-            <androidx.cardview.widget.CardView
-                android:id="@+id/imageCard"
+            <TextView
+                android:id="@+id/storyTitleTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="16dp"
-                app:cardCornerRadius="16dp">
+                android:layout_marginBottom="8dp"
+                android:fontFamily="serif"
+                android:gravity="center"
+                android:text="Wings Of Care"
+                android:textColor="@android:color/white"
+                android:textSize="22sp"
+                android:textStyle="bold" />
 
-                <ImageView
-                    android:id="@+id/resultImageView"
-                    android:layout_width="match_parent"
-                    android:layout_height="200dp"
-                    android:scaleType="centerCrop"
-                    tools:src="@tools:sample/backgrounds/scenic" />
-
-                <ImageView
-                    android:id="@+id/downloadButton"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:layout_gravity="bottom|end"
-                    android:layout_margin="8dp"
-                    android:background="@drawable/circle_background"
-                    android:padding="8dp"
-                    android:src="@drawable/ic_download" />
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:id="@+id/storyCard"
+            <ScrollView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="16dp"
-                android:layout_marginTop="16dp"
-                app:cardBackgroundColor="@color/dark_blue"
-                app:cardCornerRadius="12dp">
+                android:layout_height="match_parent"
+                android:fillViewport="true">
 
-                <LinearLayout
+                <TextView
+                    android:id="@+id/storyContentTextView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:id="@+id/storyTitleTextView"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="8dp"
-                        android:fontFamily="serif"
-                        android:gravity="center"
-                        android:text="Wings Of Care"
-                        android:textColor="@android:color/white"
-                        android:textSize="22sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/storyContentTextView"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="serif"
-                        android:textColor="@android:color/white"
-                        android:textSize="16sp"
-                        tools:text="In The Cozy Nest High Up In The Tree, Mama Lila Gently Fed Her Three Fluffy Chicks. Pip Stretched His Tiny Neck The Furthest, Eager For The First Bite, While Bella Hesitated, Peeping Softly. Lila Chirped Soothingly, Her Bright Feathers Glowing In The Warm Sunlight Filtering Through The Leaves. One By One, She Ensured Each Chick Was Fed And Comforted. As The Chicks Settled Their Bellies Full, Lila..." />
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <RadioGroup
-                android:id="@+id/visibilityRadioGroup"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="16dp"
-                android:layout_marginTop="16dp"
-                android:orientation="horizontal">
-
-                <RadioButton
-                    android:id="@+id/publicRadioButton"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:buttonTint="@color/light_blue"
-                    android:checked="true"
-                    android:text="Public"
-                    android:textColor="@android:color/white" />
-
-                <RadioButton
-                    android:id="@+id/followersRadioButton"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:buttonTint="@color/gray"
-                    android:text="Just Followers"
-                    android:textColor="@android:color/white" />
-            </RadioGroup>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="16dp"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="16dp"
-                android:orientation="horizontal">
-
-                <Button
-                    android:id="@+id/addTagsButton"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="8dp"
-                    android:layout_weight="0.7"
-                    android:background="@drawable/button_outline_background"
-                    android:text="Add Tags"
-                    android:textColor="@android:color/white" />
-
-                <ImageButton
-                    android:id="@+id/shareButton"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="0.3"
-                    android:background="@drawable/button_outline_background"
-                    android:padding="12dp"
-                    android:src="@drawable/ic_share" />
-            </LinearLayout>
+                    android:fontFamily="serif"
+                    android:textColor="@android:color/white"
+                    android:textSize="16sp"
+                    tools:text="In The Cozy Nest High Up In The Tree, Mama Lila Gently Fed Her Three Fluffy Chicks. Pip Stretched His Tiny Neck The Furthest, Eager For The First Bite, While Bella Hesitated, Peeping Softly. Lila Chirped Soothingly, Her Bright Feathers Glowing In The Warm Sunlight Filtering Through The Leaves. One By One, She Ensured Each Chick Was Fed And Comforted. As The Chicks Settled Their Bellies Full, Lila..." />
+            </ScrollView>
         </LinearLayout>
-    </ScrollView>
+    </androidx.cardview.widget.CardView>
+
+    <RadioGroup
+        android:id="@+id/visibilityRadioGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="16dp"
+        android:orientation="horizontal">
+
+        <RadioButton
+            android:id="@+id/publicRadioButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:buttonTint="@color/light_blue"
+            android:checked="true"
+            android:text="Public"
+            android:textColor="@android:color/white" />
+
+        <RadioButton
+            android:id="@+id/followersRadioButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:buttonTint="@color/gray"
+            android:text="Just Followers"
+            android:textColor="@android:color/white" />
+    </RadioGroup>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/addTagsButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"
+            android:background="@drawable/button_outline_background"
+            android:text="Add Tags"
+            android:textColor="@android:color/white" />
+
+        <ImageButton
+            android:id="@+id/shareButton"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/button_outline_background"
+            android:padding="12dp"
+            android:src="@drawable/ic_shares" />
+    </LinearLayout>
+
+    <!-- Send Button in its own row -->
+    <Button
+        android:id="@+id/sendButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="16dp"
+        android:text="Save to My Collection"
+        android:drawableStart="@drawable/ic_send"
+        android:drawablePadding="8dp" />
+
 </LinearLayout>
