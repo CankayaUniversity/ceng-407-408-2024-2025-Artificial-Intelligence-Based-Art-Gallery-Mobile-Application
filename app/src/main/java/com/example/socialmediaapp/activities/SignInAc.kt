@@ -54,7 +54,7 @@ class SignInAc : AppCompatActivity() {
 
         // Check if user is already signed in
         if(auth.currentUser != null) {
-            startActivity(Intent(this, ImageGenerationPageActivity::class.java))
+            startActivity(Intent(this, MainActivity::class.java))
             finish()
         }
 
@@ -166,7 +166,7 @@ class SignInAc : AppCompatActivity() {
                     }
 
                     // Navigate to main activity
-                    startActivity(Intent(this, ImageGenerationPageActivity::class.java))
+                    startActivity(Intent(this, MainActivity::class.java))
                     finish()
                     Toast.makeText(this, "Logged In Successfully", Toast.LENGTH_SHORT).show()
                 }

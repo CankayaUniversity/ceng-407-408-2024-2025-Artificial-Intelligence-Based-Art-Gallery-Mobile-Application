@@ -50,10 +50,10 @@ class ImageGenerationPageActivity : BaseActivity() {
     private val MAX_PROMPT_LENGTH = 300
 
     // Your Azure OpenAI API credentials - replace with actual keys in production
-    private val AZURE_OPENAI_DALLE_ENDPOINT = "YOUR_DALLE3_ENDPOINT_KEY"
-    private val AZURE_OPENAI_DALLE_API_KEY = "YOUR_DALLE3_API_KEY"
-    private val AZURE_ENDPOINT = "YOUR_AZURE_ENDPOINT_KEY"
-    private val AZURE_OPENAI_GPT_ENDPOINT = "YOUR_GPT_ENDPOINT_KEY"
+    private val AZURE_OPENAI_DALLE_ENDPOINT = "https://mindsart-storygeneration.openai.azure.com/openai/deployments/MindsArt-dall-e-3/images/generations?api-version=2024-02-01"
+    private val AZURE_OPENAI_DALLE_API_KEY = "Bd5xyYWvSIZMUzaaBOhBMM8mVpoP9Ldk4EWBa4REpuM4MZ3HLIFIJQQJ99BCACfhMk5XJ3w3AAABACOG34N4"
+    private val AZURE_ENDPOINT = "https://mindsart-storygeneration.openai.azure.com/"
+    private val AZURE_OPENAI_GPT_ENDPOINT = "https://mindsart-storygeneration.openai.azure.com/openai/deployments/MindsArt-GPT4/chat/completions?api-version=2024-10-21"
 
     private val client = OkHttpClient.Builder()
         .connectTimeout(60, TimeUnit.SECONDS)
