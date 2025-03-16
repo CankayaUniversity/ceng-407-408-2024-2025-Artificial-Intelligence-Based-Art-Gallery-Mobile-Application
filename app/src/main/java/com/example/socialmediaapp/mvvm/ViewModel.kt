@@ -274,6 +274,35 @@ class ViewModel: ViewModel() {
         return postCount
     }
 
+    fun addComment(postId: String, commentText: String) {
+        val firestore = FirebaseFirestore.getInstance()
+
+        // Giriş yapan kullanıcının ID'si ve adı
+        val userId = Utils.getUiLoggedIn()
+        val username = name.value ?: "Unknown"
+
+        // Yorum verisi
+        val commentData = mapOf(
+            "userId" to userId,
+            "username" to username,
+            "comment" to commentText,
+            "time" to com.google.firebase.Timestamp.now()
+        )
+
+        // Yorumları "comments" alt koleksiyonuna ekle
+        firestore.collection("Posts")
+            .document(postId)
+            .collection("comments")
+            .add(commentData)
+            .addOnSuccessListener {
+                Log.d("Firestore", "Yorum başarıyla eklendi.")
+            }
+            .addOnFailureListener { e ->
+                Log.e("Firestore", "Yorum eklenirken hata oluştu: ${e.message}")
+            }
+    }
+
+
 
 
 }

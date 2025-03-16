@@ -50,17 +50,26 @@
                     android:id="@+id/feedtopusername"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
                     android:text="username"
                     android:textColor="@color/black"
                     android:textSize="16sp"
                     android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/feedtime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="time"
+                    android:textColor="@color/black"
+                    android:textSize="14sp" />
             </LinearLayout>
 
             <!-- Row 2: Caption (90dp) -->
             <TextView
                 android:id="@+id/feedusernamecaption"
                 android:layout_width="match_parent"
-                android:layout_height="90dp"
+                android:layout_height="43dp"
                 android:layout_marginVertical="8dp"
                 android:textColor="@color/black"
                 android:textSize="16sp" />
@@ -81,13 +90,25 @@
                     android:textColor="@color/black"
                     android:textStyle="bold" />
 
-                <TextView
-                    android:id="@+id/feedtime"
-                    android:layout_width="wrap_content"
+                <EditText
+                    android:id="@+id/commentInput"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="time"
+                    android:layout_weight="1"
+                    android:hint="Write a comment..."
+                    android:padding="8dp"
                     android:textColor="@color/black"
                     android:textSize="14sp" />
+
+                <Button
+                    android:id="@+id/commentButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="9dp"
+                    android:text="Comment"
+                    android:textColor="@color/white" />
+
+
             </LinearLayout>
 
         </LinearLayout>

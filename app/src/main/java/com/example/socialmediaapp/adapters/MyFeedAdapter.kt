@@ -3,30 +3,33 @@
 package com.example.socialmediaapp.adapters
 
 import android.annotation.SuppressLint
-import android.text.Html
-import android.text.Spanned
 import android.text.format.DateUtils
-import android.view.GestureDetector
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.appcompat.view.menu.ListMenuItemView
 import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.example.socialmediaapp.R
 import de.hdodenhof.circleimageview.CircleImageView
 import android.view.LayoutInflater
-import android.view.MotionEvent
-import androidx.core.view.GestureDetectorCompat
 import com.bumptech.glide.Glide
 import com.example.socialmediaapp.modal.Feed
 import java.util.Date
+import android.widget.Button
+import android.widget.EditText
+import android.widget.Toast
 
 class MyFeedAdapter: RecyclerView.Adapter<FeedHolder>() {
     var feedlist = listOf<Feed>()
     private  var listener : onDoubleTapClickListener ?=  null
     private var userClickListener: onUserClickListener? = null
+    private var commentClickListener: onCommentClickListener? = null
+
+    fun setCommentClickListener(listener: onCommentClickListener) {
+        this.commentClickListener = listener
+    }
+
+
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreateViewHolder(
@@ -66,11 +69,21 @@ class MyFeedAdapter: RecyclerView.Adapter<FeedHolder>() {
         holder.likecount.text = "${feed.likes} Likes"
 
         holder.userNamePoster.setOnClickListener {
-            userClickListener?.onUserClick(feed.userid!!) // Kullanıcı ID'sini gönder
+            userClickListener?.onUserClick(feed.userid!!)
         }
 
         holder.userPosterImage.setOnClickListener {
-            userClickListener?.onUserClick(feed.userid!!) // Kullanıcı ID'sini gönder
+            userClickListener?.onUserClick(feed.userid!!)
+        }
+
+        holder.commentButton.setOnClickListener {
+            val comment = holder.commentInput.text.toString()
+            if (comment.isNotEmpty()) {
+                commentClickListener?.addComment(feed.postid!!, comment)
+                holder.commentInput.text.clear()
+            } else {
+                Toast.makeText(holder.itemView.context, "Yorum boş olamaz!", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -92,6 +105,7 @@ class MyFeedAdapter: RecyclerView.Adapter<FeedHolder>() {
     }
 
 
+
 }
 
 
@@ -103,6 +117,8 @@ class FeedHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     val feedImage: ImageView = itemView.findViewById(R.id.feedImage)
     val time: TextView = itemView.findViewById(R.id.feedtime)
     val likecount: TextView = itemView.findViewById(R.id.likecount)
+    val commentButton: Button = itemView.findViewById(R.id.commentButton)
+    val commentInput: EditText = itemView.findViewById(R.id.commentInput)
 }
 
 
@@ -115,4 +131,8 @@ interface onDoubleTapClickListener{
 
 interface onUserClickListener {
     fun onUserClick(userId: String)
+}
+
+interface onCommentClickListener {
+    fun addComment(postId: String, comment: String)
 }

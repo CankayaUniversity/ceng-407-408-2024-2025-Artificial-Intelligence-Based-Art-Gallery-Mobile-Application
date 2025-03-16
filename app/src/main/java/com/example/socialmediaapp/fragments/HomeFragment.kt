@@ -1,7 +1,6 @@
 package com.example.socialmediaapp.fragments
 
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -20,11 +19,12 @@ import androidx.lifecycle.Observer
 import com.bumptech.glide.Glide
 import com.example.socialmediaapp.Utils
 import com.example.socialmediaapp.adapters.onUserClickListener
-import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.example.socialmediaapp.adapters.onCommentClickListener
+
+
+
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -71,9 +71,19 @@ class HomeFragment : Fragment(),onDoubleTapClickListener, onUserClickListener  {
 
 
 
+        adapter.setCommentClickListener(object : onCommentClickListener{
+            override fun addComment(postId: String, comment: String) {
+                if (comment.isNotEmpty()) {
+                    vm.addComment(postId, comment)
+                    Toast.makeText(requireContext(), "Yorum eklendi!", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(requireContext(), "Yorum boş olamaz!", Toast.LENGTH_SHORT).show()
+                }
+            }
+        })
+
+
         adapter.setUserClickListener(this)
-
-
 
         binding.lifecycleOwner = viewLifecycleOwner
 
@@ -105,6 +115,10 @@ class HomeFragment : Fragment(),onDoubleTapClickListener, onUserClickListener  {
 
 
         })
+
+
+
+
 
     }
 
