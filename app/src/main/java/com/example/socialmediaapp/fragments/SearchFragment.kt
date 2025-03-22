@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.socialmediaapp.R
 import com.example.socialmediaapp.adapters.MyFeedAdapter
+import com.google.firebase.auth.FirebaseAuth
 import com.example.socialmediaapp.adapters.PostsAdapter
 import com.example.socialmediaapp.adapters.SearchUsersAdapter
 import com.example.socialmediaapp.modal.Posts
@@ -30,10 +31,17 @@ import java.util.Locale
 
 class SearchFragment : Fragment(), OnPostClickListener {
 
+    // View and ResycleView attributes
     private var recyclerView: RecyclerView? = null
-    private var postsRecyclerView: RecyclerView? = null
+    private var allPostsRecyclerView: RecyclerView? = null
+    private var userPostsRecyclerView: RecyclerView? = null
+    private var searchResultsContainer: View? = null
+
+    // Adapter attributes
     private var userAdapter: SearchUsersAdapter? = null
-    private var postsAdapter: PostsAdapter? = null
+    private var allPostsAdapter: PostsAdapter? = null
+    private var userPostsAdapter: PostsAdapter? = null
+
     private var mUser: MutableList<Users>? = null
     private var searchItem: EditText? = null
     private var toggleButton: FloatingActionButton? = null
@@ -48,17 +56,24 @@ class SearchFragment : Fragment(), OnPostClickListener {
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_search, container, false)
 
+        searchResultsContainer = view.findViewById(R.id.search_results_container)
+
         // Initialize RecyclerViews
         recyclerView = view.findViewById(R.id.recyclerview_search)
         recyclerView?.setHasFixedSize(true)
         recyclerView?.layoutManager = LinearLayoutManager(context)
 
-        // Initialize posts RecyclerView (make sure to add this to your layout)
-        postsRecyclerView = view.findViewById(R.id.recyclerview_all_posts)
-        postsRecyclerView?.setHasFixedSize(true)
-        postsRecyclerView?.layoutManager = GridLayoutManager(context, 3)
+        // Initialize posts RecyclerViews
+        allPostsRecyclerView = view.findViewById(R.id.recyclerview_all_posts)
+        allPostsRecyclerView?.setHasFixedSize(true)
+        allPostsRecyclerView?.layoutManager = GridLayoutManager(context, 3)
 
-        // Initialize toggle button (make sure to add this to your layout)
+        // Initialize User-specific Posts RecyclerView
+        userPostsRecyclerView = view.findViewById(R.id.recyclerview_user_posts)
+        userPostsRecyclerView?.setHasFixedSize(true)
+        userPostsRecyclerView?.layoutManager = GridLayoutManager(context, 3)
+
+        // Initialize toggle button
         toggleButton = view.findViewById(R.id.toggle_view_button)
         toggleButton?.setOnClickListener {
             toggleView()
@@ -69,10 +84,15 @@ class SearchFragment : Fragment(), OnPostClickListener {
         userAdapter = context?.let { SearchUsersAdapter(it, mUser as ArrayList<Users>, true) }
         recyclerView?.adapter = userAdapter
 
-        // Initialize posts adapter
-        postsAdapter = PostsAdapter()
-        postsAdapter?.setOnPostClickListener(this)
-        postsRecyclerView?.adapter = postsAdapter
+        // Initialize all posts adapter
+        allPostsAdapter = PostsAdapter()
+        allPostsAdapter?.setOnPostClickListener(this)
+        allPostsRecyclerView?.adapter = allPostsAdapter
+
+        //Initialize user posts adapter
+        userPostsAdapter = PostsAdapter()
+        userPostsAdapter?.setOnPostClickListener(this)
+        userPostsRecyclerView?.adapter = userPostsAdapter
 
         // Initialize search field
         searchItem = view.findViewById(R.id.searchitem)
@@ -88,25 +108,26 @@ class SearchFragment : Fragment(), OnPostClickListener {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                if (searchItem!!.text.toString() == "") {
-                    // Switch back to showing posts when search is cleared
-                    if (isShowingUsers) {
-                        isShowingUsers = false
-                        setViewState()
-                    }
+                val searchText = searchItem!!.text.toString()
+
+                if (searchText.isEmpty()) {
+                    // !Show regular feed when search is empty
+                    searchResultsContainer?.visibility = View.GONE
+                    allPostsRecyclerView?.visibility = View.VISIBLE
                 } else {
-                    // Switch to showing users when text is entered
-                    if (!isShowingUsers) {
-                        isShowingUsers = true
-                        setViewState()
-                    }
-                    searchUser(s.toString().toLowerCase(Locale.ROOT))
+                    // !Show search results (both users and their posts)
+                    searchResultsContainer?.visibility = View.VISIBLE
+                    allPostsRecyclerView?.visibility = View.GONE
+
+                    // !Search for users and their posts
+                    searchUser(searchText.toLowerCase(Locale.ROOT))
                 }
             }
         })
 
-        // Set initial view state
-        setViewState()
+        // Set initial view states
+        searchResultsContainer?.visibility = View.GONE
+        allPostsRecyclerView?.visibility = View.VISIBLE
 
         return view
     }
@@ -118,34 +139,33 @@ class SearchFragment : Fragment(), OnPostClickListener {
 
         // Load all posts from other users
         vm.getAllPostsExceptCurrentUser().observe(viewLifecycleOwner, Observer { posts ->
-            postsAdapter?.setPosts(posts)
+            allPostsAdapter?.setPosts(posts)
         })
     }
 
     private fun toggleView() {
-        isShowingUsers = !isShowingUsers
-        if (!isShowingUsers) {
-            // Clear search text when switching to posts view
-            searchItem?.setText("")
+        if (searchItem!!.text.toString().isEmpty()) {
+            // Only toggle view when search is empty
+            isShowingUsers = !isShowingUsers
+            if (isShowingUsers) {
+                // Show all users
+                searchResultsContainer?.visibility = View.VISIBLE
+                allPostsRecyclerView?.visibility = View.GONE
+                toggleButton?.setImageResource(R.drawable.ic_home_active)
+                retrieveAllUsers()
+            } else {
+                // Show all posts
+                searchResultsContainer?.visibility = View.GONE
+                allPostsRecyclerView?.visibility = View.VISIBLE
+                toggleButton?.setImageResource(R.drawable.search)
+            }
         }
-        setViewState()
-    }
-
-    private fun setViewState() {
-        if (isShowingUsers) {
-            recyclerView?.visibility = View.VISIBLE
-            postsRecyclerView?.visibility = View.GONE
-            toggleButton?.setImageResource(R.drawable.ic_home_active)
-        } else {
-            recyclerView?.visibility = View.GONE
-            postsRecyclerView?.visibility = View.VISIBLE
-            toggleButton?.setImageResource(R.drawable.search)
-        }
-        // Search bar always visible
-        searchItem?.visibility = View.VISIBLE
     }
 
     private fun searchUser(input: String) {
+        // Get current user ID
+        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+
         val query = FirebaseFirestore.getInstance().collection("Users")
             .orderBy("username")
             .startAt(input)
@@ -161,15 +181,54 @@ class SearchFragment : Fragment(), OnPostClickListener {
 
             for (document in value?.documents ?: emptyList()) {
                 val user = document.toObject(Users::class.java)
-                if (user != null) {
+                // Only add users that are not the current user
+                if (user != null && user.userid != currentUserId) {
                     mUser?.add(user)
+
+                    // Fetch user's posts based on usernames!!!!!
+                    // Alternatively you might choose userId for fetching posts
+                    // But using usernames for this particular task is more convenient
+                    if(user.username != null)
+                    {
+                        fetchUserPosts(user.username!!)
+                    }
                 }
             }
             userAdapter?.notifyDataSetChanged()
         }
     }
 
-    private fun retrieveUser() {
+    private fun fetchUserPosts(username: String){
+
+        val postsCollection = FirebaseFirestore.getInstance().collection("Posts")
+        postsCollection.whereEqualTo("username", username)
+            .addSnapshotListener{value, error ->
+                if(error != null){
+                    Toast.makeText(context, "Could not read from Database", Toast.LENGTH_LONG).show()
+                    return@addSnapshotListener
+                }
+                val postsList = ArrayList<Posts>()
+                for (document in value?.documents ?: emptyList())
+                {
+                    val post = document.toObject(Posts::class.java)
+                    if(post != null)
+                    {
+                        postsList.add(post)
+                    }
+                }
+                userPostsAdapter?.setPosts(postsList)
+
+            }
+
+
+
+
+    }
+
+    private fun retrieveAllUsers() {
+        // Get current user ID
+        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+
         val usersCollection = FirebaseFirestore.getInstance().collection("Users")
 
         usersCollection.addSnapshotListener { value, error ->
@@ -178,16 +237,15 @@ class SearchFragment : Fragment(), OnPostClickListener {
                 return@addSnapshotListener
             }
 
-            if (searchItem!!.text.toString().isEmpty()) {
-                mUser?.clear()
-                for (document in value?.documents ?: emptyList()) {
-                    val user = document.toObject(Users::class.java)
-                    if (user != null) {
-                        mUser?.add(user)
-                    }
+            mUser?.clear()
+            for (document in value?.documents ?: emptyList()) {
+                val user = document.toObject(Users::class.java)
+                // Only add users that are not the current user
+                if (user != null && user.userid != currentUserId) {
+                    mUser?.add(user)
                 }
-                userAdapter?.notifyDataSetChanged()
             }
+            userAdapter?.notifyDataSetChanged()
         }
     }
 

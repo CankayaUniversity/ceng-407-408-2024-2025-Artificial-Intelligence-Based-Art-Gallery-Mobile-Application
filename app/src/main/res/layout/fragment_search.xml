@@ -44,21 +44,48 @@
         </androidx.appcompat.widget.Toolbar>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- User Search Results -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerview_search"
+    <!-- Container for search mode -->
+    <LinearLayout
+        android:id="@+id/search_results_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@+id/app_bar_layout_search"
-        android:visibility="visible" />
+        android:orientation="vertical"
+        android:visibility="gone">
 
-    <!-- All Posts From Other Users -->
+        <!-- User Search Results - takes up top portion -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerview_search"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="80dp"
+            android:maxHeight="150dp" />
+
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#E0E0E0"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp" />
+
+        <!-- User-specific Posts - takes up remaining space -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerview_user_posts"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp" />
+    </LinearLayout>
+
+    <!-- All Posts From Other Users (default view) -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerview_all_posts"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@+id/app_bar_layout_search"
-        android:visibility="gone"
+        android:visibility="visible"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp" />
 
@@ -70,7 +97,7 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:layout_margin="16dp"
-        android:src="@drawable/ic_home_active"
+        android:src="@drawable/search"
         app:fabSize="normal" />
 
 </RelativeLayout>
