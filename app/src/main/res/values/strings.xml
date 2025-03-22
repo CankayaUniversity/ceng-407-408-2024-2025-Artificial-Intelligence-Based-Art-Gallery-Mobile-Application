@@ -16,4 +16,39 @@
     <string name="attachment_summary_on">Automatically download attachments for incoming emails
     </string>
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
+
+    <!-- Content descriptions -->
+    <string name="content_desc_user_profile">User Profile</string>
+    <string name="content_desc_artwork">Artwork</string>
+    <string name="content_desc_like">Like</string>
+    <string name="content_desc_comment">Comment</string>
+    <string name="content_desc_share">Share</string>
+
+    <!-- Button text -->
+    <string name="close">Close</string>
+    <string name="create_post">Create Post</string>
+    <string name="share_via">Share via</string>
+
+    <!-- Sort options -->
+    <string name="newest">Newest</string>
+    <string name="popular">Popular</string>
+
+    <!-- Messages -->
+    <string name="no_posts">No posts to display.\nFollow more users to see their artwork.</string>
+    <string name="error_loading_feed">Error loading feed: %1$s</string>
+    <string name="error_loading_posts">Error loading posts: %1$s</string>
+    <string name="error_general">Error: %1$s</string>
+
+    <!-- Post info -->
+    <string name="likes_count">%1$d likes</string>
+    <string name="comments_count">%1$d comments</string>
+    <string name="share_text">Check out this amazing artwork \'%1$s\' by %2$s on ArtMinds!</string>
+
+    <!-- Time indicators -->
+    <string name="just_now">just now</string>
+    <string name="minutes_ago">%1$d min ago</string>
+    <string name="hours_ago">%1$d hr ago</string>
+    <string name="days_ago">%1$d day%2$s ago</string>
+
+    <string name="error_liking_post">Error liking post: %1$s</string>
 </resources>

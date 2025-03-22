@@ -39,7 +39,7 @@
         android:layout_weight="1"
         android:layout_marginHorizontal="16dp"
         android:layout_marginTop="16dp"
-        app:cardBackgroundColor="@color/dark_blue"
+        app:cardBackgroundColor="@color/navy_blue"
         app:cardCornerRadius="12dp">
 
         <LinearLayout
@@ -90,7 +90,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:buttonTint="@color/light_blue"
+            android:buttonTint="@color/blue"
             android:checked="true"
             android:text="Public"
             android:textColor="@android:color/white" />

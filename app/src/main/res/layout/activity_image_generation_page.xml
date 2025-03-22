@@ -20,7 +20,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="16dp"
-                app:cardBackgroundColor="@color/dark_blue"
+                app:cardBackgroundColor="@color/navy_blue"
                 app:layout_constraintTop_toTopOf="parent"
                 android:layout_marginTop="8dp">
 
@@ -70,7 +70,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="0/300"
-                        android:textColor="@color/blue_accent"
+                        android:textColor="@color/blue"
                         android:textSize="12sp"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintBottom_toBottomOf="parent" />
@@ -83,7 +83,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="16dp"
-                app:cardBackgroundColor="@color/dark_blue"
+                app:cardBackgroundColor="@color/navy_blue"
                 app:layout_constraintTop_toBottomOf="@id/promptCard"
                 android:layout_marginTop="16dp">
 
@@ -133,7 +133,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="0/300"
-                        android:textColor="@color/blue_accent"
+                        android:textColor="@color/blue"
                         android:textSize="12sp"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintBottom_toBottomOf="parent" />
@@ -146,7 +146,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="16dp"
-                app:cardBackgroundColor="@color/dark_blue"
+                app:cardBackgroundColor="@color/navy_blue"
                 app:layout_constraintTop_toBottomOf="@id/negativePromptCard"
                 android:layout_marginTop="16dp">
 
@@ -312,7 +312,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="16dp"
-                app:cardBackgroundColor="@color/dark_blue"
+                app:cardBackgroundColor="@color/navy_blue"
                 app:layout_constraintTop_toBottomOf="@id/styleCard"
                 android:layout_marginTop="16dp">
 
@@ -341,7 +341,7 @@
                         app:layout_constraintBottom_toBottomOf="parent"
                         android:checked="false"
                         app:thumbTint="@color/white"
-                        app:trackTint="@color/blue_accent" />
+                        app:trackTint="@color/blue" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </androidx.cardview.widget.CardView>
 
@@ -363,7 +363,7 @@
                 android:id="@+id/progressBar"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:indeterminateTint="@color/blue_accent"
+                android:indeterminateTint="@color/blue"
                 android:visibility="gone"
                 app:layout_constraintTop_toTopOf="@id/generateButton"
                 app:layout_constraintBottom_toBottomOf="@id/generateButton"

@@ -6,6 +6,7 @@ import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
+import android.util.Log
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -258,7 +259,7 @@ class StoryGenerationPageActivity: BaseActivity() {
                 val storageRef = storage.reference.child(imageName)
 
                 // Upload the image
-                val uploadTask = storageRef.putBytes(imageData).await()
+                storageRef.putBytes(imageData).await()
                 val imageDownloadUrl = storageRef.downloadUrl.await().toString()
 
                 // Get visibility setting
@@ -277,11 +278,9 @@ class StoryGenerationPageActivity: BaseActivity() {
                     "comments" to 0
                 )
 
-                // Add directly to Images collection with a generated ID
-                val creationId = firestore.collection("Images")
-                    .document() // This will generate a random ID
-                    .set(creationData)
-                    .await()
+                // Add to Images collection with a generated ID
+                val docRef = firestore.collection("Images").document()
+                docRef.set(creationData).await()
 
                 withContext(Dispatchers.Main) {
                     progressDialog.dismiss()
@@ -300,6 +299,9 @@ class StoryGenerationPageActivity: BaseActivity() {
                         "Failed to save to Firebase: ${e.message}",
                         Toast.LENGTH_SHORT
                     ).show()
+
+                    // Log the error for debugging
+                    Log.e("SaveToFirebase", "Error saving to Firebase", e)
                 }
             }
         }

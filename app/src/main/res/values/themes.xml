@@ -2,9 +2,9 @@
     <!--  Base application theme.  -->
     <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
         <!--  Customize your theme here.  -->
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorPrimary">@color/blue</item>
+        <item name="colorPrimaryDark">@color/navy_blue</item>
+        <item name="colorAccent">@color/blue</item>
     </style>
     <style name="text">
         <item name="android:layout_width">wrap_content</item>
@@ -55,7 +55,7 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_marginStart">23dp</item>
         <item name="android:layout_marginTop">20dp</item>
-        <item name="android:textColor">@color/grey</item>
+        <item name="android:textColor">@color/gray</item>
     </style>
     <style name="big_input">
         <item name="android:layout_width">match_parent</item>
@@ -65,5 +65,12 @@
         <item name="android:layout_marginTop">20dp</item>
         <item name="android:background">@drawable/big_input_bg</item>
         <item name="android:padding">10dp</item>
+    </style>
+    <style name="FullScreenDialogStyle" parent="Theme.AppCompat.Dialog">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">false</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowCloseOnTouchOutside">true</item>
     </style>
 </resources>

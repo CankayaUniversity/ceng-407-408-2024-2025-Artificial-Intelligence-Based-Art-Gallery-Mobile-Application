@@ -11,7 +11,7 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="@color/navy_blue_dark"
+        android:background="@color/navy_blue"
         app:layout_constraintTop_toTopOf="parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -69,7 +69,7 @@
         android:id="@+id/bottom_navigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/navy_blue_dark"
+        android:background="@color/navy_blue"
         app:itemIconTint="@color/bottom_nav_icon_color"
         app:itemTextColor="@color/bottom_nav_icon_color"
         app:layout_constraintBottom_toBottomOf="parent"

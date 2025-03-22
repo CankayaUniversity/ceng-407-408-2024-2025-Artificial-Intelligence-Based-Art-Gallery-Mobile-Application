@@ -54,7 +54,7 @@ class SignInAc : AppCompatActivity() {
 
         // Check if user is already signed in
         if(auth.currentUser != null) {
-            startActivity(Intent(this, MainActivity::class.java))
+            startActivity(Intent(this, ProfilePageActivity::class.java))
             finish()
         }
 
