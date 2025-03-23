@@ -40,14 +40,15 @@ class StoryGenerationPageActivity: BaseActivity() {
     private lateinit var storyContentTextView: TextView
     private lateinit var downloadButton: ImageView
     private lateinit var shareButton: ImageButton
-    private lateinit var sendButton: Button  // New send button
+    private lateinit var sendButton: Button
     private lateinit var publicRadioButton: RadioButton
     private lateinit var followersRadioButton: RadioButton
-    private lateinit var addTagsButton: Button
+    private lateinit var tagDisplay: TextView
 
     private var imageUrl: String? = null
     private var story: String? = null
     private var prompt: String? = null
+    private var generatedTag: String = ""
 
     // Firebase instances
     private lateinit var auth: FirebaseAuth
@@ -68,10 +69,10 @@ class StoryGenerationPageActivity: BaseActivity() {
         storyContentTextView = findViewById(R.id.storyContentTextView)
         downloadButton = findViewById(R.id.downloadButton)
         shareButton = findViewById(R.id.shareButton)
-        sendButton = findViewById(R.id.sendButton)  // Make sure to add this button in your layout
+        sendButton = findViewById(R.id.sendButton)
         publicRadioButton = findViewById(R.id.publicRadioButton)
         followersRadioButton = findViewById(R.id.followersRadioButton)
-        addTagsButton = findViewById(R.id.addTagsButton)
+        tagDisplay = findViewById(R.id.tagDisplay)
 
         // Get data from intent
         imageUrl = intent.getStringExtra("IMAGE_URL")
@@ -81,6 +82,9 @@ class StoryGenerationPageActivity: BaseActivity() {
         // Set title based on prompt
         val title = generateTitleFromPrompt(prompt ?: "Generated Story")
         storyTitleTextView.text = title
+
+        // Generate and display caption
+        preGenerateCaption()
 
         // Load image using Glide
         imageUrl?.let {
@@ -107,10 +111,13 @@ class StoryGenerationPageActivity: BaseActivity() {
         sendButton.setOnClickListener {
             saveToFirebase()
         }
+    }
 
-        addTagsButton.setOnClickListener {
-            Toast.makeText(this, "Add tags feature coming soon!", Toast.LENGTH_SHORT).show()
-        }
+    // Function to generate a caption early - call this when loading the page
+    private fun preGenerateCaption() {
+        val caption = generateCaption(storyTitleTextView.text.toString(), prompt ?: "")
+        generatedTag = caption
+        tagDisplay.text = "Tag: $caption"
     }
 
     private fun generateTitleFromPrompt(prompt: String): String {
@@ -120,6 +127,38 @@ class StoryGenerationPageActivity: BaseActivity() {
         return titleWords.joinToString(" ") { word ->
             word.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
         }.take(30) + if (prompt.length > 30) "..." else ""
+    }
+
+    // Function to generate a short caption for art creation (max 10 characters)
+    private fun generateCaption(title: String, prompt: String): String {
+        // Extract meaningful words from title and prompt
+        val combinedText = "$title $prompt".lowercase(Locale.getDefault())
+
+        // Remove special characters and extra spaces
+        val cleanedText = combinedText.replace(Regex("[^a-zA-Z0-9\\s]"), "").trim()
+
+        // Split into words
+        val words = cleanedText.split(Regex("\\s+"))
+
+        // Try to find meaningful keywords
+        val keywords = words.filter { it.length > 3 }
+            .sortedByDescending { it.length }
+            .take(1)  // Take only the most significant keyword
+
+        // If we found a good keyword, use it; otherwise generate something random
+        val baseTag = if (keywords.isNotEmpty()) {
+            keywords[0].take(7)  // Take at most 7 characters from the keyword
+        } else {
+            // Fallback to using the first few characters of the title
+            title.take(7).lowercase(Locale.getDefault()).replace(Regex("[^a-z]"), "")
+        }
+
+        // Add a short random element (3 characters) to ensure uniqueness
+        val randomPart = UUID.randomUUID().toString().substring(0, 3)
+
+        // Combine keyword with random part, ensuring total length <= 10 characters
+        val fullTag = baseTag + randomPart
+        return fullTag.take(10)
     }
 
     private fun downloadImage() {
@@ -255,7 +294,7 @@ class StoryGenerationPageActivity: BaseActivity() {
                 val imageData = baos.toByteArray()
 
                 // Create a unique file name
-                val imageName = "Images/${currentUser.uid}/${UUID.randomUUID()}.jpg"
+                val imageName = "Posts/${currentUser.uid}/${UUID.randomUUID()}.jpg"
                 val storageRef = storage.reference.child(imageName)
 
                 // Upload the image
@@ -264,6 +303,13 @@ class StoryGenerationPageActivity: BaseActivity() {
 
                 // Get visibility setting
                 val isPublic = publicRadioButton.isChecked
+
+                // Use the already generated caption
+                val caption = generatedTag
+                if (caption.isEmpty()) {
+                    // Generate a new one if needed
+                    generatedTag = generateCaption(storyTitleTextView.text.toString(), prompt ?: "")
+                }
 
                 // Create a document in Firestore
                 val creationData = hashMapOf(
@@ -275,11 +321,12 @@ class StoryGenerationPageActivity: BaseActivity() {
                     "public" to isPublic,
                     "createdAt" to com.google.firebase.Timestamp.now(),
                     "likes" to 0,
-                    "comments" to 0
+                    "comments" to 0,
+                    "caption" to generatedTag
                 )
 
-                // Add to Images collection with a generated ID
-                val docRef = firestore.collection("Images").document()
+                // Add to Posts collection with a generated ID
+                val docRef = firestore.collection("Posts").document()
                 docRef.set(creationData).await()
 
                 withContext(Dispatchers.Main) {
