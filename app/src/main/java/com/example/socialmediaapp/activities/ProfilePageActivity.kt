@@ -117,8 +117,8 @@ class ProfilePageActivity : BaseActivity() {
                 val follows = userDoc.getLong("following")?.toInt() ?: 0  // Changed from "follows" to "following" to match database
 
                 // Calculate total likes from all artworks
-                val artworksQuery = firestore.collection("Images")
-                    .whereEqualTo("userId", currentUser.uid)  // Corrected field name
+                val artworksQuery = firestore.collection("Posts")
+                    .whereEqualTo("userid", currentUser.uid)
                     .get()
                     .await()
 
@@ -169,8 +169,8 @@ class ProfilePageActivity : BaseActivity() {
                 // Debug log
                 Log.d("ProfilePage", "Querying for artworks with userId: ${currentUser.uid}")
 
-                var query = firestore.collection("Images")
-                    .whereEqualTo("userId", currentUser.uid)  // Corrected field name to match database
+                var query = firestore.collection("Posts")
+                    .whereEqualTo("userid", currentUser.uid)
                     .orderBy("createdAt", Query.Direction.DESCENDING)
                     .limit(ARTWORKS_PER_PAGE.toLong())
 

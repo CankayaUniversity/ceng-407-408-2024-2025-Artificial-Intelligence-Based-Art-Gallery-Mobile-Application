@@ -294,7 +294,7 @@ class StoryGenerationPageActivity: BaseActivity() {
                 val imageData = baos.toByteArray()
 
                 // Create a unique file name
-                val imageName = "Posts/${currentUser.uid}/${UUID.randomUUID()}.jpg"
+                val imageName = "Images/${currentUser.uid}/${UUID.randomUUID()}.jpg"
                 val storageRef = storage.reference.child(imageName)
 
                 // Upload the image
@@ -313,7 +313,7 @@ class StoryGenerationPageActivity: BaseActivity() {
 
                 // Create a document in Firestore
                 val creationData = hashMapOf(
-                    "userId" to currentUser.uid,
+                    "userid" to currentUser.uid,
                     "title" to storyTitleTextView.text.toString(),
                     "story" to storyContentTextView.text.toString(),
                     "prompt" to (prompt ?: ""),
@@ -325,8 +325,8 @@ class StoryGenerationPageActivity: BaseActivity() {
                     "caption" to generatedTag
                 )
 
-                // Add to Posts collection with a generated ID
-                val docRef = firestore.collection("Posts").document()
+                // Add to Images collection with a generated ID
+                val docRef = firestore.collection("Images").document()
                 docRef.set(creationData).await()
 
                 withContext(Dispatchers.Main) {
