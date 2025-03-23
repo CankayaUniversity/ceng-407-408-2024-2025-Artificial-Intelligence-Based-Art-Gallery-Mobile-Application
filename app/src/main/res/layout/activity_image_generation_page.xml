@@ -340,8 +340,7 @@
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintBottom_toBottomOf="parent"
                         android:checked="false"
-                        app:thumbTint="@color/white"
-                        app:trackTint="@color/blue" />
+                        app:thumbTint="@color/white"/>
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </androidx.cardview.widget.CardView>
 

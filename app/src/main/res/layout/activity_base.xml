@@ -30,13 +30,14 @@
 
             <TextView
                 android:id="@+id/toolbar_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="112dp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
                 android:text="~~~TEXT~~~"
                 android:textColor="@android:color/white"
                 android:textSize="18sp"
                 app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@id/trophy_icon"
                 app:layout_constraintTop_toTopOf="parent" />
 

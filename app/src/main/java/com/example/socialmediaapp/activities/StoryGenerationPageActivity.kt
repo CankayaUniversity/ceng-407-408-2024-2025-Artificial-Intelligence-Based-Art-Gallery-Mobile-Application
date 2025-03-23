@@ -1,12 +1,15 @@
 package com.example.socialmediaapp.activities
 
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.util.Log
+import android.view.Gravity
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -14,6 +17,7 @@ import android.widget.RadioButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.FileProvider
+import androidx.core.graphics.toColorInt
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.example.socialmediaapp.R
@@ -44,6 +48,7 @@ class StoryGenerationPageActivity: BaseActivity() {
     private lateinit var publicRadioButton: RadioButton
     private lateinit var followersRadioButton: RadioButton
     private lateinit var tagDisplay: TextView
+    private lateinit var toolbarTitle : TextView
 
     private var imageUrl: String? = null
     private var story: String? = null
@@ -73,6 +78,7 @@ class StoryGenerationPageActivity: BaseActivity() {
         publicRadioButton = findViewById(R.id.publicRadioButton)
         followersRadioButton = findViewById(R.id.followersRadioButton)
         tagDisplay = findViewById(R.id.tagDisplay)
+        toolbarTitle = findViewById(R.id.toolbar_title)
 
         // Get data from intent
         imageUrl = intent.getStringExtra("IMAGE_URL")
@@ -111,6 +117,36 @@ class StoryGenerationPageActivity: BaseActivity() {
         sendButton.setOnClickListener {
             saveToFirebase()
         }
+
+        toolbarTitle.text = "Your Generation Result"
+        //toolbarTitle.gravity = Gravity.CLIP_VERTICAL
+        // Coloring the default radio button option to app's color
+        publicRadioButton.buttonTintList = ColorStateList.valueOf("#3389FF".toColorInt())
+
+        // Public radio button color change part
+        publicRadioButton.setOnClickListener {
+            if(!publicRadioButton.isChecked) {
+                publicRadioButton.buttonTintList = ColorStateList.valueOf(Color.GRAY)
+                followersRadioButton.buttonTintList = ColorStateList.valueOf("#3389FF".toColorInt())
+            }
+            else {
+                publicRadioButton.buttonTintList = ColorStateList.valueOf("#3389FF".toColorInt())
+                followersRadioButton.buttonTintList = ColorStateList.valueOf(Color.GRAY)
+            }
+        }
+
+        // Followers radio button color change part
+        followersRadioButton.setOnClickListener {
+            if(!publicRadioButton.isChecked) {
+                publicRadioButton.buttonTintList = ColorStateList.valueOf(Color.GRAY)
+                followersRadioButton.buttonTintList = ColorStateList.valueOf("#3389FF".toColorInt())
+            }
+            else {
+                publicRadioButton.buttonTintList = ColorStateList.valueOf("#3389FF".toColorInt())
+                followersRadioButton.buttonTintList = ColorStateList.valueOf(Color.GRAY)
+            }
+        }
+
     }
 
     // Function to generate a caption early - call this when loading the page

@@ -2,6 +2,8 @@ package com.example.socialmediaapp.activities
 
 import org.json.JSONArray
 import android.content.Intent
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -13,6 +15,7 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.cardview.widget.CardView
+import androidx.core.graphics.toColorInt
 import androidx.lifecycle.lifecycleScope
 import com.example.socialmediaapp.R
 import com.google.android.material.switchmaterial.SwitchMaterial
@@ -149,6 +152,14 @@ class ImageGenerationPageActivity : BaseActivity() {
         styleCardCartoon.setOnClickListener { selectStyle("cartoon") }
         styleCardAnime.setOnClickListener { selectStyle("anime") }
         styleCardHyperrealistic.setOnClickListener { selectStyle("hyperrealistic") }
+
+        // Changing the color of the switch depending on the on-off status
+        storySwitch.setOnClickListener {
+            if(!storySwitch.isChecked)
+                storySwitch.trackTintList = ColorStateList.valueOf(Color.GRAY)
+            else
+                storySwitch.trackTintList = ColorStateList.valueOf("#3389FF".toColorInt())
+        }
     }
 
     private fun selectStyle(style: String) {
