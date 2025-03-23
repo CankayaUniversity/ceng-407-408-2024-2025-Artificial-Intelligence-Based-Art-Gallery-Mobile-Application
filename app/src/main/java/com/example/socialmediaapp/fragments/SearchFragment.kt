@@ -111,16 +111,19 @@ class SearchFragment : Fragment(), OnPostClickListener {
                 val searchText = searchItem!!.text.toString()
 
                 if (searchText.isEmpty()) {
-                    // !Show regular feed when search is empty
+                    // Show regular feed when search is empty
                     searchResultsContainer?.visibility = View.GONE
                     allPostsRecyclerView?.visibility = View.VISIBLE
                 } else {
-                    // !Show search results (both users and their posts)
+                    // Show search results (both users and their posts)
                     searchResultsContainer?.visibility = View.VISIBLE
                     allPostsRecyclerView?.visibility = View.GONE
 
-                    // !Search for users and their posts
+                    // Search for users with matching username
                     searchUser(searchText.toLowerCase(Locale.ROOT))
+
+                    // Search for posts with matching caption
+                    searchPostsByCaption(searchText.toLowerCase(Locale.ROOT))
                 }
             }
         })
@@ -162,6 +165,30 @@ class SearchFragment : Fragment(), OnPostClickListener {
         }
     }
 
+    private fun searchPostsByCaption(input: String) {
+        val postsCollection = FirebaseFirestore.getInstance().collection("Posts")
+
+        postsCollection
+            .orderBy("caption")
+            .startAt(input)
+            .endAt(input + "\uf8ff")
+            .addSnapshotListener { value, error ->
+                if (error != null) {
+                    Log.e("Firestore Error", error.message.toString())
+                    return@addSnapshotListener
+                }
+
+                val postsList = ArrayList<Posts>()
+                for (document in value?.documents ?: emptyList()) {
+                    val post = document.toObject(Posts::class.java)
+                    if (post != null) {
+                        postsList.add(post)
+                    }
+                }
+                userPostsAdapter?.setPosts(postsList)
+            }
+    }
+
     private fun searchUser(input: String) {
         // Get current user ID
         val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
@@ -184,46 +211,34 @@ class SearchFragment : Fragment(), OnPostClickListener {
                 // Only add users that are not the current user
                 if (user != null && user.userid != currentUserId) {
                     mUser?.add(user)
-
-                    // Fetch user's posts based on usernames!!!!!
-                    // Alternatively you might choose userId for fetching posts
-                    // But using usernames for this particular task is more convenient
-                    if(user.username != null)
-                    {
-                        fetchUserPosts(user.username!!)
-                    }
                 }
             }
             userAdapter?.notifyDataSetChanged()
         }
     }
 
-    private fun fetchUserPosts(username: String){
+   // private fun fetchUserPosts(username: String){
 
-        val postsCollection = FirebaseFirestore.getInstance().collection("Posts")
-        postsCollection.whereEqualTo("username", username)
-            .addSnapshotListener{value, error ->
-                if(error != null){
-                    Toast.makeText(context, "Could not read from Database", Toast.LENGTH_LONG).show()
-                    return@addSnapshotListener
-                }
-                val postsList = ArrayList<Posts>()
-                for (document in value?.documents ?: emptyList())
-                {
-                    val post = document.toObject(Posts::class.java)
-                    if(post != null)
-                    {
-                        postsList.add(post)
-                    }
-                }
-                userPostsAdapter?.setPosts(postsList)
+      //  val postsCollection = FirebaseFirestore.getInstance().collection("Posts")
+      //  postsCollection.whereEqualTo("caption", username)
+      //      .addSnapshotListener{value, error ->
+      //          if(error != null){
+       //             Toast.makeText(context, "Could not read from Database", Toast.LENGTH_LONG).show()
+       //             return@addSnapshotListener
+          //      }
+         //       val postsList = ArrayList<Posts>()
+         //       for (document in value?.documents ?: emptyList())
+         //       {
+         //           val post = document.toObject(Posts::class.java)
+        //            if(post != null)
+        //            {
+        //                postsList.add(post)
+        //            }
+        //        }
+        //        userPostsAdapter?.setPosts(postsList)
 
-            }
-
-
-
-
-    }
+          //  }
+  //  }
 
     private fun retrieveAllUsers() {
         // Get current user ID
