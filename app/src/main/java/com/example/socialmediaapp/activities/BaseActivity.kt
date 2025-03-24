@@ -23,17 +23,31 @@ abstract class BaseActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayShowTitleEnabled(false)
 
-        // Inflate child layout into container
-        val contentFrame = findViewById<FrameLayout>(R.id.fragment_container)
-        LayoutInflater.from(this).inflate(getContentLayoutId(), contentFrame, true)
+        // Only inflate child layout if this is a fresh creation
+        if (savedInstanceState == null) {
+            val contentFrame = findViewById<FrameLayout>(R.id.fragment_container)
+            LayoutInflater.from(this).inflate(getContentLayoutId(), contentFrame, true)
+            setupBottomNavigation()
+        } else {
+            setupBottomNavigation()
+        }
+    }
+    fun loadFragment(fragment: Fragment, title: String) {
+        // Clear any existing back stack
+        for (i in 0 until supportFragmentManager.backStackEntryCount) {
+            supportFragmentManager.popBackStack()
+        }
 
-        setupBottomNavigation()
-    }
-    fun loadFragment(fragment: Fragment) {
+        // Replace fragment
         supportFragmentManager.beginTransaction()
+            .setCustomAnimations(R.anim.fade_in, R.anim.fade_out)
             .replace(R.id.fragment_container, fragment)
-            .commit()
+            .commitNow()
+
+        // Toolbar başlığını güncelle
+        setToolbarTitle(title)
     }
+
     abstract fun getContentLayoutId(): Int
 
     // In BaseActivity.kt, modify the setupBottomNavigation() method
@@ -41,37 +55,44 @@ abstract class BaseActivity : AppCompatActivity() {
     private fun setupBottomNavigation() {
         val bottomNavigation = findViewById<BottomNavigationView>(R.id.bottom_navigation)
 
+        // Set the selected item without triggering the listener
         when (this) {
             is MainActivity -> bottomNavigation.selectedItemId = R.id.nav_home
             is ProfilePageActivity -> bottomNavigation.selectedItemId = R.id.nav_profile
             is ImageGenerationPageActivity -> bottomNavigation.selectedItemId = R.id.nav_create
-
         }
 
         bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.nav_home -> {
-                    loadFragment(HomeFragment()) // Fragment yükleme
+                    if (this !is MainActivity) {
+                        startActivity(Intent(this, MainActivity::class.java)
+                            .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
+                        finish()
+                    } else {
+                        loadFragment(HomeFragment(), "Home")
+                    }
                     true
                 }
                 R.id.nav_create -> {
                     if (this !is ImageGenerationPageActivity) {
-                        startActivity(Intent(this, ImageGenerationPageActivity::class.java))
+                        startActivity(Intent(this, ImageGenerationPageActivity::class.java)
+                            .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
                         finish()
                     }
                     true
                 }
                 R.id.nav_profile -> {
                     if (this !is ProfilePageActivity) {
-                        startActivity(Intent(this, ProfilePageActivity::class.java))
+                        startActivity(Intent(this, ProfilePageActivity::class.java)
+                            .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
                         finish()
                     }
                     true
                 }
-                R.id.nav_search ->{
-                    loadFragment(SearchFragment()) // Fragment yükleme
+                R.id.nav_search -> {
+                    loadFragment(SearchFragment(), "Search")
                     true
-
                 }
                 else -> false
             }
@@ -85,3 +106,5 @@ abstract class BaseActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.toolbar_title)?.text = title
     }
 }
+
+

@@ -15,12 +15,12 @@ class MainActivity : BaseActivity() {
 
         // Eğer daha önce bir fragment yüklenmediyse HomeFragment'ı yükle
         if (savedInstanceState == null) {
-            loadFragment(HomeFragment())
+            loadFragment(HomeFragment(),"Home")
         }
 
         // Girişten geldiyse HomeFragment'a yönlendir
         if (intent.getBooleanExtra("fromSignIn", false)) {
-            loadFragment(HomeFragment())
+            loadFragment(HomeFragment(),"Home")
         }
     }
 
