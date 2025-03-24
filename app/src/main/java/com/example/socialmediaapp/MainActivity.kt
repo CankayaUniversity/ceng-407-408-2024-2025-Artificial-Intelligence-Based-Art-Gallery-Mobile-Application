@@ -1,49 +1,42 @@
 package com.example.socialmediaapp
 
-import android.content.Intent
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import androidx.annotation.RequiresApi
-import androidx.navigation.NavController
-import androidx.navigation.fragment.NavHostFragment
-import com.example.socialmediaapp.fragments.ProfileFragment
-import com.google.firebase.auth.FirebaseAuth
-import java.text.SimpleDateFormat
-import java.util.*
+import com.example.socialmediaapp.activities.BaseActivity
+import com.example.socialmediaapp.fragments.HomeFragment
 
 @Suppress("DEPRECATION")
-class MainActivity : AppCompatActivity() {
-
-    private lateinit var navController: NavController
+class MainActivity : BaseActivity() {
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activty_main)
 
+        // Eğer daha önce bir fragment yüklenmediyse HomeFragment'ı yükle
+        if (savedInstanceState == null) {
+            loadFragment(HomeFragment(),"Home")
+        }
 
-        val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
-        navController = navHostFragment.navController
-
-
-        // Force navigation to HomeFragment if coming from SignIn
-        if(intent.getBooleanExtra("fromSignIn", false))
-        {
-            navController.navigate(R.id.action_profileFragment_to_homeFragment)
+        // Girişten geldiyse HomeFragment'a yönlendir
+        if (intent.getBooleanExtra("fromSignIn", false)) {
+            loadFragment(HomeFragment(),"Home")
         }
     }
 
+    override fun getContentLayoutId(): Int {
+        return R.layout.activty_main
+    }
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        if (supportFragmentManager.backStackEntryCount > 0) {
+        val fragmentCount = supportFragmentManager.backStackEntryCount
+        if (fragmentCount > 0) {
             super.onBackPressed()
         } else {
-            // If we are on the Home fragment, exit the app
-            if (navController.currentDestination?.id == R.id.profileFragment) {
-                moveTaskToBack(true)
+            // Eğer kullanıcı HomeFragment'teyse çıkış yap
+            if (supportFragmentManager.findFragmentById(R.id.fragment_container) is HomeFragment) {
+                moveTaskToBack(true) // Uygulamayı arka plana al
             } else {
                 super.onBackPressed()
             }

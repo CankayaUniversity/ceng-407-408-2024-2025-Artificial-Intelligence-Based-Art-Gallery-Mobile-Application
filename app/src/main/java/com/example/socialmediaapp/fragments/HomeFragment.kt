@@ -26,16 +26,8 @@ import com.example.socialmediaapp.adapters.onCommentClickListener
 
 
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
 
-/**
- * A simple [Fragment] subclass.
- * Use the [HomeFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
+
 class HomeFragment : Fragment(),onDoubleTapClickListener, onUserClickListener  {
 
 
@@ -96,25 +88,6 @@ class HomeFragment : Fragment(),onDoubleTapClickListener, onUserClickListener  {
 
         adapter.setListener(this)
 
-
-        binding.imageViewBottom.setOnClickListener {
-
-            view.findNavController().navigate(R.id.action_homeFragment_to_profileFragment)
-
-        }
-
-        binding.imageViewSearch.setOnClickListener {
-            Toast.makeText(requireContext(), "Search clicked!", Toast.LENGTH_SHORT).show()
-            view.findNavController().navigate(R.id.action_homeFragment_to_searchFragment)
-        }
-
-        vm.image.observe(viewLifecycleOwner, Observer {
-
-
-            Glide.with(requireContext()).load(it).into(binding.imageViewBottom)
-
-
-        })
 
 
 

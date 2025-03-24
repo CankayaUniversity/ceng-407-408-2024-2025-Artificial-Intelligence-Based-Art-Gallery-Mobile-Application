@@ -45,12 +45,14 @@
         </androidx.appcompat.widget.Toolbar>
     </com.google.android.material.appbar.AppBarLayout>
 
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerview_search"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@+id/app_bar_layout_search"
-        >
-    </androidx.recyclerview.widget.RecyclerView>
+        android:layout_marginTop="6dp"
+        android:background="#9C27B0"
+        android:backgroundTint="#9C27B0"></androidx.recyclerview.widget.RecyclerView>
 
 </RelativeLayout>
