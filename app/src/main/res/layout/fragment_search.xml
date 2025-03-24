@@ -50,7 +50,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@+id/app_bar_layout_search"
-        >
-    </androidx.recyclerview.widget.RecyclerView>
+        android:layout_marginTop="6dp"></androidx.recyclerview.widget.RecyclerView>
 
 </RelativeLayout>

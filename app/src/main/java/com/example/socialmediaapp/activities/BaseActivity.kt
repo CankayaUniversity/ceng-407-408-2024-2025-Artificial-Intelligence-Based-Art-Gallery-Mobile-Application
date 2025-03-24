@@ -7,8 +7,11 @@ import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.fragment.app.Fragment
 import com.example.socialmediaapp.MainActivity
 import com.example.socialmediaapp.R
+import com.example.socialmediaapp.fragments.HomeFragment
+import com.example.socialmediaapp.fragments.SearchFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 abstract class BaseActivity : AppCompatActivity() {
@@ -26,7 +29,11 @@ abstract class BaseActivity : AppCompatActivity() {
 
         setupBottomNavigation()
     }
-
+    fun loadFragment(fragment: Fragment) {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, fragment)
+            .commit()
+    }
     abstract fun getContentLayoutId(): Int
 
     // In BaseActivity.kt, modify the setupBottomNavigation() method
@@ -34,36 +41,20 @@ abstract class BaseActivity : AppCompatActivity() {
     private fun setupBottomNavigation() {
         val bottomNavigation = findViewById<BottomNavigationView>(R.id.bottom_navigation)
 
-        // Set the selected item based on current activity
         when (this) {
             is MainActivity -> bottomNavigation.selectedItemId = R.id.nav_home
             is ProfilePageActivity -> bottomNavigation.selectedItemId = R.id.nav_profile
             is ImageGenerationPageActivity -> bottomNavigation.selectedItemId = R.id.nav_create
-            // Add other activity types if needed
+
         }
 
         bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {
-                R.id.nav_notifications -> {
-                    // If this is not already the notifications activity
-                    false
-                }
-                R.id.nav_search -> {
-                    // If this is not already the search activity
-                    false
-                }
                 R.id.nav_home -> {
-                    // If this is not already the home activity
-                    if (this !is MainActivity) {
-                        val intent = Intent(this, MainActivity::class.java)
-                        intent.putExtra("fromSignIn", true) // This triggers navigation to HomeFragment
-                        startActivity(intent)
-                        finish()
-                    }
+                    loadFragment(HomeFragment()) // Fragment yükleme
                     true
                 }
                 R.id.nav_create -> {
-                    // If this is not already the image generation activity
                     if (this !is ImageGenerationPageActivity) {
                         startActivity(Intent(this, ImageGenerationPageActivity::class.java))
                         finish()
@@ -71,17 +62,22 @@ abstract class BaseActivity : AppCompatActivity() {
                     true
                 }
                 R.id.nav_profile -> {
-                    // If this is not already the profile activity
                     if (this !is ProfilePageActivity) {
                         startActivity(Intent(this, ProfilePageActivity::class.java))
                         finish()
                     }
                     true
                 }
+                R.id.nav_search ->{
+                    loadFragment(SearchFragment()) // Fragment yükleme
+                    true
+
+                }
                 else -> false
             }
         }
     }
+
 
 
     // Method to update toolbar title
