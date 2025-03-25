@@ -306,7 +306,36 @@ class ViewModel: ViewModel() {
             }
     }
 
+    fun getAllPostsExceptCurrentUser(): LiveData<List<Posts>> {
+        val posts = MutableLiveData<List<Posts>>()
+        val firestore = FirebaseFirestore.getInstance()
+        val currentUserId = Utils.getUiLoggedIn()
 
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                firestore.collection("Posts")
+                    .whereNotEqualTo("userid", currentUserId)
+                    .addSnapshotListener { snapshot, exception ->
+                        if (exception != null) {
+                            // Handle the exception here
+                            Log.e("Firebase", "Error fetching posts: ${exception.message}")
+                            return@addSnapshotListener
+                        }
+
+                        val postList = snapshot?.documents?.mapNotNull {
+                            it.toObject(Posts::class.java)
+                        }?.sortedByDescending { it.time }
+
+                        posts.postValue(postList ?: emptyList())
+                    }
+            } catch (e: Exception) {
+                Log.e("Firebase", "Exception in getAllPostsExceptCurrentUser: ${e.message}")
+                // Handle any exceptions that occur during the Firestore operation
+            }
+        }
+
+        return posts
+    }
 
 
 }
