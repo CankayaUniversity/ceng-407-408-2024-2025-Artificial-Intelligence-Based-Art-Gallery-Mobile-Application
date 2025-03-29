@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="60dp"
+    android:height="70dp"
+    android:viewportWidth="60"
+    android:viewportHeight="70">
+
+    <!-- Background gradient -->
+    <path
+        android:fillColor="#0A0C2E"
+        android:pathData="M0,0h60v70h-60z" />
+
+    <!-- Cyberpunk city silhouette -->
+    <path
+        android:fillColor="#1E0478"
+        android:pathData="M0,70V35H5V45H10V30H15V40H20V25H25V50H30V20H35V45H40V30H45V55H50V25H55V70H0Z" />
+
+    <!-- Neon grid lines -->
+    <path
+        android:strokeColor="#00FFFF"
+        android:strokeWidth="0.5"
+        android:pathData="M0,10H60M0,20H60M0,30H60M0,40H60M0,50H60M0,60H60" />
+    <path
+        android:strokeColor="#FF00FF"
+        android:strokeWidth="0.5"
+        android:pathData="M10,0V70M20,0V70M30,0V70M40,0V70M50,0V70" />
+
+    <!-- Neon lights -->
+    <path
+        android:fillColor="#FF00FF"
+        android:pathData="M15,30H17V32H15z" />
+    <path
+        android:fillColor="#00FFFF"
+        android:pathData="M30,25H32V27H30z" />
+    <path
+        android:fillColor="#FFFF00"
+        android:pathData="M45,35H47V37H45z" />
+    <path
+        android:fillColor="#FF00FF"
+        android:pathData="M25,45H27V47H25z" />
+    <path
+        android:fillColor="#00FFFF"
+        android:pathData="M40,20H42V22H40z" />
+
+    <!-- Futuristic character silhouette -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M20,15m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0" />
+    <path
+        android:strokeColor="#FF00FF"
+        android:strokeWidth="1"
+        android:pathData="M20,15m-5,0a5,5 0,1 1,10 0a5,5 0,1 1,-10 0" />
+
+</vector>

@@ -135,46 +135,50 @@ class ViewModel: ViewModel() {
     }
 
 
-    fun loadMyFeed(): LiveData<List<Feed>>
-    {
+    fun loadMyFeed(): LiveData<List<Feed>> {
         val firestore = FirebaseFirestore.getInstance()
-
         val feeds = MutableLiveData<List<Feed>>()
 
-
-        viewModelScope.launch(Dispatchers.IO)
-        {
-            getThePeopleIFollow{list->
-
+        viewModelScope.launch(Dispatchers.IO) {
+            getThePeopleIFollow { followedUserIds ->
                 try {
+                    // Ensure current user's ID is NOT included when fetching posts
+                    val filteredUserIds = followedUserIds.filter { it != Utils.getUiLoggedIn() }
 
-                    firestore.collection("Posts").whereIn("userid", list)
-                        .addSnapshotListener{value,error->
+                    // If no followed users, return empty list
+                    if (filteredUserIds.isEmpty()) {
+                        feeds.postValue(emptyList())
+                        return@getThePeopleIFollow
+                    }
 
+                    firestore.collection("Posts")
+                        .whereIn("userid", filteredUserIds)
+                        .addSnapshotListener { value, error ->
                             if (error != null) {
+                                Log.e("FeedLoad", "Error loading feed: ${error.message}")
+                                feeds.postValue(emptyList())
                                 return@addSnapshotListener
                             }
 
                             val feed = mutableListOf<Feed>()
-                            value?.documents?.forEach{ documentSnapshot->
+                            value?.documents?.forEach { documentSnapshot ->
                                 val pModal = documentSnapshot.toObject(Feed::class.java)
                                 pModal?.let {
                                     feed.add(it)
                                 }
                             }
+
                             // Displaying the latest posts first
                             val sortedFeed = feed.sortedByDescending { it.time }
                             feeds.postValue(sortedFeed)
-
                         }
 
-                }catch (e: Exception){}
-
-
+                } catch (e: Exception) {
+                    Log.e("FeedLoad", "Exception in loadMyFeed: ${e.message}")
+                    feeds.postValue(emptyList())
+                }
             }
-
         }
-
 
         return feeds
     }
@@ -212,7 +216,7 @@ class ViewModel: ViewModel() {
         firestore.collection("Users").document(userId).get()
             .addOnSuccessListener { documentSnapshot ->
                 val userInfo = documentSnapshot.toObject(Users::class.java) ?: Users(username = "Unknown", image = "")
-                    user.postValue(userInfo)
+                user.postValue(userInfo)
 
             }
             .addOnFailureListener { exception ->
@@ -302,7 +306,36 @@ class ViewModel: ViewModel() {
             }
     }
 
+    fun getAllPostsExceptCurrentUser(): LiveData<List<Posts>> {
+        val posts = MutableLiveData<List<Posts>>()
+        val firestore = FirebaseFirestore.getInstance()
+        val currentUserId = Utils.getUiLoggedIn()
 
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                firestore.collection("Posts")
+                    .whereNotEqualTo("userid", currentUserId)
+                    .addSnapshotListener { snapshot, exception ->
+                        if (exception != null) {
+                            // Handle the exception here
+                            Log.e("Firebase", "Error fetching posts: ${exception.message}")
+                            return@addSnapshotListener
+                        }
+
+                        val postList = snapshot?.documents?.mapNotNull {
+                            it.toObject(Posts::class.java)
+                        }?.sortedByDescending { it.time }
+
+                        posts.postValue(postList ?: emptyList())
+                    }
+            } catch (e: Exception) {
+                Log.e("Firebase", "Exception in getAllPostsExceptCurrentUser: ${e.message}")
+                // Handle any exceptions that occur during the Firestore operation
+            }
+        }
+
+        return posts
+    }
 
 
 }

@@ -28,10 +28,10 @@
         android:label="HomeFragment" >
         <action
             android:id="@+id/action_homeFragment_to_profileFragment"
-            app:destination="@id/profileFragment" />
+            app:destination="@id/profilePageActivity" />
         <action
             android:id="@+id/action_homeFragment_to_profileFragment2"
-            app:destination="@id/profileFragment" />
+            app:destination="@id/profilePageActivity" />
         <action
             android:id="@+id/action_homeFragment_to_settingsFragment"
             app:destination="@id/settingsFragment" />
@@ -48,7 +48,7 @@
         android:label="CreatePostFragment" >
         <action
             android:id="@+id/action_createPostFragment_to_profileFragment"
-            app:destination="@id/profileFragment" />
+            app:destination="@id/profilePageActivity" />
     </fragment>
     <fragment
         android:id="@+id/userToFollowFragment"
@@ -56,7 +56,7 @@
         android:label="UserToFollowFragment" >
         <action
             android:id="@+id/action_userToFollowFragment_to_profileFragment"
-            app:destination="@id/profileFragment" />
+            app:destination="@id/profilePageActivity" />
     </fragment>
     <fragment
         android:id="@+id/settingsFragment"
@@ -68,7 +68,7 @@
             app:destination="@id/changePasswordFragment" />
         <action
             android:id="@+id/action_settingsFragment_to_profileFragment"
-            app:destination="@id/profileFragment" />
+            app:destination="@id/profilePageActivity" />
     </fragment>
     <fragment
         android:id="@+id/changePasswordFragment"
@@ -78,7 +78,15 @@
         android:id="@+id/searchFragment"
         android:name="com.example.socialmediaapp.fragments.SearchFragment"
         android:label="fragment_search"
-        tools:layout="@layout/fragment_search" />
+        tools:layout="@layout/fragment_search" >
+        <action
+            android:id="@+id/action_searchFragment_to_otherUsersFragment"
+            app:destination="@id/otherUsersFragment">
+            <argument
+                android:name="userId"
+                app:argType="string" />
+        </action>
+    </fragment>
     <fragment
         android:id="@+id/otherUsersFragment"
         android:name="com.example.socialmediaapp.fragments.OtherUsersFragment"
@@ -89,7 +97,7 @@
             app:argType="string" />
         <action
             android:id="@+id/action_otherUsersFragment_to_profileFragment"
-            app:destination="@id/profileFragment" />
+            app:destination="@id/profilePageActivity" />
         <action
             android:id="@+id/action_otherUsersFragment_to_homeFragment"
             app:destination="@id/homeFragment" />
@@ -103,4 +111,13 @@
             android:id="@+id/action_otherUsersFragment_to_settingsFragment"
             app:destination="@id/settingsFragment" />
     </fragment>
+    <activity
+        android:id="@+id/profilePageActivity"
+        android:name="com.example.socialmediaapp.activities.ProfilePageActivity"
+        android:label="ProfilePageActivity" />
+    <activity
+        android:id="@+id/imageGenerationPageActivity"
+        android:name="com.example.socialmediaapp.activities.ImageGenerationPageActivity"
+        android:label="activity_image_generation_page"
+        tools:layout="@layout/activity_image_generation_page" />
 </navigation>

@@ -1,23 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#1C2541"
     tools:context=".fragments.SearchFragment">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/white"
-        android:id="@+id/app_bar_layout_search"
-        >
+        android:background="#1C2541"
+        android:id="@+id/app_bar_layout_search">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/search_toolbar"
             android:layout_height="50dp"
             android:layout_width="match_parent"
             android:layout_marginTop="2dp"
-            >
+            android:background="#1C2541">
+
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
@@ -28,7 +30,7 @@
                     android:layout_height="30dp"
                     android:layout_alignParentLeft="true"
                     android:layout_marginTop="10dp"
-
+                    android:tint="#FFFFFF"
                     android:src="@drawable/search" />
 
                 <EditText
@@ -39,18 +41,71 @@
                     android:layout_centerInParent="true"
                     android:layout_marginStart="35dp"
                     android:layout_marginEnd="1dp"
-                    android:hint="Search"
-                    android:inputType="text" />
+                    android:textColor="#FFFFFF"
+                    android:textColorHint="#80FFFFFF"
+                    android:hint="Search For People, Keywords"
+                    android:inputType="text"
+                    android:background="@null"/>
             </RelativeLayout>
         </androidx.appcompat.widget.Toolbar>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerview_search"
+    <!-- Container for search mode -->
+    <LinearLayout
+        android:id="@+id/search_results_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@+id/app_bar_layout_search"
-        >
-    </androidx.recyclerview.widget.RecyclerView>
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <!-- User Search Results - takes up top portion -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerview_search"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="80dp"
+            android:maxHeight="150dp" />
+
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#30FFFFFF"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp" />
+
+        <!-- User-specific Posts - takes up remaining space -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerview_user_posts"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp" />
+    </LinearLayout>
+
+    <!-- All Posts From Other Users (default view) -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerview_all_posts"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/app_bar_layout_search"
+        android:visibility="visible"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp" />
+
+    <!-- Toggle Button for View Mode -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/toggle_view_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_margin="16dp"
+        android:backgroundTint="#3A506B"
+        android:src="@drawable/search"
+        app:fabSize="normal"
+        app:tint="#FFFFFF" />
 
 </RelativeLayout>

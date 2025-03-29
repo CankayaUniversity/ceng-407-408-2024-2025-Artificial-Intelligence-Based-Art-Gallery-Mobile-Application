@@ -1,120 +1,165 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <ScrollView
+    <data>
+        <!-- Data binding variables if needed -->
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        >
-        <LinearLayout
+        android:background="@color/navy_blue"
+        tools:context=".activities.SignInAc">
+
+        <TextView
+            android:id="@+id/tvSignInTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="56dp"
+            android:text="Log In"
+            android:textColor="@color/white"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:background="#FFFF"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="32dp"
+            android:layout_marginEnd="24dp"
+            app:cardBackgroundColor="@color/navy_blue"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvSignInTitle">
 
-
-            <TextView
-                android:layout_width="wrap_content"
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:textColor="@color/black"
-                android:textSize="16sp"
-                android:layout_marginBottom="20dp"/>
+                android:padding="24dp">
 
-
-            <TextView
-                android:id="@+id/titleText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="40dp"
-                android:gravity="start"
-                android:textColor="@color/black"
-                android:text="Login to your account"
-                android:textSize="30sp" />
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_margin="10dp"
-                android:background="@android:color/transparent"
-                app:boxBackgroundColor="@android:color/transparent">
-
+                <!-- Email field - simple EditText -->
                 <EditText
                     android:id="@+id/loginetemail"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:ems="10"
+                    android:background="@drawable/edit_text_background"
                     android:hint="Email"
-                    android:importantForAutofill="no"
                     android:inputType="textEmailAddress"
-                    android:maxLength="25"
-                    android:paddingStart="10dp"
-                    android:paddingEnd="0dp"
-                    android:textSize="16sp"
-                    tools:background="@android:color/transparent" />
-            </com.google.android.material.textfield.TextInputLayout>
+                    android:padding="16dp"
+                    android:textColor="@color/white"
+                    android:textColorHint="@color/gray"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/editTextPasswordInputLayout"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_width="fill_parent"
-                android:layout_height="match_parent"
-                android:layout_margin="10dp"
-                android:background="@android:color/transparent"
-                android:padding="0dp"
-                app:boxBackgroundColor="@android:color/transparent">
-
+                <!-- Password field with visibility toggle -->
                 <EditText
                     android:id="@+id/loginetpassword"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="20dp"
-                    android:ems="10"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/edit_text_background"
                     android:hint="Password"
-                    android:importantForAutofill="no"
                     android:inputType="textPassword"
-                    android:maxLength="25"
-                    android:paddingStart="10dp"
-                    android:paddingEnd="0dp"
-                    android:textSize="16sp"
-                    tools:background="@android:color/transparent" />
-            </com.google.android.material.textfield.TextInputLayout>
+                    android:padding="16dp"
+                    android:textColor="@color/white"
+                    android:textColorHint="@color/gray"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/loginetemail" />
 
-            <TextView
-                android:id="@+id/tv_forgot_password"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="5dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                android:text="Forgot your password?"
-                android:textColor="#5DB075" />
+                <!-- Password visibility toggle -->
+                <ImageView
+                    android:id="@+id/passwordVisibilityToggle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="16dp"
+                    android:src="@drawable/ic_visibility_off"
+                    app:layout_constraintBottom_toBottomOf="@+id/loginetpassword"
+                    app:layout_constraintEnd_toEndOf="@+id/loginetpassword"
+                    app:layout_constraintTop_toTopOf="@+id/loginetpassword"
+                    app:tint="@color/white" />
 
+                <!-- Remember me checkbox -->
+                <CheckBox
+                    android:id="@+id/cbRememberMe"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:buttonTint="@color/blue"
+                    android:text="Remember me"
+                    android:textColor="@color/gray"
+                    android:textSize="14sp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/loginetpassword" />
 
-            <Button
-                android:id="@+id/loginButton"
-                android:layout_width="339dp"
-                android:layout_height="61dp"
-                android:layout_marginTop="25dp"
-                android:text="Login"
-                android:textAlignment="center"
-                android:textSize="16sp" />
+                <!-- Forgot password link -->
+                <TextView
+                    android:id="@+id/tvForgotPassword"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Forgot your password?"
+                    android:textColor="@color/blue"
+                    android:textSize="14sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/loginetpassword" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:id="@+id/signInTextToSignUp"
-                android:layout_height="wrap_content"
-                android:text="Create a new account"
-                android:layout_marginTop="20dp"
-                android:textColor="@color/black"/>
+                <!-- Login button -->
+                <Button
+                    android:id="@+id/loginButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:background="@drawable/button_background"
+                    android:paddingTop="12dp"
+                    android:paddingBottom="12dp"
+                    android:text="Login"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/cbRememberMe" />
 
+                <!-- No account text -->
+                <TextView
+                    android:id="@+id/tvNoAccount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Don't have an account?"
+                    android:textColor="@color/gray"
+                    android:textSize="14sp"
+                    app:layout_constraintEnd_toStartOf="@+id/signInTextToSignUp"
+                    app:layout_constraintHorizontal_bias="0.5"
+                    app:layout_constraintHorizontal_chainStyle="packed"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/loginButton" />
 
+                <!-- Register link -->
+                <TextView
+                    android:id="@+id/signInTextToSignUp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:text="Register"
+                    android:textColor="@color/blue"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    app:layout_constraintBaseline_toBaselineOf="@+id/tvNoAccount"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.5"
+                    app:layout_constraintStart_toEndOf="@+id/tvNoAccount" />
 
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.cardview.widget.CardView>
 
-
-        </LinearLayout>
-    </ScrollView>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
