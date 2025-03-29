@@ -271,7 +271,7 @@ class ProfilePageActivity : BaseActivity() {
         Glide.with(this)
             .load(imageUrl)
             .centerCrop()
-            .placeholder(R.drawable.placeholder_image)
+            .placeholder(R.drawable.placeholder_image2)
             .error(R.drawable.error_image)
             .into(artworkImageView)
 
@@ -313,7 +313,7 @@ class ProfilePageActivity : BaseActivity() {
         Glide.with(this)
             .load(imageUrl)
             .fitCenter()
-            .placeholder(R.drawable.placeholder_image)
+            .placeholder(R.drawable.placeholder_image2)
             .error(R.drawable.error_image)
             .into(detailImageView)
 

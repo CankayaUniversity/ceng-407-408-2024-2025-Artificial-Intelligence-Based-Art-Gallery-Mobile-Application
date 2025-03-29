@@ -53,7 +53,7 @@ class PostsAdapter : RecyclerView.Adapter<PostsAdapter.PostViewHolder>() {
             // Load the post image using Glide
             Glide.with(itemView.context)
                 .load(post.image)
-                .placeholder(R.drawable.placeholder_image)
+                .placeholder(R.drawable.placeholder_image2)
                 .into(postImage)
         }
     }

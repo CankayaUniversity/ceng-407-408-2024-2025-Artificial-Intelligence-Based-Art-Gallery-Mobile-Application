@@ -5,11 +5,9 @@ import android.content.res.ColorStateList
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
-import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.util.Log
-import android.view.Gravity
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -96,7 +94,7 @@ class StoryGenerationPageActivity: BaseActivity() {
         imageUrl?.let {
             Glide.with(this)
                 .load(it)
-                .placeholder(R.drawable.placeholder_image)
+                .placeholder(R.drawable.placeholder_image2)
                 .error(R.drawable.error_image)
                 .into(resultImageView)
         }
