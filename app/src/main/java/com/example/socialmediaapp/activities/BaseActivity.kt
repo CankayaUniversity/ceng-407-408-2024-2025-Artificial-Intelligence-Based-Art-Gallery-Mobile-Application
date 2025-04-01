@@ -13,6 +13,10 @@ import com.example.socialmediaapp.R
 import com.example.socialmediaapp.fragments.HomeFragment
 import com.example.socialmediaapp.fragments.SearchFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.firebase.auth.FirebaseAuth
+import android.widget.ImageButton
+
+
 
 abstract class BaseActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,6 +35,8 @@ abstract class BaseActivity : AppCompatActivity() {
         } else {
             setupBottomNavigation()
         }
+
+        setupMenuButton()
     }
     fun loadFragment(fragment: Fragment, title: String) {
         // Clear any existing back stack
@@ -105,6 +111,24 @@ abstract class BaseActivity : AppCompatActivity() {
     fun setToolbarTitle(title: String) {
         findViewById<TextView>(R.id.toolbar_title)?.text = title
     }
+
+
+    private fun setupMenuButton() {
+        val menuButton = findViewById<ImageButton>(R.id.menu_button)
+
+        menuButton.setOnClickListener {
+            FirebaseAuth.getInstance().signOut()
+
+            // Giriş ekranına yönlendir
+            val intent = Intent(this, SignInAc::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+            finish() // Mevcut aktiviteyi sonlandır
+        }
+    }
+
+
+
 }
 
 
