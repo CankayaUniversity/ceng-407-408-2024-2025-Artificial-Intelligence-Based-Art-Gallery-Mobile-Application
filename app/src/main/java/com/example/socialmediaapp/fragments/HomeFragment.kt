@@ -22,6 +22,10 @@ import com.example.socialmediaapp.adapters.onUserClickListener
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.example.socialmediaapp.adapters.onCommentClickListener
+import android.widget.Spinner
+import android.widget.ArrayAdapter
+import android.widget.AdapterView
+
 
 
 
@@ -91,6 +95,39 @@ class HomeFragment : Fragment(),onDoubleTapClickListener, onUserClickListener  {
 
 
 
+        val spinner = requireActivity().findViewById<Spinner>(R.id.filter_spinner)
+
+
+        val adapter = ArrayAdapter.createFromResource(
+            requireContext(),
+            R.array.filter_options,
+            android.R.layout.simple_spinner_item
+        )
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinner.adapter = adapter
+
+        spinner.setSelection(0)
+
+        spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+                val selectedOption = parent.getItemAtPosition(position).toString()
+                Toast.makeText(requireContext(), "Selected: $selectedOption", Toast.LENGTH_SHORT).show()
+
+                when (selectedOption) {
+                    "Descending Date" -> vm.sortFeedDescendingDate()
+                    "Ascending Date" -> vm.sortFeedAscendingDate()
+                    "Most Liked" -> vm.sortFeedMostLiked()
+                    "Most Commented" -> vm.sortFeedMostCommented()
+                }
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>) {
+                // Boş seçim durumunda işlem yapılmaz
+            }
+        }
+
+
+
 
 
     }
@@ -149,5 +186,8 @@ class HomeFragment : Fragment(),onDoubleTapClickListener, onUserClickListener  {
         val action = HomeFragmentDirections.actionHomeFragmentToOtherUsersFragment(userId)
         view?.findNavController()?.navigate(action)
     }
+
+
+
 
 }

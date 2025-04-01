@@ -338,4 +338,23 @@ class ViewModel: ViewModel() {
     }
 
 
+
+    fun sortFeedDescendingDate() {
+        // Feed'i tarih bazında azalan şekilde sıralayın
+    }
+
+    fun sortFeedAscendingDate() {
+        // Feed'i tarih bazında artan şekilde sıralayın
+    }
+
+    fun sortFeedMostLiked() {
+        // Feed'i en çok beğenilen şekilde sıralayın
+    }
+
+    fun sortFeedMostCommented() {
+        // Feed'i en çok yorumlanan şekilde sıralayın
+    }
+
+
+
 }

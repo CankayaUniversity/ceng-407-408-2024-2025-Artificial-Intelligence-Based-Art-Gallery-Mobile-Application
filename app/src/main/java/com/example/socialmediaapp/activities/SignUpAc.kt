@@ -73,7 +73,7 @@ class SignUpAc : AppCompatActivity() {
                 if (usernameField != null) {
                     // Field exists but we'll use name as username for database
                     username = binding.signUpName.text.toString()
-
+                    //Niye???
 
                 }
             } catch (e: Exception) {
@@ -99,6 +99,9 @@ class SignUpAc : AppCompatActivity() {
                 val email = binding.signUpnetemail.text.toString()
                 val password = binding.signUpetpassword.text.toString()
                 val name = binding.signUpName.text.toString()
+
+
+
 
                 // Use the original name as the username to maintain compatibility
                 signInUp(name, email, password, username, surname)

@@ -51,4 +51,12 @@
     <string name="days_ago">%1$d day%2$s ago</string>
 
     <string name="error_liking_post">Error liking post: %1$s</string>
+
+    <string-array name="filter_options">
+        <item>Descending Date</item>
+        <item>Ascending Date</item>
+        <item>Most Liked</item>
+        <item>Most Commented</item>
+    </string-array>
+
 </resources>
