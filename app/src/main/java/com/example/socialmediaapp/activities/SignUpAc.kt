@@ -57,6 +57,15 @@ class SignUpAc : AppCompatActivity() {
                 return@setOnClickListener
             }
 
+            val usernameCheck = binding.signUpUsername.text.toString()
+
+            if (!usernameCheck.matches("[a-z0-9._-]*".toRegex())) {
+                Toast.makeText(this, "Username must not contain uppercase letters", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+
+
 
             try {
                 // Try to find the username field
@@ -64,6 +73,8 @@ class SignUpAc : AppCompatActivity() {
                 if (usernameField != null) {
                     // Field exists but we'll use name as username for database
                     username = binding.signUpName.text.toString()
+
+
                 }
             } catch (e: Exception) {
                 // Field doesn't exist
