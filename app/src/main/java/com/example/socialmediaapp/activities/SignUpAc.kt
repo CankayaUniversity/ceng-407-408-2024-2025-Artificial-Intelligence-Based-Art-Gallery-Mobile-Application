@@ -48,6 +48,16 @@ class SignUpAc : AppCompatActivity() {
             var username = ""
             var surname = ""
 
+            val password = binding.signUpetpassword.text.toString()
+            val confirmPassword = binding.signUpetconfirmpassword.text.toString()
+
+            // Password ve Confrim Password eslesme kontrol
+            if (password != confirmPassword) {
+                Toast.makeText(this, "Password fields do not match", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+
             try {
                 // Try to find the username field
                 val usernameField = findViewById<View>(R.id.signUpUsername)
