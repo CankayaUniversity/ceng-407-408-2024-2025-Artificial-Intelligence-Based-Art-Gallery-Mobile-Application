@@ -11,13 +11,13 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
         android:gravity="center"
-        android:text="Edit Profile"
+        android:text="Edit Profile Picture"
         android:textColor="@android:color/white"
         android:textSize="18sp"
         android:textStyle="bold" />
 
     <Button
-        android:id="@+id/galleryButton"
+        android:id="@+id/takePhotoButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
@@ -26,11 +26,11 @@
         android:drawablePadding="8dp"
         android:gravity="start|center_vertical"
         android:padding="12dp"
-        android:text="Edit Profile Picture"
+        android:text="Take Photo"
         android:textColor="@android:color/white" />
 
     <Button
-        android:id="@+id/editNameButton"
+        android:id="@+id/chooseFromGalleryButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
@@ -39,14 +39,14 @@
         android:drawablePadding="8dp"
         android:gravity="start|center_vertical"
         android:padding="12dp"
-        android:text="Edit Username"
+        android:text="Choose From Gallery"
         android:textColor="@android:color/white" />
 
     <Button
-        android:id="@+id/cancelButton"
+        android:id="@+id/backToEditButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/cancel_button_background"
-        android:text="Cancel"
+        android:text="Return To Previous Menu"
         android:textColor="@android:color/white" />
 </LinearLayout>

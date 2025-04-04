@@ -330,6 +330,36 @@ class ProfilePageActivity : BaseActivity() {
         dialog.show()
     }
 
+    private fun showProfilePictureEditDialog() {
+        val dialog = Dialog(this)
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        dialog.setCancelable(true)
+        dialog.setContentView(R.layout.dialog_edit_profile_picture)
+
+        val galleryButton = dialog.findViewById<Button>(R.id.chooseFromGalleryButton)
+        val photoButton = dialog.findViewById<Button>(R.id.takePhotoButton)
+        val backButton = dialog.findViewById<Button>(R.id.backToEditButton)
+
+        galleryButton.setOnClickListener {
+            val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+            pickImageLauncher.launch(intent)
+        }
+
+        photoButton.setOnClickListener {
+            // Launch camera intent
+            // Note: You'd need to implement camera functionality
+            Toast.makeText(this, "Camera functionality coming soon", Toast.LENGTH_SHORT).show()
+            dialog.dismiss()
+        }
+
+        backButton.setOnClickListener {
+            showImagePickerOptions()
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
     private fun showImagePickerOptions() {
         val dialog = Dialog(this)
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -337,23 +367,12 @@ class ProfilePageActivity : BaseActivity() {
         dialog.setContentView(R.layout.dialog_image_picker)
 
         // Initialize dialog views
-        val cameraButton = dialog.findViewById<Button>(R.id.cameraButton)
         val galleryButton = dialog.findViewById<Button>(R.id.galleryButton)
         val editNameButton = dialog.findViewById<Button>(R.id.editNameButton)
         val cancelButton = dialog.findViewById<Button>(R.id.cancelButton)
 
-        // Set click listeners
-        cameraButton.setOnClickListener {
-            // Launch camera intent
-            // Note: You'd need to implement camera functionality
-            Toast.makeText(this, "Camera functionality coming soon", Toast.LENGTH_SHORT).show()
-            dialog.dismiss()
-        }
-
         galleryButton.setOnClickListener {
-            // Launch gallery intent
-            val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-            pickImageLauncher.launch(intent)
+            showProfilePictureEditDialog()
             dialog.dismiss()
         }
 
