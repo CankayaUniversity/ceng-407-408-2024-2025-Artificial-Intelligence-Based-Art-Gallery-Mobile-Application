@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:cardCornerRadius="8dp"
+    android:layout_margin="10dp"
+    app:cardElevation="8dp">
+<RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_margin="10dp"
+
+    android:layout_height="wrap_content">
+
+
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:src="@mipmap/ic_launcher"
+        app:civ_border_color="#FF4081"
+        app:civ_border_width="1dp"
+        android:id="@+id/userImage_follow"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="User Name"
+        android:textSize="18sp"
+        android:textColor="@color/black"
+        android:layout_margin="10dp"
+        android:layout_toRightOf="@id/userImage_follow"
+        android:layout_centerVertical="true"
+        android:id="@+id/userName_follow"/>
+
+
+
+    <androidx.appcompat.widget.SwitchCompat
+        android:layout_width="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:layout_height="wrap_content"
+        android:background="@drawable/switchstyle"
+        android:id="@+id/toggle"/>
+
+
+</RelativeLayout>
+
+</androidx.cardview.widget.CardView>
