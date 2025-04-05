@@ -46,6 +46,7 @@ class SignUpAc : AppCompatActivity() {
         binding.signUpButton.setOnClickListener {
             // Get username and surname if they exist in the layout
             var username = ""
+            var name = ""
             var surname = ""
 
             val password = binding.signUpetpassword.text.toString()
@@ -72,7 +73,7 @@ class SignUpAc : AppCompatActivity() {
                 val usernameField = findViewById<View>(R.id.signUpUsername)
                 if (usernameField != null) {
                     // Field exists but we'll use name as username for database
-                    username = binding.signUpName.text.toString()
+                    username = binding.signUpUsername.text.toString()
                     //Niye???
 
                 }
@@ -85,7 +86,18 @@ class SignUpAc : AppCompatActivity() {
                 val surnameField = findViewById<View>(R.id.signUpSurname)
                 if (surnameField != null) {
                     // Field exists, but we'll ignore for now as original code doesn't use it
-                    surname = ""
+                    surname = binding.signUpSurname.text.toString()
+                }
+            } catch (e: Exception) {
+                // Field doesn't exist
+            }
+
+            try {
+                // Try to find the surname field
+                val nameField = findViewById<View>(R.id.signUpName)
+                if (nameField != null) {
+                    // Field exists, but we'll ignore for now as original code doesn't use it
+                    name = binding.signUpName.text.toString()
                 }
             } catch (e: Exception) {
                 // Field doesn't exist
@@ -98,7 +110,7 @@ class SignUpAc : AppCompatActivity() {
 
                 val email = binding.signUpnetemail.text.toString()
                 val password = binding.signUpetpassword.text.toString()
-                val name = binding.signUpName.text.toString()
+                name = binding.signUpName.text.toString()
 
 
 
@@ -126,7 +138,7 @@ class SignUpAc : AppCompatActivity() {
                     "email" to email,
                     "followers" to 0,
                     "following" to 0,
-                    "user" to name,
+                    "name" to name,
                     "surname" to surname
                 )
 
