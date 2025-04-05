@@ -377,12 +377,13 @@ class ProfilePageActivity : BaseActivity() {
         }
 
         editNameButton.setOnClickListener {
-            // Show dialog to edit name
+            // Show dialog to edit username
             showUsernameEditDialog()
             dialog.dismiss()
         }
 
         cancelButton.setOnClickListener {
+            // Close the menu
             dialog.dismiss()
         }
 
