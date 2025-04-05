@@ -341,6 +341,7 @@ class ProfilePageActivity : BaseActivity() {
         val backButton = dialog.findViewById<Button>(R.id.backToEditButton)
 
         galleryButton.setOnClickListener {
+            // Open gallery
             val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
             pickImageLauncher.launch(intent)
         }
