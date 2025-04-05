@@ -421,6 +421,7 @@ class ProfilePageActivity : BaseActivity() {
         }
 
         cancelButton.setOnClickListener {
+            // Close current menu
             dialog.dismiss()
         }
 
