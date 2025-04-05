@@ -112,7 +112,7 @@ class ProfilePageActivity : BaseActivity() {
                     .await()
 
                 val username = userDoc.getString("username") ?: currentUser.displayName ?: "User"
-                val photoUrl = userDoc.getString("photoUrl") ?: currentUser.photoUrl?.toString()
+                val photoUrl = userDoc.getString("image") ?: currentUser.photoUrl?.toString()
                 val followers = userDoc.getLong("followers")?.toInt() ?: 0
                 val follows = userDoc.getLong("following")?.toInt() ?: 0  // Changed from "follows" to "following" to match database
 
@@ -484,7 +484,7 @@ class ProfilePageActivity : BaseActivity() {
 
                 // Update Firestore user document
                 val updates = hashMapOf<String, Any>(
-                    "photoUrl" to photoUrl
+                    "image" to photoUrl
                 )
 
                 firestore.collection("Users")
