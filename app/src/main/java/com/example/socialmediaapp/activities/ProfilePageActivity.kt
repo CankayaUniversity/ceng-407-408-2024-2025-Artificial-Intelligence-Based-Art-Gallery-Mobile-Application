@@ -169,9 +169,10 @@ class ProfilePageActivity : BaseActivity() {
                 // Debug log
                 Log.d("ProfilePage", "Querying for artworks with userId: ${currentUser.uid}")
 
+                // Updated: Query Posts collection where userid matches current user
                 var query = firestore.collection("Posts")
                     .whereEqualTo("userid", currentUser.uid)
-                    .orderBy("createdAt", Query.Direction.DESCENDING)
+                    .orderBy("time", Query.Direction.DESCENDING)  // Changed from "createdAt" to "time" to match StoryGenerationPageActivity
                     .limit(ARTWORKS_PER_PAGE.toLong())
 
                 lastDocumentSnapshot?.let {
@@ -183,7 +184,7 @@ class ProfilePageActivity : BaseActivity() {
                 // Logging to debug
                 Log.d("ProfilePage", "Loaded ${artworksQuery.documents.size} artworks for user ${currentUser.uid}")
                 for (doc in artworksQuery.documents) {
-                    Log.d("ProfilePage", "Artwork found: ${doc.id} - ${doc.getString("title")}")
+                    Log.d("ProfilePage", "Artwork found: ${doc.id} - ${doc.getString("caption")}")
                 }
 
                 // Check if there are more artworks to load
@@ -205,25 +206,49 @@ class ProfilePageActivity : BaseActivity() {
 
                     // Create and add artwork cards to the grid
                     for (doc in artworksQuery.documents) {
-                        val imageUrl = doc.getString("imageUrl")
+                        // Get the image URL from the "image" field in Posts collection
+                        val imageUrl = doc.getString("image")
                         if (imageUrl.isNullOrEmpty()) {
                             Log.e("ProfilePage", "Missing image URL for document ${doc.id}")
                             continue
                         }
 
-                        val title = doc.getString("title") ?: "Untitled"
-                        val story = doc.getString("story") ?: ""
+                        val caption = doc.getString("caption") ?: "Untitled"
                         val likes = doc.getLong("likes")?.toInt() ?: 0
                         val comments = doc.getLong("comments")?.toInt() ?: 0
-                        val docId = doc.id
+                        val postId = doc.id
 
-                        // Create artwork card view
-                        val cardView = createArtworkCardView(imageUrl, title, story, likes, comments, docId)
-                        artworksGridLayout.addView(cardView)
+                        // Fetch additional artwork details from Images collection using postId
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            try {
+                                val imagesQuery = firestore.collection("Images")
+                                    .whereEqualTo("postid", postId)
+                                    .limit(1)
+                                    .get()
+                                    .await()
+
+                                var story = ""
+                                var title = caption // Default to caption if title not found
+
+                                if (!imagesQuery.isEmpty) {
+                                    val imageDoc = imagesQuery.documents[0]
+                                    story = imageDoc.getString("story") ?: ""
+                                    title = imageDoc.getString("title") ?: caption
+                                }
+
+                                withContext(Dispatchers.Main) {
+                                    // Create artwork card view with the additional information
+                                    val cardView = createArtworkCardView(imageUrl, title, story, likes, comments, postId)
+                                    artworksGridLayout.addView(cardView)
+                                }
+                            } catch (e: Exception) {
+                                Log.e("ProfilePage", "Error fetching artwork details for ${postId}", e)
+                            }
+                        }
                     }
 
                     // Show a message if no artworks are found
-                    if (artworksGridLayout.childCount == 0) {
+                    if (artworksGridLayout.childCount == 0 && artworksQuery.documents.isEmpty()) {
                         artworksTitleTextView.text = "No Artworks Yet"
                     }
 
