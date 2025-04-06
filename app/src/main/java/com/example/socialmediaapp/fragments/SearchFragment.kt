@@ -211,34 +211,38 @@ class SearchFragment : Fragment(), OnPostClickListener {
                 // Only add users that are not the current user
                 if (user != null && user.userid != currentUserId) {
                     mUser?.add(user)
+
+                    // Fetch posts for the first matching user
+                    if (mUser?.size == 1) {
+                        user.userid?.let { fetchUserPosts(it) }
+                    }
                 }
             }
             userAdapter?.notifyDataSetChanged()
         }
     }
 
-   // private fun fetchUserPosts(username: String){
+    private fun fetchUserPosts(userId: String) {
+        val postsCollection = FirebaseFirestore.getInstance().collection("Posts")
+        postsCollection.whereEqualTo("userid", userId)
+            .addSnapshotListener { value, error ->
+                if (error != null) {
+                    Toast.makeText(context, "Could not read from Database", Toast.LENGTH_LONG).show()
+                    return@addSnapshotListener
+                }
+                val postsList = ArrayList<Posts>()
+                for (document in value?.documents ?: emptyList()) {
+                    val post = document.toObject(Posts::class.java)
+                    if (post != null) {
+                        postsList.add(post)
+                    }
+                }
+                userPostsAdapter?.setPosts(postsList)
 
-      //  val postsCollection = FirebaseFirestore.getInstance().collection("Posts")
-      //  postsCollection.whereEqualTo("caption", username)
-      //      .addSnapshotListener{value, error ->
-      //          if(error != null){
-       //             Toast.makeText(context, "Could not read from Database", Toast.LENGTH_LONG).show()
-       //             return@addSnapshotListener
-          //      }
-         //       val postsList = ArrayList<Posts>()
-         //       for (document in value?.documents ?: emptyList())
-         //       {
-         //           val post = document.toObject(Posts::class.java)
-        //            if(post != null)
-        //            {
-        //                postsList.add(post)
-        //            }
-        //        }
-        //        userPostsAdapter?.setPosts(postsList)
-
-          //  }
-  //  }
+                // Make sure the user posts recycler view is visible
+                userPostsRecyclerView?.visibility = View.VISIBLE
+            }
+    }
 
     private fun retrieveAllUsers() {
         // Get current user ID

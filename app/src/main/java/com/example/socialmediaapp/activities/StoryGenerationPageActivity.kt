@@ -288,7 +288,7 @@ class StoryGenerationPageActivity: BaseActivity() {
         }
     }
 
-    // Save the content to Firebase
+    // Save the content to Firebase (modified to save in both Posts and Images collections)
     private fun saveToFirebase() {
         // Check if user is logged in
         val currentUser = auth.currentUser
@@ -335,6 +335,15 @@ class StoryGenerationPageActivity: BaseActivity() {
                 storageRef.putBytes(imageData).await()
                 val imageDownloadUrl = storageRef.downloadUrl.await().toString()
 
+                // Fetch additional user information needed for Feed object
+                val userDoc = firestore.collection("Users")
+                    .document(currentUser.uid)
+                    .get()
+                    .await()
+
+                val username = userDoc.getString("username") ?: currentUser.displayName ?: "User"
+                val userImageUrl = userDoc.getString("image") ?: ""
+
                 // Get visibility setting
                 val isPublic = publicRadioButton.isChecked
 
@@ -345,8 +354,34 @@ class StoryGenerationPageActivity: BaseActivity() {
                     generatedTag = generateCaption(storyTitleTextView.text.toString(), prompt ?: "")
                 }
 
-                // Create a document in Firestore
-                val creationData = hashMapOf(
+                // Current timestamp for post
+                val timestamp = System.currentTimeMillis()
+
+                // Create data for Posts collection (for Feed display)
+                val postData = hashMapOf(
+                    "username" to username,
+                    "userid" to currentUser.uid,
+                    "image" to imageDownloadUrl, // The artwork image
+                    "imageposter" to userImageUrl, // User's profile image
+                    "caption" to storyTitleTextView.text.toString(), // Using title as caption
+                    "time" to timestamp,
+                    "postid" to "", // Will update after document creation
+                    "likes" to 0,
+                    "comments" to 0
+                )
+
+                // Add to Posts collection with a generated ID
+                val postDocRef = firestore.collection("Posts").document()
+                val postId = postDocRef.id
+
+                // Update the postid field with the actual document ID
+                postData["postid"] = postId
+
+                // Save to Posts collection
+                postDocRef.set(postData).await()
+
+                // Create data for Images collection (preserving all artwork attributes)
+                val imageDocData = hashMapOf(
                     "userid" to currentUser.uid,
                     "title" to storyTitleTextView.text.toString(),
                     "story" to storyContentTextView.text.toString(),
@@ -356,12 +391,12 @@ class StoryGenerationPageActivity: BaseActivity() {
                     "createdAt" to com.google.firebase.Timestamp.now(),
                     "likes" to 0,
                     "comments" to 0,
-                    "caption" to generatedTag
+                    "caption" to generatedTag,
+                    "postid" to postId // Reference to the post document
                 )
 
-                // Add to Images collection with a generated ID
-                val docRef = firestore.collection("Images").document()
-                docRef.set(creationData).await()
+                // Save to Images collection
+                firestore.collection("Images").document().set(imageDocData).await()
 
                 withContext(Dispatchers.Main) {
                     progressDialog.dismiss()

@@ -55,7 +55,20 @@ class MyFeedAdapter: RecyclerView.Adapter<FeedHolder>() {
         holder.userNameCaption.text = feed.caption
 
         // Set time in Row-3
-        val date = Date(feed.time!!.toLong() * 1000)
+        val timeMillis = if (feed.time != null) {
+            // Check if timestamp needs conversion or is already in milliseconds
+            if (feed.time < 1000000000000L) {
+                // If timestamp is in seconds, convert to milliseconds
+                feed.time * 1000
+            } else {
+                // If timestamp is already in milliseconds, use as is
+                feed.time
+            }
+        } else {
+            System.currentTimeMillis() // Fallback
+        }
+
+        val date = Date(timeMillis)
         val instagramTimeFormat = DateUtils.getRelativeTimeSpanString(
             date.time,
             System.currentTimeMillis(),
@@ -77,7 +90,6 @@ class MyFeedAdapter: RecyclerView.Adapter<FeedHolder>() {
                 return true
             }
         })
-
 
         holder.itemView.setOnTouchListener { _, event ->
             doubleClickGestureDetector.onTouchEvent(event)
@@ -102,7 +114,6 @@ class MyFeedAdapter: RecyclerView.Adapter<FeedHolder>() {
             }
         }
     }
-
 
     override fun getItemCount(): Int {
         return feedlist.size
