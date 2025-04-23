@@ -15,6 +15,7 @@ import com.example.socialmediaapp.fragments.SearchFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import android.widget.ImageButton
+import android.widget.ImageView
 
 
 
@@ -37,7 +38,9 @@ abstract class BaseActivity : AppCompatActivity() {
         }
 
         setupMenuButton()
+        setupTrophyIcon()
     }
+
     fun loadFragment(fragment: Fragment, title: String) {
         // Clear any existing back stack
         for (i in 0 until supportFragmentManager.backStackEntryCount) {
@@ -105,13 +108,10 @@ abstract class BaseActivity : AppCompatActivity() {
         }
     }
 
-
-
     // Method to update toolbar title
     fun setToolbarTitle(title: String) {
         findViewById<TextView>(R.id.toolbar_title)?.text = title
     }
-
 
     private fun setupMenuButton() {
         val menuButton = findViewById<ImageButton>(R.id.menu_button)
@@ -127,8 +127,17 @@ abstract class BaseActivity : AppCompatActivity() {
         }
     }
 
+    // Add the new method to handle trophy icon click
+    private fun setupTrophyIcon() {
+        val trophyIcon = findViewById<ImageView>(R.id.trophy_icon)
 
-
+        trophyIcon.setOnClickListener {
+            // Check if already on ChallengesActivity to avoid recreation
+            if (this !is ChallengesActivity) {
+                // Navigate to ChallengesActivity
+                val intent = Intent(this, ChallengesActivity::class.java)
+                startActivity(intent)
+            }
+        }
+    }
 }
-
-

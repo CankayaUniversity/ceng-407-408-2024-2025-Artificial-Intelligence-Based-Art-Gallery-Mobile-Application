@@ -5,6 +5,7 @@
         <item name="colorPrimary">@color/blue</item>
         <item name="colorPrimaryDark">@color/navy_blue</item>
         <item name="colorAccent">@color/blue</item>
+        <item name="android:screenOrientation">portrait</item>
     </style>
     <style name="text">
         <item name="android:layout_width">wrap_content</item>
@@ -73,4 +74,5 @@
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowCloseOnTouchOutside">true</item>
     </style>
+
 </resources>

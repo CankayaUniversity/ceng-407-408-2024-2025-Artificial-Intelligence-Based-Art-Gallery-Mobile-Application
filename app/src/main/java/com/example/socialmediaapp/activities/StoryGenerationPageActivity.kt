@@ -32,6 +32,9 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.util.Locale
 import java.util.UUID
+import android.content.ContentValues
+import android.media.MediaScannerConnection
+import android.provider.MediaStore
 
 class StoryGenerationPageActivity: BaseActivity() {
     override fun getContentLayoutId(): Int {
@@ -202,18 +205,58 @@ class StoryGenerationPageActivity: BaseActivity() {
                 if (drawable is BitmapDrawable) {
                     val bitmap = drawable.bitmap
                     val filename = "ArtMinds_${System.currentTimeMillis()}.jpg"
-                    val file = File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), filename)
 
-                    FileOutputStream(file).use { out ->
-                        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
+                    // Option 1: For Android 10 (Q) and above - use MediaStore
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                        val contentValues = ContentValues().apply {
+                            put(MediaStore.Images.Media.DISPLAY_NAME, filename)
+                            put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+                            put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/ArtMinds")
+                        }
+
+                        val uri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+                        uri?.let {
+                            contentResolver.openOutputStream(it)?.use { stream ->
+                                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
+                            }
+
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(
+                                    this@StoryGenerationPageActivity,
+                                    "Image saved to your gallery",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        }
                     }
+                    // Option 2: For devices below Android 10
+                    else {
+                        val storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+                        val artMindsDir = File(storageDir, "ArtMinds")
+                        if (!artMindsDir.exists()) {
+                            artMindsDir.mkdirs()
+                        }
 
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(
+                        val file = File(artMindsDir, filename)
+                        FileOutputStream(file).use { out ->
+                            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
+                        }
+
+                        // Broadcast to refresh gallery
+                        MediaScannerConnection.scanFile(
                             this@StoryGenerationPageActivity,
-                            "Image saved to: ${file.absolutePath}",
-                            Toast.LENGTH_LONG
-                        ).show()
+                            arrayOf(file.toString()),
+                            arrayOf("image/jpeg"),
+                            null
+                        )
+
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(
+                                this@StoryGenerationPageActivity,
+                                "Image saved to: Pictures/ArtMinds",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
                     }
                 } else {
                     withContext(Dispatchers.Main) {
@@ -231,6 +274,9 @@ class StoryGenerationPageActivity: BaseActivity() {
                         "Failed to save image: ${e.message}",
                         Toast.LENGTH_SHORT
                     ).show()
+
+                    // Log the error
+                    Log.e("DownloadImage", "Error saving image", e)
                 }
             }
         }

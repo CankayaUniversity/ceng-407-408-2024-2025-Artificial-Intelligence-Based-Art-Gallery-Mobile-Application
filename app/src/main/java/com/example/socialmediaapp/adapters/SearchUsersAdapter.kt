@@ -49,10 +49,11 @@ class SearchUsersAdapter(
         checkFollowingStatus(user.userid.toString(), holder.followButton)
 
         // Navigate to user's profile
-        holder.useritem.setOnClickListener { view ->
+        holder.useritem.setOnClickListener {
+            // view ->
             // Use Navigation Components to navigate
-            val action = SearchFragmentDirections.actionSearchFragmentToOtherUsersFragment(user.userid ?: "")
-            view.findNavController().navigate(action)
+            /// val action = SearchFragmentDirections.actionSearchFragmentToOtherUsersFragment(user.userid ?: "")
+            // view.findNavController().navigate(action)
         }
 
         // Follow/Unfollow functionality
