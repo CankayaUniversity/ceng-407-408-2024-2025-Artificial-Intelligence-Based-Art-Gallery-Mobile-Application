@@ -94,7 +94,7 @@ class HomeFragment : Fragment(), onDoubleTapClickListener, onUserClickListener {
         spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
                 val selectedOption = parent.getItemAtPosition(position).toString()
-                Toast.makeText(requireContext(), "Selected: $selectedOption", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Filtered by $selectedOption", Toast.LENGTH_SHORT).show()
 
                 when (selectedOption) {
                     "Descending Date" -> vm.sortFeedDescendingDate()

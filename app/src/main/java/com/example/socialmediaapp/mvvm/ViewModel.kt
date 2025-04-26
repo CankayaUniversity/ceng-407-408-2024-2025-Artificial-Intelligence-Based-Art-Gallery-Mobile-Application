@@ -134,7 +134,43 @@ class ViewModel: ViewModel() {
         return users
     }
 
+    private val _feeds = MutableLiveData<List<Feed>>()
+    fun loadMyFeed(): LiveData<List<Feed>> {
+        val firestore = FirebaseFirestore.getInstance()
 
+        viewModelScope.launch(Dispatchers.IO) {
+            getThePeopleIFollow { followedUserIds ->
+                val filteredUserIds = followedUserIds.filter { it != Utils.getUiLoggedIn() }
+
+                if (filteredUserIds.isEmpty()) {
+                    _feeds.postValue(emptyList())
+                    return@getThePeopleIFollow
+                }
+
+                firestore.collection("Posts")
+                    .whereIn("userid", filteredUserIds)
+                    .addSnapshotListener { value, error ->
+                        if (error != null) {
+                            _feeds.postValue(emptyList())
+                            return@addSnapshotListener
+                        }
+
+                        val feed = value?.documents?.mapNotNull {
+                            it.toObject(Feed::class.java)
+                        } ?: emptyList()
+
+                        _feeds.postValue(feed.sortedByDescending { it.time })
+                    }
+            }
+        }
+
+        return _feeds
+    }
+
+
+
+
+/*
     fun loadMyFeed(): LiveData<List<Feed>> {
         val firestore = FirebaseFirestore.getInstance()
         val feeds = MutableLiveData<List<Feed>>()
@@ -182,7 +218,7 @@ class ViewModel: ViewModel() {
 
         return feeds
     }
-
+*/
     // get the ids of those who I follow
     fun getThePeopleIFollow(callback: (List<String>) -> Unit)
     {
@@ -340,19 +376,20 @@ class ViewModel: ViewModel() {
 
 
     fun sortFeedDescendingDate() {
-        // Feed'i tarih bazında azalan şekilde sıralayın
+        //_feeds.value = _feeds.value?.sortedByDescending { it.time }
+        loadMyFeed()
     }
 
     fun sortFeedAscendingDate() {
-        // Feed'i tarih bazında artan şekilde sıralayın
+        _feeds.value = _feeds.value?.sortedBy { it.time }
     }
 
     fun sortFeedMostLiked() {
-        // Feed'i en çok beğenilen şekilde sıralayın
+        _feeds.value = _feeds.value?.sortedByDescending { it.likes }
     }
 
     fun sortFeedMostCommented() {
-        // Feed'i en çok yorumlanan şekilde sıralayın
+        _feeds.value = _feeds.value?.sortedByDescending { it.comments }
     }
 
 
