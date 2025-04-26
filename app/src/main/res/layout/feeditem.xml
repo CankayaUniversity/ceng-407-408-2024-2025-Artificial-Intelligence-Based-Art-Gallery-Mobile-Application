@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView
+    android:id="@+id/cardview"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -20,8 +21,12 @@
             android:layout_width="match_parent"
             android:layout_height="300dp"
             android:foreground="@drawable/border_background"
-            android:scaleType="centerCrop"
-            android:src="@drawable/image_placeholder" />
+            android:scaleType="fitCenter"
+            android:src="@drawable/image_placeholder"
+            android:adjustViewBounds="true"
+
+            />
+
 
         <!-- İkinci Satır: Kullanıcı Bilgileri -->
         <LinearLayout
@@ -74,7 +79,7 @@
                 android:textColor="@color/black"
                 android:textSize="16sp" />
 
-            <!-- Row 3: Like Count ve Feed Time (30dp) -->
+            <!-- Row 3: Like Count, Feed Time and Icons -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="30dp"
@@ -90,29 +95,18 @@
                     android:textColor="@color/black"
                     android:textStyle="bold" />
 
-                <EditText
-                    android:id="@+id/commentInput"
+                <View
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:hint="Write a comment..."
-                    android:padding="8dp"
-                    android:textColor="@color/black"
-                    android:textSize="14sp" />
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
 
-                <Button
-                    android:id="@+id/commentButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Comment"
-                    android:textColor="@color/white"
-                    android:textSize="9dp" />
-
-
+                <ImageView
+                    android:id="@+id/commentIcon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_comment"
+                    android:contentDescription="Comment" />
             </LinearLayout>
-
         </LinearLayout>
-
     </LinearLayout>
-
 </androidx.cardview.widget.CardView>
