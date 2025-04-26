@@ -101,6 +101,7 @@ class HomeFragment : Fragment(), onDoubleTapClickListener, onUserClickListener {
                     "Ascending Date" -> vm.sortFeedAscendingDate()
                     "Most Liked" -> vm.sortFeedMostLiked()
                     "Most Commented" -> vm.sortFeedMostCommented()
+
                 }
             }
 
