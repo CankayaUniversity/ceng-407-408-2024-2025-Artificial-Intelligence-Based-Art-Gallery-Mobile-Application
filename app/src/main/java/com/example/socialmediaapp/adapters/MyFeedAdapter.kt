@@ -1,8 +1,10 @@
+
 @file:Suppress("DEPRECATION")
 
 package com.example.socialmediaapp.adapters
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.text.format.DateUtils
 import android.view.GestureDetector
 import android.view.View
@@ -21,18 +23,13 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.core.view.GestureDetectorCompat
+import com.google.android.material.bottomsheet.BottomSheetDialog
 
 class MyFeedAdapter: RecyclerView.Adapter<FeedHolder>() {
     var feedlist = listOf<Feed>()
-    private  var listener : onDoubleTapClickListener ?=  null
+    private var listener: onDoubleTapClickListener? = null
     private var userClickListener: onUserClickListener? = null
     private var commentClickListener: onCommentClickListener? = null
-
-    fun setCommentClickListener(listener: onCommentClickListener) {
-        this.commentClickListener = listener
-    }
-
-
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreateViewHolder(
@@ -41,31 +38,19 @@ class MyFeedAdapter: RecyclerView.Adapter<FeedHolder>() {
     ): FeedHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.feeditem, parent, false)
         return FeedHolder(view)
-
     }
 
     @SuppressLint("SetTextI18n", "ClickableViewAccessibility")
     override fun onBindViewHolder(holder: FeedHolder, position: Int) {
         val feed = feedlist[position]
 
-        // Set username in Row-1
         holder.userNamePoster.text = feed.username
-
-        // Set Caption in Row-2
         holder.userNameCaption.text = feed.caption
 
-        // Set time in Row-3
         val timeMillis = if (feed.time != null) {
-            // Check if timestamp needs conversion or is already in milliseconds
-            if (feed.time < 1000000000000L) {
-                // If timestamp is in seconds, convert to milliseconds
-                feed.time * 1000
-            } else {
-                // If timestamp is already in milliseconds, use as is
-                feed.time
-            }
+            if (feed.time < 1000000000000L) feed.time * 1000 else feed.time
         } else {
-            System.currentTimeMillis() // Fallback
+            System.currentTimeMillis()
         }
 
         val date = Date(timeMillis)
@@ -77,11 +62,9 @@ class MyFeedAdapter: RecyclerView.Adapter<FeedHolder>() {
         )
         holder.time.text = instagramTimeFormat
 
-        // Set Image and Profile Picture
         Glide.with(holder.itemView.context).load(feed.image).into(holder.feedImage)
         Glide.with(holder.itemView.context).load(feed.imageposter).into(holder.userPosterImage)
 
-        // Set Likes
         holder.likecount.text = "${feed.likes} Likes"
 
         val doubleClickGestureDetector = GestureDetector(holder.itemView.context, object : GestureDetector.SimpleOnGestureListener() {
@@ -104,26 +87,43 @@ class MyFeedAdapter: RecyclerView.Adapter<FeedHolder>() {
             userClickListener?.onUserClick(feed.userid!!)
         }
 
-        holder.commentButton.setOnClickListener {
-            val comment = holder.commentInput.text.toString()
+        holder.commentIcon.setOnClickListener {
+            showCommentBottomSheet(holder.itemView.context, feed)
+        }
+
+
+
+
+    }
+    private fun showCommentBottomSheet(context: Context, feed: Feed) {
+        val bottomSheetDialog = BottomSheetDialog(context)
+        val view = LayoutInflater.from(context).inflate(R.layout.layout_comment_bottom_sheet, null)
+        bottomSheetDialog.setContentView(view)
+
+        val commentInput = view.findViewById<EditText>(R.id.bottomSheetCommentInput)
+        val commentButton = view.findViewById<Button>(R.id.bottomSheetCommentButton)
+
+        commentButton.setOnClickListener {
+            val comment = commentInput.text.toString()
             if (comment.isNotEmpty()) {
                 commentClickListener?.addComment(feed.postid!!, comment)
-                holder.commentInput.text.clear()
+                bottomSheetDialog.dismiss()
             } else {
-                Toast.makeText(holder.itemView.context, "Yorum boş olamaz!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Comment cannot be empty!", Toast.LENGTH_SHORT).show()
             }
         }
-    }
 
+        bottomSheetDialog.show()
+    }
     override fun getItemCount(): Int {
         return feedlist.size
     }
 
-    fun setFeedList(list: List<Feed>){
+    fun setFeedList(list: List<Feed>) {
         this.feedlist = list
     }
 
-    fun setListener(listener: onDoubleTapClickListener){
+    fun setListener(listener: onDoubleTapClickListener) {
         this.listener = listener
     }
 
@@ -131,21 +131,27 @@ class MyFeedAdapter: RecyclerView.Adapter<FeedHolder>() {
         this.userClickListener = listener
     }
 
-
+    fun setCommentClickListener(listener: onCommentClickListener) {
+        this.commentClickListener = listener
+    }
 
 }
 
-
-
+// FeedHolder güncellemesi:
 class FeedHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     val userNamePoster: TextView = itemView.findViewById(R.id.feedtopusername)
-    val userNameCaption: TextView = itemView.findViewById(R.id.feedusernamecaption) // Caption text
+    val userNameCaption: TextView = itemView.findViewById(R.id.feedusernamecaption)
     val userPosterImage: CircleImageView = itemView.findViewById(R.id.userimage)
     val feedImage: ImageView = itemView.findViewById(R.id.feedImage)
     val time: TextView = itemView.findViewById(R.id.feedtime)
     val likecount: TextView = itemView.findViewById(R.id.likecount)
-    val commentButton: Button = itemView.findViewById(R.id.commentButton)
-    val commentInput: EditText = itemView.findViewById(R.id.commentInput)
+    val commentIcon: ImageView = itemView.findViewById(R.id.commentIcon)
+    val cardView: androidx.cardview.widget.CardView = itemView.findViewById(R.id.cardview)
+}
+
+// Ekstra: dp to px dönüşümü
+fun Int.dpToPx(context: android.content.Context): Int {
+    return (this * context.resources.displayMetrics.density).toInt()
 }
 
 
