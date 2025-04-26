@@ -329,13 +329,22 @@ class ViewModel: ViewModel() {
             "time" to com.google.firebase.Timestamp.now()
         )
 
-        // Yorumları "comments" alt koleksiyonuna ekle
-        firestore.collection("Posts")
-            .document(postId)
-            .collection("comments")
+        val postRef = firestore.collection("Posts").document(postId)
+
+        // Yorum verisini alt koleksiyona ekle
+        postRef.collection("comments")
             .add(commentData)
             .addOnSuccessListener {
                 Log.d("Firestore", "Yorum başarıyla eklendi.")
+
+                // Yorum sayısını artır
+                postRef.update("comments", com.google.firebase.firestore.FieldValue.increment(1))
+                    .addOnSuccessListener {
+                        Log.d("Firestore", "Yorum sayısı güncellendi.")
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e("Firestore", "Yorum sayısı güncellenemedi: ${e.message}")
+                    }
             }
             .addOnFailureListener { e ->
                 Log.e("Firestore", "Yorum eklenirken hata oluştu: ${e.message}")
