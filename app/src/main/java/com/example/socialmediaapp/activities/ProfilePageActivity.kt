@@ -555,27 +555,45 @@ class ProfilePageActivity : BaseActivity() {
 
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                // Update Firestore user document
-                val updates = hashMapOf<String, Any>(
-                    "username" to newUsername
-                )
 
-                firestore.collection("Users")
-                    .document(currentUser.uid)
-                    .update(updates)
+                val querySnapshot = firestore.collection("Users")
+                    .whereEqualTo("username", newUsername)
+                    .get()
                     .await()
 
-                withContext(Dispatchers.Main) {
-                    progressDialog.dismiss()
-                    // Update UI
-                    usernameTextView.text = newUsername
+                if (!querySnapshot.isEmpty) {
 
-                    Toast.makeText(
-                        this@ProfilePageActivity,
-                        "Username updated successfully",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    withContext(Dispatchers.Main) {
+                        progressDialog.dismiss()
+                        Toast.makeText(
+                            this@ProfilePageActivity,
+                            "This username is already taken. Please choose another one.",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }else {
+                    val updates = hashMapOf<String, Any>(
+                        "username" to newUsername
+                    )
+
+                    firestore.collection("Users")
+                        .document(currentUser.uid)
+                        .update(updates)
+                        .await()
+
+                    withContext(Dispatchers.Main) {
+                        progressDialog.dismiss()
+                        // Update UI
+                        usernameTextView.text = newUsername
+
+                        Toast.makeText(
+                            this@ProfilePageActivity,
+                            "Username updated successfully",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
+
             } catch (e: Exception) {
                 Log.e("ProfilePage", "Error updating username", e)
                 withContext(Dispatchers.Main) {
