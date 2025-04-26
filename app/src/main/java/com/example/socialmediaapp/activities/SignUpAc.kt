@@ -112,11 +112,25 @@ class SignUpAc : AppCompatActivity() {
                 val password = binding.signUpetpassword.text.toString()
                 name = binding.signUpName.text.toString()
 
-
-
+                firestore.collection("Users")
+                    .whereEqualTo("username", username)
+                    .get()
+                    .addOnSuccessListener { documents ->
+                        if (!documents.isEmpty) {
+                            pd.dismiss()
+                            Toast.makeText(this, "This username is already taken. Please choose another one.", Toast.LENGTH_SHORT).show()
+                        } else {
+                            pd.dismiss()
+                            signInUp(name, email, password, username, surname)
+                        }
+                    }
+                    .addOnFailureListener { exception ->
+                        pd.dismiss()
+                        Toast.makeText(this, "Error checking username: ${exception.message}", Toast.LENGTH_SHORT).show()
+                    }
 
                 // Use the original name as the username to maintain compatibility
-                signInUp(name, email, password, username, surname)
+                //signInUp(name, email, password, username, surname)
             } else {
                 Toast.makeText(this, "Fill the required fields", Toast.LENGTH_SHORT).show()
             }
