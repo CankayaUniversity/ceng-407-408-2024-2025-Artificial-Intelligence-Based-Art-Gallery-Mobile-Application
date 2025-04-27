@@ -10,6 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import androidx.lifecycle.viewModelScope
 import com.example.socialmediaapp.modal.Feed
 import com.example.socialmediaapp.modal.Users
+import com.google.firebase.firestore.auth.User
 import kotlinx.coroutines.launch
 
 class ViewModel: ViewModel() {
@@ -21,37 +22,57 @@ class ViewModel: ViewModel() {
 
 
     init {
+
         getCurrentUser()
+
     }
 
     fun getCurrentUser() = viewModelScope.launch(Dispatchers.IO) {
+
         val firestore = FirebaseFirestore.getInstance()
 
         firestore.collection("Users").document(Utils.getUiLoggedIn()).addSnapshotListener { value, error ->
+
+
             if (error!=null){
+
                 return@addSnapshotListener
+
             }
 
             if (value!=null && value.exists()){
+
                 val users = value.toObject(Users::class.java)
                 name.value  = users!!.username!!
                 image.value = users.image!!
                 followers.value = users.followers!!.toString()
                 following.value = users.following!!.toString()
+
             }
+
         }
+
+
     }
+
+
 
     fun getMyPosts(): LiveData<List<Posts>> {
         val posts = MutableLiveData<List<Posts>>()
         val firestore = FirebaseFirestore.getInstance()
 
+        // on the background thread
+        // ! Using coroutines here might be unnecessary,
+        // Since Firestore is already launching another thread to perform the operation
+        // So in terms of performance, using less threads as possible is better for
+        // reducing the thread overheads
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 firestore.collection("Posts")
                     .whereEqualTo("userid", Utils.getUiLoggedIn())
                     .addSnapshotListener { snapshot, exception ->
                         if (exception != null) {
+                            // Handle the exception here
                             return@addSnapshotListener
                         }
 
@@ -61,37 +82,49 @@ class ViewModel: ViewModel() {
                             ?.sortedByDescending { it.time
                             }
 
-                        posts.postValue(postList!!)
+                        posts.postValue(postList!!) // Switch back to the main thread
                     }
             } catch (e: Exception) {
                 // Handle any exceptions that occur during the Firestore operation
             }
         }
 
+
+
         return posts
     }
 
+
     fun getAllUsers(): LiveData<List<Users>> {
+
         val users = MutableLiveData<List<Users>>()
+
         val firestore = FirebaseFirestore.getInstance()
 
+        // on the background thread
+        // ! Using coroutines here might be unnecessary,
+        // Since Firestore is already launching another thread to perform the operation
+        // So in terms of performance, using less threads as possible is better for
+        // reducing the thread overheads
         viewModelScope.launch(Dispatchers.IO)
         {
             try {
                 firestore.collection("Users").addSnapshotListener { snapshot, exception ->
                     if (exception != null) {
+                        // Handle the exception here
                         return@addSnapshotListener
                     }
 
                     val usersList = mutableListOf<Users>()
                     snapshot?.documents?.forEach { document ->
                         val user = document.toObject(Users::class.java)
+                        // gets the userlist that is not the current user
                         if (user != null && user.userid != Utils.getUiLoggedIn()) {
                             usersList.add(user)
                         }
                     }
 
-                    users.postValue(usersList)
+                    users.postValue(usersList) // Switch back to the main thread
                 }
             } catch (e: Exception) {
                 // Handle any exceptions that occur during the Firestore operation
@@ -101,6 +134,43 @@ class ViewModel: ViewModel() {
         return users
     }
 
+    private val _feeds = MutableLiveData<List<Feed>>()
+    fun loadMyFeed(): LiveData<List<Feed>> {
+        val firestore = FirebaseFirestore.getInstance()
+
+        viewModelScope.launch(Dispatchers.IO) {
+            getThePeopleIFollow { followedUserIds ->
+                val filteredUserIds = followedUserIds.filter { it != Utils.getUiLoggedIn() }
+
+                if (filteredUserIds.isEmpty()) {
+                    _feeds.postValue(emptyList())
+                    return@getThePeopleIFollow
+                }
+
+                firestore.collection("Posts")
+                    .whereIn("userid", filteredUserIds)
+                    .addSnapshotListener { value, error ->
+                        if (error != null) {
+                            _feeds.postValue(emptyList())
+                            return@addSnapshotListener
+                        }
+
+                        val feed = value?.documents?.mapNotNull {
+                            it.toObject(Feed::class.java)
+                        } ?: emptyList()
+
+                        _feeds.postValue(feed.sortedByDescending { it.time })
+                    }
+            }
+        }
+
+        return _feeds
+    }
+
+
+
+
+/*
     fun loadMyFeed(): LiveData<List<Feed>> {
         val firestore = FirebaseFirestore.getInstance()
         val feeds = MutableLiveData<List<Feed>>()
@@ -108,8 +178,10 @@ class ViewModel: ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             getThePeopleIFollow { followedUserIds ->
                 try {
+                    // Ensure current user's ID is NOT included when fetching posts
                     val filteredUserIds = followedUserIds.filter { it != Utils.getUiLoggedIn() }
 
+                    // If no followed users, return empty list
                     if (filteredUserIds.isEmpty()) {
                         feeds.postValue(emptyList())
                         return@getThePeopleIFollow
@@ -132,6 +204,7 @@ class ViewModel: ViewModel() {
                                 }
                             }
 
+                            // Displaying the latest posts first
                             val sortedFeed = feed.sortedByDescending { it.time }
                             feeds.postValue(sortedFeed)
                         }
@@ -145,7 +218,8 @@ class ViewModel: ViewModel() {
 
         return feeds
     }
-
+*/
+    // get the ids of those who I follow
     fun getThePeopleIFollow(callback: (List<String>) -> Unit)
     {
         val firestore = FirebaseFirestore.getInstance()
@@ -170,6 +244,7 @@ class ViewModel: ViewModel() {
             }
     }
 
+
     fun getOtherUser(userId: String): LiveData<Users> {
         val user = MutableLiveData<Users>()
         val firestore = FirebaseFirestore.getInstance()
@@ -178,6 +253,7 @@ class ViewModel: ViewModel() {
             .addOnSuccessListener { documentSnapshot ->
                 val userInfo = documentSnapshot.toObject(Users::class.java) ?: Users(username = "Unknown", image = "")
                 user.postValue(userInfo)
+
             }
             .addOnFailureListener { exception ->
                 Log.e("Firebase", "Kullanıcı bilgisi alınırken hata oluştu: ${exception.message}")
@@ -236,30 +312,6 @@ class ViewModel: ViewModel() {
             }
 
         return postCount
-    }
-
-    // Added for follow functionality
-    fun checkIfFollowing(userId: String): LiveData<Boolean> {
-        val isFollowing = MutableLiveData<Boolean>()
-        val firestore = FirebaseFirestore.getInstance()
-        val currentUserId = Utils.getUiLoggedIn()
-
-        firestore.collection("Follow").document(currentUserId)
-            .get()
-            .addOnSuccessListener { documentSnapshot ->
-                if (documentSnapshot.exists()) {
-                    val followingList = documentSnapshot.get("following_id") as? List<String> ?: emptyList()
-                    isFollowing.postValue(userId in followingList)
-                } else {
-                    isFollowing.postValue(false)
-                }
-            }
-            .addOnFailureListener { exception ->
-                Log.e("Firebase", "Takip durumu kontrol edilirken hata oluştu: ${exception.message}")
-                isFollowing.postValue(false)
-            }
-
-        return isFollowing
     }
 
     // Added for follow functionality
@@ -417,62 +469,27 @@ class ViewModel: ViewModel() {
         return success
     }
 
-    fun addComment(postId: String, commentText: String) {
-        val firestore = FirebaseFirestore.getInstance()
-
-        // Giriş yapan kullanıcının ID'si ve adı
-        val userId = Utils.getUiLoggedIn()
-        val username = name.value ?: "Unknown"
-
-        // Yorum verisi
-        val commentData = mapOf(
-            "userId" to userId,
-            "username" to username,
-            "comment" to commentText,
-            "time" to com.google.firebase.Timestamp.now()
-        )
-
-        // Yorumları "comments" alt koleksiyonuna ekle
-        firestore.collection("Posts")
-            .document(postId)
-            .collection("comments")
-            .add(commentData)
-            .addOnSuccessListener {
-                Log.d("Firestore", "Yorum başarıyla eklendi.")
-            }
-            .addOnFailureListener { e ->
-                Log.e("Firestore", "Yorum eklenirken hata oluştu: ${e.message}")
-            }
-    }
-
-    fun getAllPostsExceptCurrentUser(): LiveData<List<Posts>> {
-        val posts = MutableLiveData<List<Posts>>()
+    fun checkIfFollowing(userId: String): LiveData<Boolean> {
+        val isFollowing = MutableLiveData<Boolean>()
         val firestore = FirebaseFirestore.getInstance()
         val currentUserId = Utils.getUiLoggedIn()
 
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                firestore.collection("Posts")
-                    .whereNotEqualTo("userid", currentUserId)
-                    .addSnapshotListener { snapshot, exception ->
-                        if (exception != null) {
-                            Log.e("Firebase", "Error fetching posts: ${exception.message}")
-                            return@addSnapshotListener
-                        }
-
-                        val postList = snapshot?.documents?.mapNotNull {
-                            it.toObject(Posts::class.java)
-                        }?.sortedByDescending { it.time }
-
-                        posts.postValue(postList ?: emptyList())
-                    }
-            } catch (e: Exception) {
-                Log.e("Firebase", "Exception in getAllPostsExceptCurrentUser: ${e.message}")
-                // Handle any exceptions that occur during the Firestore operation
+        firestore.collection("Follow").document(currentUserId)
+            .get()
+            .addOnSuccessListener { documentSnapshot ->
+                if (documentSnapshot.exists()) {
+                    val followingList = documentSnapshot.get("following_id") as? List<String> ?: emptyList()
+                    isFollowing.postValue(userId in followingList)
+                } else {
+                    isFollowing.postValue(false)
+                }
             }
-        }
+            .addOnFailureListener { exception ->
+                Log.e("Firebase", "Takip durumu kontrol edilirken hata oluştu: ${exception.message}")
+                isFollowing.postValue(false)
+            }
 
-        return posts
+        return isFollowing
     }
 
     // Added to support direct profile visit functionality
@@ -574,19 +591,120 @@ class ViewModel: ViewModel() {
         return result
     }
 
+    fun addComment(postId: String, commentText: String) {
+        val firestore = FirebaseFirestore.getInstance()
+
+        // Giriş yapan kullanıcının ID'si ve adı
+        val userId = Utils.getUiLoggedIn()
+        val username = name.value ?: "Unknown"
+
+        // Yorum verisi
+        val commentData = mapOf(
+            "userId" to userId,
+            "username" to username,
+            "comment" to commentText,
+            "time" to com.google.firebase.Timestamp.now()
+        )
+
+        val postRef = firestore.collection("Posts").document(postId)
+
+        // Yorum verisini alt koleksiyona ekle
+        postRef.collection("comments")
+            .add(commentData)
+            .addOnSuccessListener {
+                Log.d("Firestore", "Yorum başarıyla eklendi.")
+
+                // Yorum sayısını artır
+                postRef.update("comments", com.google.firebase.firestore.FieldValue.increment(1))
+                    .addOnSuccessListener {
+                        Log.d("Firestore", "Yorum sayısı güncellendi.")
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e("Firestore", "Yorum sayısı güncellenemedi: ${e.message}")
+                    }
+            }
+            .addOnFailureListener { e ->
+                Log.e("Firestore", "Yorum eklenirken hata oluştu: ${e.message}")
+            }
+    }
+
+    fun getAllPostsExceptCurrentUser(): LiveData<List<Posts>> {
+        val posts = MutableLiveData<List<Posts>>()
+        val firestore = FirebaseFirestore.getInstance()
+        val currentUserId = Utils.getUiLoggedIn()
+
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                firestore.collection("Posts")
+                    .whereNotEqualTo("userid", currentUserId)
+                    .addSnapshotListener { snapshot, exception ->
+                        if (exception != null) {
+                            // Handle the exception here
+                            Log.e("Firebase", "Error fetching posts: ${exception.message}")
+                            return@addSnapshotListener
+                        }
+
+                        val postList = snapshot?.documents?.mapNotNull {
+                            it.toObject(Posts::class.java)
+                        }?.sortedByDescending { it.time }
+
+                        posts.postValue(postList ?: emptyList())
+                    }
+            } catch (e: Exception) {
+                Log.e("Firebase", "Exception in getAllPostsExceptCurrentUser: ${e.message}")
+                // Handle any exceptions that occur during the Firestore operation
+            }
+        }
+
+        return posts
+    }
+
+
+
     fun sortFeedDescendingDate() {
-        // Feed'i tarih bazında azalan şekilde sıralayın
+        //_feeds.value = _feeds.value?.sortedByDescending { it.time }
+        loadMyFeed()
     }
 
     fun sortFeedAscendingDate() {
-        // Feed'i tarih bazında artan şekilde sıralayın
+        _feeds.value = _feeds.value?.sortedBy { it.time }
     }
 
     fun sortFeedMostLiked() {
-        // Feed'i en çok beğenilen şekilde sıralayın
+        _feeds.value = _feeds.value?.sortedByDescending { it.likes }
     }
 
     fun sortFeedMostCommented() {
-        // Feed'i en çok yorumlanan şekilde sıralayın
+        _feeds.value = _feeds.value?.sortedByDescending { it.comments }
     }
+
+
+
+    fun getPostComments(postId: String): LiveData<List<Map<String, Any>>> {
+        val comments = MutableLiveData<List<Map<String, Any>>>()
+        val firestore = FirebaseFirestore.getInstance()
+
+        firestore.collection("Posts")
+            .document(postId)
+            .collection("comments")
+            .orderBy("time", com.google.firebase.firestore.Query.Direction.DESCENDING)
+            .addSnapshotListener { snapshot, exception ->
+                if (exception != null) {
+                    Log.e("Firestore", "Error getting comments: ${exception.message}")
+                    comments.postValue(emptyList())
+                    return@addSnapshotListener
+                }
+
+                val commentsList = snapshot?.documents?.mapNotNull { doc ->
+                    doc.data
+                } ?: emptyList()
+
+                comments.postValue(commentsList)
+            }
+
+        return comments
+    }
+
+
+
 }
