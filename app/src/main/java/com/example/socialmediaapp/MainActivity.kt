@@ -32,7 +32,7 @@ class MainActivity : BaseActivity() {
                     putString("userId", userId)
                 }
             }
-            loadFragment(fragment, "OtherUser")
+            loadFragment(fragment, "Profile")
         } else if (savedInstanceState == null || intent.getBooleanExtra("fromSignIn", false)) {
             loadFragment(HomeFragment(), "Home")
         }

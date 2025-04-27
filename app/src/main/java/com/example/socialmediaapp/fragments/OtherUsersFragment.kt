@@ -4,6 +4,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.Observer
@@ -20,6 +22,7 @@ class OtherUsersFragment : Fragment() {
     private lateinit var binding: FragmentOtherUsersBinding
     private lateinit var viewModel: ViewModel
     private var userId: String? = null
+    private var isFollowing = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -69,12 +72,66 @@ class OtherUsersFragment : Fragment() {
         }
 
         // Alt navbar'a profil resmini ekle
-        viewModel.image.observe(viewLifecycleOwner, Observer { imageUrl ->
-            Glide.with(requireContext()).load(imageUrl).into(binding.imageViewBottom)
-        })
+       // viewModel.image.observe(viewLifecycleOwner, Observer { imageUrl ->
+       //     Glide.with(requireContext()).load(imageUrl).into(binding.imageViewBottom)
+       // })
 
         // Alt navbar'ın tıklanabilirlik işlevleri
-        setupBottomNavBar()
+       // setupBottomNavBar()
+
+        // Set up follow button click listener
+        binding.followButton.setOnClickListener {
+            userId?.let { id ->
+                if (isFollowing) {
+                    // Unfollow the user
+                    viewModel.unfollowUser(id).observe(viewLifecycleOwner) { success ->
+                        if (success) {
+                            updateFollowButton(false)
+                            Toast.makeText(context, "Unfollowed", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(context, "Failed to unfollow", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                } else {
+                    // Follow the user
+                    viewModel.followUser(id).observe(viewLifecycleOwner) { success ->
+                        if (success) {
+                            updateFollowButton(true)
+                            Toast.makeText(context, "Followed", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(context, "Failed to follow", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            }
+        }
+
+
+        userId?.let { id ->
+            viewModel.checkIfFollowing(id).observe(viewLifecycleOwner) { following ->
+                isFollowing = following
+                updateFollowButton(following)
+            }
+
+            // Load user data (keep your existing code)
+            viewModel.getOtherUser(id).observe(viewLifecycleOwner, Observer { user ->
+                binding.usernameText.text = user.username
+                Glide.with(requireContext()).load(user.image).into(binding.profileImage)
+            })
+        }
+
+    }
+
+    private fun updateFollowButton(following: Boolean) {
+        isFollowing = following
+        binding.followButton.apply {
+            text = if (following) "Following" else "Follow"
+            backgroundTintList = if (following) {
+                ContextCompat.getColorStateList(requireContext(), R.color.button_blue)
+            } else {
+                ContextCompat.getColorStateList(requireContext(), R.color.button_blue)
+            }
+        }
     }
 
     // Alt navbar için tıklanabilirlik
