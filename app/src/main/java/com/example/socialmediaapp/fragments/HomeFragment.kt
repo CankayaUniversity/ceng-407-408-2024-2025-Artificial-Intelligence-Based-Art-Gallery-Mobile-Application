@@ -1,6 +1,8 @@
 package com.example.socialmediaapp.fragments
 
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,6 +14,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import com.example.socialmediaapp.MainActivity
 import com.example.socialmediaapp.R
 import com.example.socialmediaapp.Utils
 import com.example.socialmediaapp.adapters.MyFeedAdapter
@@ -138,8 +141,29 @@ class HomeFragment : Fragment(), onDoubleTapClickListener, onUserClickListener {
     }
 
     override fun onUserClick(userId: String) {
-        // Yönlendirme burada yapılabilir.
-        // val action = HomeFragmentDirections.actionHomeFragmentToOtherUsersFragment(userId)
-        // view?.findNavController()?.navigate(action)
+        navigateToUserProfile(userId)
+    }
+
+    private fun navigateToUserProfile(userId: String) {
+        try {
+            Log.d("Navigation", "Navigating to user profile with ID: $userId")
+
+            // Create an intent to the activity that hosts OtherUsersFragment
+            val intent = Intent(requireActivity(), MainActivity::class.java).apply {
+                // Pass the ID as an extra
+                putExtra("userId", userId)
+                // Add a flag to indicate we want to show the OtherUsersFragment
+                putExtra("showOtherUser", true)
+            }
+
+            startActivity(intent)
+        } catch (e: Exception) {
+            Log.e("Navigation Error", "Failed to navigate using Intent", e)
+            Toast.makeText(
+                context,
+                "Navigation error: ${e.message}",
+                Toast.LENGTH_LONG
+            ).show()
+        }
     }
 }

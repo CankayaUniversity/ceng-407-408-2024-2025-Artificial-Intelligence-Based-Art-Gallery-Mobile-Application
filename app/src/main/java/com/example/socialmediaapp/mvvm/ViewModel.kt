@@ -314,6 +314,283 @@ class ViewModel: ViewModel() {
         return postCount
     }
 
+    // Added for follow functionality
+    fun followUser(userId: String): LiveData<Boolean> {
+        val success = MutableLiveData<Boolean>()
+        val firestore = FirebaseFirestore.getInstance()
+        val currentUserId = Utils.getUiLoggedIn()
+
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                // 1. Current user's following list update
+                firestore.collection("Follow").document(currentUserId)
+                    .get()
+                    .addOnSuccessListener { currentUserDoc ->
+                        val followingList = if (currentUserDoc.exists()) {
+                            (currentUserDoc.get("following_id") as? List<String>)?.toMutableList() ?: mutableListOf()
+                        } else {
+                            mutableListOf()
+                        }
+
+                        if (userId !in followingList) {
+                            followingList.add(userId)
+
+                            // Update the following list
+                            firestore.collection("Follow").document(currentUserId)
+                                .set(mapOf("following_id" to followingList))
+                                .addOnSuccessListener {
+                                    // 2. Update the target user's followers count
+                                    firestore.collection("Users").document(userId)
+                                        .get()
+                                        .addOnSuccessListener { targetUserDoc ->
+                                            val currentFollowers = targetUserDoc.getLong("followers")?.toInt() ?: 0
+
+                                            // Increment followers count
+                                            firestore.collection("Users").document(userId)
+                                                .update("followers", currentFollowers + 1)
+                                                .addOnSuccessListener {
+                                                    // 3. Update current user's following count
+                                                    firestore.collection("Users").document(currentUserId)
+                                                        .get()
+                                                        .addOnSuccessListener { currentUserInfo ->
+                                                            val currentFollowing = currentUserInfo.getLong("following")?.toInt() ?: 0
+
+                                                            firestore.collection("Users").document(currentUserId)
+                                                                .update("following", currentFollowing + 1)
+                                                                .addOnSuccessListener {
+                                                                    success.postValue(true)
+                                                                }
+                                                                .addOnFailureListener {
+                                                                    success.postValue(false)
+                                                                }
+                                                        }
+                                                }
+                                                .addOnFailureListener {
+                                                    success.postValue(false)
+                                                }
+                                        }
+                                }
+                                .addOnFailureListener {
+                                    success.postValue(false)
+                                }
+                        } else {
+                            // Already following
+                            success.postValue(true)
+                        }
+                    }
+                    .addOnFailureListener {
+                        success.postValue(false)
+                    }
+            } catch (e: Exception) {
+                Log.e("Firebase", "Takip edilirken hata oluştu: ${e.message}")
+                success.postValue(false)
+            }
+        }
+
+        return success
+    }
+
+    // Added for unfollow functionality
+    fun unfollowUser(userId: String): LiveData<Boolean> {
+        val success = MutableLiveData<Boolean>()
+        val firestore = FirebaseFirestore.getInstance()
+        val currentUserId = Utils.getUiLoggedIn()
+
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                // 1. Current user's following list update
+                firestore.collection("Follow").document(currentUserId)
+                    .get()
+                    .addOnSuccessListener { currentUserDoc ->
+                        if (currentUserDoc.exists()) {
+                            val followingList = (currentUserDoc.get("following_id") as? List<String>)?.toMutableList() ?: mutableListOf()
+
+                            if (userId in followingList) {
+                                followingList.remove(userId)
+
+                                // Update the following list
+                                firestore.collection("Follow").document(currentUserId)
+                                    .set(mapOf("following_id" to followingList))
+                                    .addOnSuccessListener {
+                                        // 2. Update the target user's followers count
+                                        firestore.collection("Users").document(userId)
+                                            .get()
+                                            .addOnSuccessListener { targetUserDoc ->
+                                                val currentFollowers = targetUserDoc.getLong("followers")?.toInt() ?: 0
+                                                val newFollowers = if (currentFollowers > 0) currentFollowers - 1 else 0
+
+                                                // Decrement followers count
+                                                firestore.collection("Users").document(userId)
+                                                    .update("followers", newFollowers)
+                                                    .addOnSuccessListener {
+                                                        // 3. Update current user's following count
+                                                        firestore.collection("Users").document(currentUserId)
+                                                            .get()
+                                                            .addOnSuccessListener { currentUserInfo ->
+                                                                val currentFollowing = currentUserInfo.getLong("following")?.toInt() ?: 0
+                                                                val newFollowing = if (currentFollowing > 0) currentFollowing - 1 else 0
+
+                                                                firestore.collection("Users").document(currentUserId)
+                                                                    .update("following", newFollowing)
+                                                                    .addOnSuccessListener {
+                                                                        success.postValue(true)
+                                                                    }
+                                                                    .addOnFailureListener {
+                                                                        success.postValue(false)
+                                                                    }
+                                                            }
+                                                    }
+                                                    .addOnFailureListener {
+                                                        success.postValue(false)
+                                                    }
+                                            }
+                                    }
+                                    .addOnFailureListener {
+                                        success.postValue(false)
+                                    }
+                            } else {
+                                // Already not following
+                                success.postValue(true)
+                            }
+                        } else {
+                            // No following document exists, so not following anyway
+                            success.postValue(true)
+                        }
+                    }
+                    .addOnFailureListener {
+                        success.postValue(false)
+                    }
+            } catch (e: Exception) {
+                Log.e("Firebase", "Takipten çıkarken hata oluştu: ${e.message}")
+                success.postValue(false)
+            }
+        }
+
+        return success
+    }
+
+    fun checkIfFollowing(userId: String): LiveData<Boolean> {
+        val isFollowing = MutableLiveData<Boolean>()
+        val firestore = FirebaseFirestore.getInstance()
+        val currentUserId = Utils.getUiLoggedIn()
+
+        firestore.collection("Follow").document(currentUserId)
+            .get()
+            .addOnSuccessListener { documentSnapshot ->
+                if (documentSnapshot.exists()) {
+                    val followingList = documentSnapshot.get("following_id") as? List<String> ?: emptyList()
+                    isFollowing.postValue(userId in followingList)
+                } else {
+                    isFollowing.postValue(false)
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.e("Firebase", "Takip durumu kontrol edilirken hata oluştu: ${exception.message}")
+                isFollowing.postValue(false)
+            }
+
+        return isFollowing
+    }
+
+    // Added to support direct profile visit functionality
+    fun likePost(postId: String): LiveData<Boolean> {
+        val result = MutableLiveData<Boolean>()
+        val firestore = FirebaseFirestore.getInstance()
+        val currentUserId = Utils.getUiLoggedIn()
+
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                // 1. Get the current post to check likes
+                firestore.collection("Posts").document(postId)
+                    .get()
+                    .addOnSuccessListener { documentSnapshot ->
+                        val currentLikes = documentSnapshot.getLong("likes")?.toInt() ?: 0
+                        val likedBy = documentSnapshot.get("likedBy") as? MutableList<String> ?: mutableListOf()
+
+                        if (currentUserId !in likedBy) {
+                            // Add user to liked list and increment likes
+                            likedBy.add(currentUserId)
+
+                            val updates = mapOf(
+                                "likes" to currentLikes + 1,
+                                "likedBy" to likedBy
+                            )
+
+                            firestore.collection("Posts").document(postId)
+                                .update(updates)
+                                .addOnSuccessListener {
+                                    result.postValue(true)
+                                }
+                                .addOnFailureListener {
+                                    result.postValue(false)
+                                }
+                        } else {
+                            // User already liked this post
+                            result.postValue(true)
+                        }
+                    }
+                    .addOnFailureListener {
+                        result.postValue(false)
+                    }
+            } catch (e: Exception) {
+                Log.e("Firebase", "Post beğenilirken hata oluştu: ${e.message}")
+                result.postValue(false)
+            }
+        }
+
+        return result
+    }
+
+    // Added to support direct profile visit functionality
+    fun unlikePost(postId: String): LiveData<Boolean> {
+        val result = MutableLiveData<Boolean>()
+        val firestore = FirebaseFirestore.getInstance()
+        val currentUserId = Utils.getUiLoggedIn()
+
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                // 1. Get the current post to check likes
+                firestore.collection("Posts").document(postId)
+                    .get()
+                    .addOnSuccessListener { documentSnapshot ->
+                        val currentLikes = documentSnapshot.getLong("likes")?.toInt() ?: 0
+                        val likedBy = documentSnapshot.get("likedBy") as? MutableList<String> ?: mutableListOf()
+
+                        if (currentUserId in likedBy) {
+                            // Remove user from liked list and decrement likes
+                            likedBy.remove(currentUserId)
+                            val newLikes = if (currentLikes > 0) currentLikes - 1 else 0
+
+                            val updates = mapOf(
+                                "likes" to newLikes,
+                                "likedBy" to likedBy
+                            )
+
+                            firestore.collection("Posts").document(postId)
+                                .update(updates)
+                                .addOnSuccessListener {
+                                    result.postValue(true)
+                                }
+                                .addOnFailureListener {
+                                    result.postValue(false)
+                                }
+                        } else {
+                            // User hasn't liked this post
+                            result.postValue(true)
+                        }
+                    }
+                    .addOnFailureListener {
+                        result.postValue(false)
+                    }
+            } catch (e: Exception) {
+                Log.e("Firebase", "Post beğeni kaldırılırken hata oluştu: ${e.message}")
+                result.postValue(false)
+            }
+        }
+
+        return result
+    }
+
     fun addComment(postId: String, commentText: String) {
         val firestore = FirebaseFirestore.getInstance()
 
