@@ -1,3 +1,4 @@
+
 package com.example.socialmediaapp.adapters
 
 import android.content.Context
@@ -8,8 +9,6 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.annotation.NonNull
-import androidx.fragment.app.FragmentActivity
-import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.socialmediaapp.modal.Users
@@ -17,7 +16,6 @@ import de.hdodenhof.circleimageview.CircleImageView
 import android.view.View as AndroidViewView
 import com.example.socialmediaapp.R
 import com.example.socialmediaapp.Utils
-import com.example.socialmediaapp.fragments.SearchFragmentDirections
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FieldValue
@@ -26,7 +24,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 class SearchUsersAdapter(
     private var mContext: Context,
     private var mUser: List<Users>,
-    private var isFragment: Boolean = false
+    private var isFragment: Boolean = false,
+    private val onUserClicked: (String) -> Unit // Callback for user clicks
 ) : RecyclerView.Adapter<SearchUsersAdapter.ViewHolder>() {
 
     private val firebaseUser: FirebaseUser? = FirebaseAuth.getInstance().currentUser
@@ -48,12 +47,20 @@ class SearchUsersAdapter(
         // Check following status
         checkFollowingStatus(user.userid.toString(), holder.followButton)
 
-        // Navigate to user's profile
+        // Set click listener on the entire item view
+        holder.itemView.setOnClickListener {
+            user.userid?.let { userId ->
+                Log.d("SearchUsersAdapter", "User clicked: $userId")
+                onUserClicked(userId)
+            }
+        }
+
+        // Also set click listener on the user item layout specifically
         holder.useritem.setOnClickListener {
-            // view ->
-            // Use Navigation Components to navigate
-            /// val action = SearchFragmentDirections.actionSearchFragmentToOtherUsersFragment(user.userid ?: "")
-            // view.findNavController().navigate(action)
+            user.userid?.let { userId ->
+                Log.d("SearchUsersAdapter", "User item clicked: $userId")
+                onUserClicked(userId)
+            }
         }
 
         // Follow/Unfollow functionality
@@ -66,8 +73,6 @@ class SearchUsersAdapter(
         }
     }
 
-    // Existing followUser, unfollowUser, and checkFollowingStatus methods remain the same...
-
     // ViewHolder class remains unchanged
     class ViewHolder(@NonNull itemView: AndroidViewView) : RecyclerView.ViewHolder(itemView) {
         var followButton: Button = itemView.findViewById(R.id.user_item_follow)
@@ -77,7 +82,7 @@ class SearchUsersAdapter(
         var userProfileImage: CircleImageView = itemView.findViewById(R.id.user_item_image)
     }
 
-    // Existing helper methods for following and checking follow status
+    // Rest of your methods remain the same
     fun followUser(user: Users) {
         val firestore = FirebaseFirestore.getInstance()
         val userDocRef = firestore.collection("Users").document(Utils.getUiLoggedIn())
@@ -180,3 +185,4 @@ class SearchUsersAdapter(
         }
     }
 }
+

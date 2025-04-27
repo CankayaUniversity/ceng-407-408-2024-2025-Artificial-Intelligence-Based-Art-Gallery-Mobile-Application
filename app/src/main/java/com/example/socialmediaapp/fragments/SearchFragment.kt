@@ -2,6 +2,7 @@
 
 package com.example.socialmediaapp.fragments
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.text.Editable
@@ -14,9 +15,12 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.Navigation
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.socialmediaapp.MainActivity
 import com.example.socialmediaapp.R
 import com.example.socialmediaapp.adapters.MyFeedAdapter
 import com.google.firebase.auth.FirebaseAuth
@@ -81,7 +85,20 @@ class SearchFragment : Fragment(), OnPostClickListener {
 
         // Initialize user list and adapter
         mUser = ArrayList()
-        userAdapter = context?.let { SearchUsersAdapter(it, mUser as ArrayList<Users>, true) }
+
+        return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        // Initialize adapter with the fragment as context, and add a click listener
+        userAdapter = context?.let {
+            SearchUsersAdapter(it, mUser as ArrayList<Users>, true) { userId ->
+                // Handle navigation to other user's profile
+                navigateToUserProfile(userId)
+            }
+        }
         recyclerView?.adapter = userAdapter
 
         // Initialize all posts adapter
@@ -89,7 +106,7 @@ class SearchFragment : Fragment(), OnPostClickListener {
         allPostsAdapter?.setOnPostClickListener(this)
         allPostsRecyclerView?.adapter = allPostsAdapter
 
-        //Initialize user posts adapter
+        // Initialize user posts adapter
         userPostsAdapter = PostsAdapter()
         userPostsAdapter?.setOnPostClickListener(this)
         userPostsRecyclerView?.adapter = userPostsAdapter
@@ -132,12 +149,6 @@ class SearchFragment : Fragment(), OnPostClickListener {
         searchResultsContainer?.visibility = View.GONE
         allPostsRecyclerView?.visibility = View.VISIBLE
 
-        return view
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
         vm = ViewModelProvider(this).get(ViewModel::class.java)
 
         // Load all posts from other users
@@ -146,6 +157,31 @@ class SearchFragment : Fragment(), OnPostClickListener {
         })
     }
 
+    // Safe navigation method
+    private fun navigateToUserProfile(userId: String) {
+        try {
+            Log.d("Navigation", "Navigating to user profile with ID: $userId")
+
+            // Create an intent to the activity that hosts OtherUsersFragment
+            val intent = Intent(requireActivity(), MainActivity::class.java).apply {
+                // Pass the ID as an extra
+                putExtra("userId", userId)
+                // Add a flag to indicate we want to show the OtherUsersFragment
+                putExtra("showOtherUser", true)
+            }
+
+            startActivity(intent)
+        } catch (e: Exception) {
+            Log.e("Navigation Error", "Failed to navigate using Intent", e)
+            Toast.makeText(
+                context,
+                "Navigation error: ${e.message}",
+                Toast.LENGTH_LONG
+            ).show()
+        }
+    }
+
+    // Rest of your methods remain the same...
     private fun toggleView() {
         if (searchItem!!.text.toString().isEmpty()) {
             // Only toggle view when search is empty
@@ -271,10 +307,6 @@ class SearchFragment : Fragment(), OnPostClickListener {
     override fun onPostClick(post: Posts) {
         // Handle post click - navigate to post detail or perform other actions
         Toast.makeText(context, "Post clicked: ${post.caption}", Toast.LENGTH_SHORT).show()
-
-        // Example navigation to post detail (you'll need to implement this)
-        // val action = SearchFragmentDirections.actionSearchFragmentToPostDetailFragment(post.postid!!)
-        // view?.findNavController()?.navigate(action)
     }
 }
 
