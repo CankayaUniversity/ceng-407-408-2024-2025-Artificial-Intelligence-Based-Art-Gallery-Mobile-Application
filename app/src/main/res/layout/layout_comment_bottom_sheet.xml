@@ -8,51 +8,59 @@
     android:padding="16dp"
     app:behavior_hideable="true"
     app:behavior_peekHeight="0dp"
-    app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
+    app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
+    tools:ignore="ExtraText">
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Comments"
-        android:textSize="18sp"
+        android:textSize="20sp"
         android:textStyle="bold"
-        android:layout_marginBottom="8dp" />
+        android:layout_marginBottom="12dp" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/commentsRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:maxHeight="300dp"
-        android:layout_marginBottom="16dp" />
+        android:layout_marginBottom="20dp" />
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="#E0E0E0"
-        android:layout_marginBottom="16dp" />
+        android:layout_marginBottom="20dp" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Add Comment"
-        android:textSize="16sp"
+        android:text="Add a Comment"
+        android:textSize="18sp"
         android:textStyle="bold"
         android:layout_marginBottom="8dp" />
 
+    <!-- Şık arka plan drawable uygulanıyor -->
     <EditText
         android:id="@+id/bottomSheetCommentInput"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Write a comment..."
-        android:padding="12dp"
+        android:padding="14dp"
         android:background="@drawable/edit_text_background"
-        android:layout_marginBottom="16dp" />
+        android:layout_marginBottom="20dp" />
 
-    <Button
+    <!-- Modern buton drawable uygulanıyor -->
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/bottomSheetCommentButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Post Comment" />
+        android:text="Post a Comment"
+        app:backgroundTint="@color/card_background"
+        android:textAllCaps="false"
+        android:textColor="@android:color/white"
+        app:cornerRadius="8dp" />
+
 
     <TextView
         android:id="@+id/noCommentsText"
@@ -60,7 +68,8 @@
         android:layout_height="wrap_content"
         android:text="No comments yet"
         android:textAlignment="center"
-        android:textColor="#757575"
+        android:textColor="#9E9E9E"
         android:padding="16dp"
         android:visibility="gone" />
+
 </LinearLayout>
