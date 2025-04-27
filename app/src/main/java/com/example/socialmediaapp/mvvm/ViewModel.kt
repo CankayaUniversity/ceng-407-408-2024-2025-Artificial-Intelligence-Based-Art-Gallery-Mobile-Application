@@ -10,7 +10,6 @@ import kotlinx.coroutines.Dispatchers
 import androidx.lifecycle.viewModelScope
 import com.example.socialmediaapp.modal.Feed
 import com.example.socialmediaapp.modal.Users
-import com.google.firebase.firestore.auth.User
 import kotlinx.coroutines.launch
 
 class ViewModel: ViewModel() {
@@ -22,57 +21,37 @@ class ViewModel: ViewModel() {
 
 
     init {
-
         getCurrentUser()
-
     }
 
     fun getCurrentUser() = viewModelScope.launch(Dispatchers.IO) {
-
         val firestore = FirebaseFirestore.getInstance()
 
         firestore.collection("Users").document(Utils.getUiLoggedIn()).addSnapshotListener { value, error ->
-
-
             if (error!=null){
-
                 return@addSnapshotListener
-
             }
 
             if (value!=null && value.exists()){
-
                 val users = value.toObject(Users::class.java)
                 name.value  = users!!.username!!
                 image.value = users.image!!
                 followers.value = users.followers!!.toString()
                 following.value = users.following!!.toString()
-
             }
-
         }
-
-
     }
-
-
 
     fun getMyPosts(): LiveData<List<Posts>> {
         val posts = MutableLiveData<List<Posts>>()
         val firestore = FirebaseFirestore.getInstance()
 
-        // on the background thread
-        // ! Using coroutines here might be unnecessary,
-        // Since Firestore is already launching another thread to perform the operation
-        // So in terms of performance, using less threads as possible is better for
-        // reducing the thread overheads
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 firestore.collection("Posts")
                     .whereEqualTo("userid", Utils.getUiLoggedIn())
                     .addSnapshotListener { snapshot, exception ->
                         if (exception != null) {
-                            // Handle the exception here
                             return@addSnapshotListener
                         }
 
@@ -82,49 +61,37 @@ class ViewModel: ViewModel() {
                             ?.sortedByDescending { it.time
                             }
 
-                        posts.postValue(postList!!) // Switch back to the main thread
+                        posts.postValue(postList!!)
                     }
             } catch (e: Exception) {
                 // Handle any exceptions that occur during the Firestore operation
             }
         }
 
-
-
         return posts
     }
 
-
     fun getAllUsers(): LiveData<List<Users>> {
-
         val users = MutableLiveData<List<Users>>()
-
         val firestore = FirebaseFirestore.getInstance()
 
-        // on the background thread
-        // ! Using coroutines here might be unnecessary,
-        // Since Firestore is already launching another thread to perform the operation
-        // So in terms of performance, using less threads as possible is better for
-        // reducing the thread overheads
         viewModelScope.launch(Dispatchers.IO)
         {
             try {
                 firestore.collection("Users").addSnapshotListener { snapshot, exception ->
                     if (exception != null) {
-                        // Handle the exception here
                         return@addSnapshotListener
                     }
 
                     val usersList = mutableListOf<Users>()
                     snapshot?.documents?.forEach { document ->
                         val user = document.toObject(Users::class.java)
-                        // gets the userlist that is not the current user
                         if (user != null && user.userid != Utils.getUiLoggedIn()) {
                             usersList.add(user)
                         }
                     }
 
-                    users.postValue(usersList) // Switch back to the main thread
+                    users.postValue(usersList)
                 }
             } catch (e: Exception) {
                 // Handle any exceptions that occur during the Firestore operation
@@ -134,7 +101,6 @@ class ViewModel: ViewModel() {
         return users
     }
 
-
     fun loadMyFeed(): LiveData<List<Feed>> {
         val firestore = FirebaseFirestore.getInstance()
         val feeds = MutableLiveData<List<Feed>>()
@@ -142,10 +108,8 @@ class ViewModel: ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             getThePeopleIFollow { followedUserIds ->
                 try {
-                    // Ensure current user's ID is NOT included when fetching posts
                     val filteredUserIds = followedUserIds.filter { it != Utils.getUiLoggedIn() }
 
-                    // If no followed users, return empty list
                     if (filteredUserIds.isEmpty()) {
                         feeds.postValue(emptyList())
                         return@getThePeopleIFollow
@@ -168,7 +132,6 @@ class ViewModel: ViewModel() {
                                 }
                             }
 
-                            // Displaying the latest posts first
                             val sortedFeed = feed.sortedByDescending { it.time }
                             feeds.postValue(sortedFeed)
                         }
@@ -183,7 +146,6 @@ class ViewModel: ViewModel() {
         return feeds
     }
 
-    // get the ids of those who I follow
     fun getThePeopleIFollow(callback: (List<String>) -> Unit)
     {
         val firestore = FirebaseFirestore.getInstance()
@@ -208,7 +170,6 @@ class ViewModel: ViewModel() {
             }
     }
 
-
     fun getOtherUser(userId: String): LiveData<Users> {
         val user = MutableLiveData<Users>()
         val firestore = FirebaseFirestore.getInstance()
@@ -217,7 +178,6 @@ class ViewModel: ViewModel() {
             .addOnSuccessListener { documentSnapshot ->
                 val userInfo = documentSnapshot.toObject(Users::class.java) ?: Users(username = "Unknown", image = "")
                 user.postValue(userInfo)
-
             }
             .addOnFailureListener { exception ->
                 Log.e("Firebase", "Kullanıcı bilgisi alınırken hata oluştu: ${exception.message}")
@@ -278,6 +238,185 @@ class ViewModel: ViewModel() {
         return postCount
     }
 
+    // Added for follow functionality
+    fun checkIfFollowing(userId: String): LiveData<Boolean> {
+        val isFollowing = MutableLiveData<Boolean>()
+        val firestore = FirebaseFirestore.getInstance()
+        val currentUserId = Utils.getUiLoggedIn()
+
+        firestore.collection("Follow").document(currentUserId)
+            .get()
+            .addOnSuccessListener { documentSnapshot ->
+                if (documentSnapshot.exists()) {
+                    val followingList = documentSnapshot.get("following_id") as? List<String> ?: emptyList()
+                    isFollowing.postValue(userId in followingList)
+                } else {
+                    isFollowing.postValue(false)
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.e("Firebase", "Takip durumu kontrol edilirken hata oluştu: ${exception.message}")
+                isFollowing.postValue(false)
+            }
+
+        return isFollowing
+    }
+
+    // Added for follow functionality
+    fun followUser(userId: String): LiveData<Boolean> {
+        val success = MutableLiveData<Boolean>()
+        val firestore = FirebaseFirestore.getInstance()
+        val currentUserId = Utils.getUiLoggedIn()
+
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                // 1. Current user's following list update
+                firestore.collection("Follow").document(currentUserId)
+                    .get()
+                    .addOnSuccessListener { currentUserDoc ->
+                        val followingList = if (currentUserDoc.exists()) {
+                            (currentUserDoc.get("following_id") as? List<String>)?.toMutableList() ?: mutableListOf()
+                        } else {
+                            mutableListOf()
+                        }
+
+                        if (userId !in followingList) {
+                            followingList.add(userId)
+
+                            // Update the following list
+                            firestore.collection("Follow").document(currentUserId)
+                                .set(mapOf("following_id" to followingList))
+                                .addOnSuccessListener {
+                                    // 2. Update the target user's followers count
+                                    firestore.collection("Users").document(userId)
+                                        .get()
+                                        .addOnSuccessListener { targetUserDoc ->
+                                            val currentFollowers = targetUserDoc.getLong("followers")?.toInt() ?: 0
+
+                                            // Increment followers count
+                                            firestore.collection("Users").document(userId)
+                                                .update("followers", currentFollowers + 1)
+                                                .addOnSuccessListener {
+                                                    // 3. Update current user's following count
+                                                    firestore.collection("Users").document(currentUserId)
+                                                        .get()
+                                                        .addOnSuccessListener { currentUserInfo ->
+                                                            val currentFollowing = currentUserInfo.getLong("following")?.toInt() ?: 0
+
+                                                            firestore.collection("Users").document(currentUserId)
+                                                                .update("following", currentFollowing + 1)
+                                                                .addOnSuccessListener {
+                                                                    success.postValue(true)
+                                                                }
+                                                                .addOnFailureListener {
+                                                                    success.postValue(false)
+                                                                }
+                                                        }
+                                                }
+                                                .addOnFailureListener {
+                                                    success.postValue(false)
+                                                }
+                                        }
+                                }
+                                .addOnFailureListener {
+                                    success.postValue(false)
+                                }
+                        } else {
+                            // Already following
+                            success.postValue(true)
+                        }
+                    }
+                    .addOnFailureListener {
+                        success.postValue(false)
+                    }
+            } catch (e: Exception) {
+                Log.e("Firebase", "Takip edilirken hata oluştu: ${e.message}")
+                success.postValue(false)
+            }
+        }
+
+        return success
+    }
+
+    // Added for unfollow functionality
+    fun unfollowUser(userId: String): LiveData<Boolean> {
+        val success = MutableLiveData<Boolean>()
+        val firestore = FirebaseFirestore.getInstance()
+        val currentUserId = Utils.getUiLoggedIn()
+
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                // 1. Current user's following list update
+                firestore.collection("Follow").document(currentUserId)
+                    .get()
+                    .addOnSuccessListener { currentUserDoc ->
+                        if (currentUserDoc.exists()) {
+                            val followingList = (currentUserDoc.get("following_id") as? List<String>)?.toMutableList() ?: mutableListOf()
+
+                            if (userId in followingList) {
+                                followingList.remove(userId)
+
+                                // Update the following list
+                                firestore.collection("Follow").document(currentUserId)
+                                    .set(mapOf("following_id" to followingList))
+                                    .addOnSuccessListener {
+                                        // 2. Update the target user's followers count
+                                        firestore.collection("Users").document(userId)
+                                            .get()
+                                            .addOnSuccessListener { targetUserDoc ->
+                                                val currentFollowers = targetUserDoc.getLong("followers")?.toInt() ?: 0
+                                                val newFollowers = if (currentFollowers > 0) currentFollowers - 1 else 0
+
+                                                // Decrement followers count
+                                                firestore.collection("Users").document(userId)
+                                                    .update("followers", newFollowers)
+                                                    .addOnSuccessListener {
+                                                        // 3. Update current user's following count
+                                                        firestore.collection("Users").document(currentUserId)
+                                                            .get()
+                                                            .addOnSuccessListener { currentUserInfo ->
+                                                                val currentFollowing = currentUserInfo.getLong("following")?.toInt() ?: 0
+                                                                val newFollowing = if (currentFollowing > 0) currentFollowing - 1 else 0
+
+                                                                firestore.collection("Users").document(currentUserId)
+                                                                    .update("following", newFollowing)
+                                                                    .addOnSuccessListener {
+                                                                        success.postValue(true)
+                                                                    }
+                                                                    .addOnFailureListener {
+                                                                        success.postValue(false)
+                                                                    }
+                                                            }
+                                                    }
+                                                    .addOnFailureListener {
+                                                        success.postValue(false)
+                                                    }
+                                            }
+                                    }
+                                    .addOnFailureListener {
+                                        success.postValue(false)
+                                    }
+                            } else {
+                                // Already not following
+                                success.postValue(true)
+                            }
+                        } else {
+                            // No following document exists, so not following anyway
+                            success.postValue(true)
+                        }
+                    }
+                    .addOnFailureListener {
+                        success.postValue(false)
+                    }
+            } catch (e: Exception) {
+                Log.e("Firebase", "Takipten çıkarken hata oluştu: ${e.message}")
+                success.postValue(false)
+            }
+        }
+
+        return success
+    }
+
     fun addComment(postId: String, commentText: String) {
         val firestore = FirebaseFirestore.getInstance()
 
@@ -317,7 +456,6 @@ class ViewModel: ViewModel() {
                     .whereNotEqualTo("userid", currentUserId)
                     .addSnapshotListener { snapshot, exception ->
                         if (exception != null) {
-                            // Handle the exception here
                             Log.e("Firebase", "Error fetching posts: ${exception.message}")
                             return@addSnapshotListener
                         }
@@ -337,7 +475,104 @@ class ViewModel: ViewModel() {
         return posts
     }
 
+    // Added to support direct profile visit functionality
+    fun likePost(postId: String): LiveData<Boolean> {
+        val result = MutableLiveData<Boolean>()
+        val firestore = FirebaseFirestore.getInstance()
+        val currentUserId = Utils.getUiLoggedIn()
 
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                // 1. Get the current post to check likes
+                firestore.collection("Posts").document(postId)
+                    .get()
+                    .addOnSuccessListener { documentSnapshot ->
+                        val currentLikes = documentSnapshot.getLong("likes")?.toInt() ?: 0
+                        val likedBy = documentSnapshot.get("likedBy") as? MutableList<String> ?: mutableListOf()
+
+                        if (currentUserId !in likedBy) {
+                            // Add user to liked list and increment likes
+                            likedBy.add(currentUserId)
+
+                            val updates = mapOf(
+                                "likes" to currentLikes + 1,
+                                "likedBy" to likedBy
+                            )
+
+                            firestore.collection("Posts").document(postId)
+                                .update(updates)
+                                .addOnSuccessListener {
+                                    result.postValue(true)
+                                }
+                                .addOnFailureListener {
+                                    result.postValue(false)
+                                }
+                        } else {
+                            // User already liked this post
+                            result.postValue(true)
+                        }
+                    }
+                    .addOnFailureListener {
+                        result.postValue(false)
+                    }
+            } catch (e: Exception) {
+                Log.e("Firebase", "Post beğenilirken hata oluştu: ${e.message}")
+                result.postValue(false)
+            }
+        }
+
+        return result
+    }
+
+    // Added to support direct profile visit functionality
+    fun unlikePost(postId: String): LiveData<Boolean> {
+        val result = MutableLiveData<Boolean>()
+        val firestore = FirebaseFirestore.getInstance()
+        val currentUserId = Utils.getUiLoggedIn()
+
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                // 1. Get the current post to check likes
+                firestore.collection("Posts").document(postId)
+                    .get()
+                    .addOnSuccessListener { documentSnapshot ->
+                        val currentLikes = documentSnapshot.getLong("likes")?.toInt() ?: 0
+                        val likedBy = documentSnapshot.get("likedBy") as? MutableList<String> ?: mutableListOf()
+
+                        if (currentUserId in likedBy) {
+                            // Remove user from liked list and decrement likes
+                            likedBy.remove(currentUserId)
+                            val newLikes = if (currentLikes > 0) currentLikes - 1 else 0
+
+                            val updates = mapOf(
+                                "likes" to newLikes,
+                                "likedBy" to likedBy
+                            )
+
+                            firestore.collection("Posts").document(postId)
+                                .update(updates)
+                                .addOnSuccessListener {
+                                    result.postValue(true)
+                                }
+                                .addOnFailureListener {
+                                    result.postValue(false)
+                                }
+                        } else {
+                            // User hasn't liked this post
+                            result.postValue(true)
+                        }
+                    }
+                    .addOnFailureListener {
+                        result.postValue(false)
+                    }
+            } catch (e: Exception) {
+                Log.e("Firebase", "Post beğeni kaldırılırken hata oluştu: ${e.message}")
+                result.postValue(false)
+            }
+        }
+
+        return result
+    }
 
     fun sortFeedDescendingDate() {
         // Feed'i tarih bazında azalan şekilde sıralayın
@@ -354,7 +589,4 @@ class ViewModel: ViewModel() {
     fun sortFeedMostCommented() {
         // Feed'i en çok yorumlanan şekilde sıralayın
     }
-
-
-
 }
