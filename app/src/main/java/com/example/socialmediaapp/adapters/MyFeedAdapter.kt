@@ -24,6 +24,7 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.core.view.GestureDetectorCompat
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.firebase.firestore.FirebaseFirestore
 
 class MyFeedAdapter: RecyclerView.Adapter<FeedHolder>() {
     var feedlist = listOf<Feed>()
@@ -91,10 +92,66 @@ class MyFeedAdapter: RecyclerView.Adapter<FeedHolder>() {
             showCommentBottomSheet(holder.itemView.context, feed)
         }
 
+        // Add this code after the commentIcon click listener in onBindViewHolder method
+        holder.itemView.findViewById<ImageView>(R.id.storyIcon).setOnClickListener {
+            // Get the story information from Firebase
+            showStoryBottomSheet(holder.itemView.context, feed)
+        }
+
 
 
 
     }
+    private fun showStoryBottomSheet(context: Context, feed: Feed) {
+        val bottomSheetDialog = BottomSheetDialog(context)
+        val view = LayoutInflater.from(context).inflate(R.layout.layout_story_bottom_sheet, null)
+        bottomSheetDialog.setContentView(view)
+
+        val storyTitle = view.findViewById<TextView>(R.id.storyTitleText)
+        val storyContent = view.findViewById<TextView>(R.id.storyContentText)
+        val storyImage = view.findViewById<ImageView>(R.id.storyImageView)
+        val closeButton = view.findViewById<Button>(R.id.closeStoryButton)
+
+        // Load image
+        Glide.with(context)
+            .load(feed.image)
+            .centerCrop()
+            .into(storyImage)
+
+        // Get the story content from Firebase Images collection
+        val firestore = FirebaseFirestore.getInstance()
+
+        firestore.collection("Images")
+            .whereEqualTo("postid", feed.postid)
+            .limit(1)
+            .get()
+            .addOnSuccessListener { documents ->
+                if (!documents.isEmpty) {
+                    val imageDoc = documents.documents[0]
+                    val story = imageDoc.getString("story") ?: "No story available for this artwork."
+                    val title = imageDoc.getString("title") ?: feed.caption ?: "Untitled"
+
+                    storyTitle.text = title
+                    storyContent.text = story
+                } else {
+                    storyTitle.text = feed.caption ?: "Untitled"
+                    storyContent.text = "No story available for this artwork."
+                }
+            }
+            .addOnFailureListener { e ->
+                storyTitle.text = feed.caption ?: "Untitled"
+                storyContent.text = "Failed to load story: ${e.message}"
+            }
+
+        closeButton.setOnClickListener {
+            bottomSheetDialog.dismiss()
+        }
+
+        bottomSheetDialog.show()
+    }
+
+
+
     private fun showCommentBottomSheet(context: Context, feed: Feed) {
         val bottomSheetDialog = BottomSheetDialog(context)
         val view = LayoutInflater.from(context).inflate(R.layout.layout_comment_bottom_sheet, null)

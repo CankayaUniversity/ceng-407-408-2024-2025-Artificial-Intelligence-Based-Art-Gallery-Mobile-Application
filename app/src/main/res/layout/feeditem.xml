@@ -105,7 +105,23 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@drawable/ic_comment"
-                    android:contentDescription="Comment" />
+                    android:contentDescription="Comment">
+
+                </ImageView>
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+                <ImageView
+                    android:id="@+id/storyIcon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_story"
+                    android:contentDescription="Comment"
+
+                    />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>
