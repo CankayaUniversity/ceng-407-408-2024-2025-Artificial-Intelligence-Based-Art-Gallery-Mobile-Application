@@ -1,6 +1,8 @@
 package com.example.socialmediaapp.fragments
 
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,6 +14,8 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.findNavController
+import com.example.socialmediaapp.MainActivity
 import com.example.socialmediaapp.R
 import com.example.socialmediaapp.Utils
 import com.example.socialmediaapp.adapters.MyFeedAdapter
@@ -23,9 +27,9 @@ import com.example.socialmediaapp.modal.Feed
 import com.example.socialmediaapp.mvvm.ViewModel
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.android.material.bottomsheet.BottomSheetDialog
 
 class HomeFragment : Fragment(), onDoubleTapClickListener, onUserClickListener {
+    // Parameters
     private lateinit var vm: ViewModel
     private lateinit var binding: FragmentHomeBinding
     private lateinit var adapter: MyFeedAdapter
@@ -35,6 +39,7 @@ class HomeFragment : Fragment(), onDoubleTapClickListener, onUserClickListener {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        // Inflate the layout for this fragment
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_home, container, false)
         return binding.root
     }
@@ -53,19 +58,20 @@ class HomeFragment : Fragment(), onDoubleTapClickListener, onUserClickListener {
     }
 
     private fun setupFeedAdapter() {
-        adapter = MyFeedAdapter()
-        adapter.setListener(this@HomeFragment)
-        adapter.setUserClickListener(this@HomeFragment)
-        adapter.setCommentClickListener(object : onCommentClickListener {
-            override fun addComment(postId: String, comment: String) {
-                if (comment.isNotEmpty()) {
-                    vm.addComment(postId, comment)
-                    Toast.makeText(requireContext(), "Yorum eklendi!", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(requireContext(), "Yorum boş olamaz!", Toast.LENGTH_SHORT).show()
+        adapter = MyFeedAdapter().apply {
+            setListener(this@HomeFragment)
+            setUserClickListener(this@HomeFragment)
+            setCommentClickListener(object : onCommentClickListener {
+                override fun addComment(postId: String, comment: String) {
+                    if (comment.isNotEmpty()) {
+                        vm.addComment(postId, comment)
+                        Toast.makeText(requireContext(), "Yorum eklendi!", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(requireContext(), "Yorum boş olamaz!", Toast.LENGTH_SHORT).show()
+                    }
                 }
-            }
-        })
+            })
+        }
     }
 
     private fun observeFeed() {
@@ -91,19 +97,18 @@ class HomeFragment : Fragment(), onDoubleTapClickListener, onUserClickListener {
         spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
                 val selectedOption = parent.getItemAtPosition(position).toString()
-                Toast.makeText(requireContext(), "Filtered by $selectedOption", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Selected: $selectedOption", Toast.LENGTH_SHORT).show()
 
                 when (selectedOption) {
                     "Descending Date" -> vm.sortFeedDescendingDate()
                     "Ascending Date" -> vm.sortFeedAscendingDate()
                     "Most Liked" -> vm.sortFeedMostLiked()
                     "Most Commented" -> vm.sortFeedMostCommented()
-
                 }
             }
 
             override fun onNothingSelected(parent: AdapterView<*>) {
-                // No action needed
+                // No action needed when nothing is selected
             }
         }
     }
@@ -123,6 +128,7 @@ class HomeFragment : Fragment(), onDoubleTapClickListener, onUserClickListener {
                 if (!likers.isNullOrEmpty() && likers.contains(currentUserId)) {
                     println("You have already liked this post!")
                 } else {
+                    // Increment like count and update likers
                     postRef.update(
                         "likes", likes + 1,
                         "likers", FieldValue.arrayUnion(currentUserId)
@@ -139,8 +145,30 @@ class HomeFragment : Fragment(), onDoubleTapClickListener, onUserClickListener {
     }
 
     override fun onUserClick(userId: String) {
-        // Yönlendirme burada yapılabilir.
-        // val action = HomeFragmentDirections.actionHomeFragmentToOtherUsersFragment(userId)
-        // view?.findNavController()?.navigate(action)
+        navigateToUserProfile(userId)
     }
+
+    private fun navigateToUserProfile(userId: String) {
+        try {
+            Log.d("Navigation", "Navigating to user profile with ID: $userId")
+
+            // Create an intent to the activity that hosts OtherUsersFragment
+            val intent = Intent(requireActivity(), MainActivity::class.java).apply {
+                // Pass the ID as an extra
+                putExtra("userId", userId)
+                // Add a flag to indicate we want to show the OtherUsersFragment
+                putExtra("showOtherUser", true)
+            }
+
+            startActivity(intent)
+        } catch (e: Exception) {
+            Log.e("Navigation Error", "Failed to navigate using Intent", e)
+            Toast.makeText(
+                context,
+                "Navigation error: ${e.message}",
+                Toast.LENGTH_LONG
+            ).show()
+        }
+    }
+
 }
