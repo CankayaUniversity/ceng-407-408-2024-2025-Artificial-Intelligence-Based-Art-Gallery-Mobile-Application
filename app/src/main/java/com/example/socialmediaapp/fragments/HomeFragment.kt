@@ -143,7 +143,7 @@ class HomeFragment : Fragment(), onDoubleTapClickListener, onUserClickListener {
 
     override fun onUserClick(userId: String) {
         // Navigate to other user's profile using Safe Args
-        //val action = HomeFragmentDirections.actionHomeFragmentToOtherUsersFragment(userId)
-        //view?.findNavController()?.navigate(action)
+        val action = HomeFragmentDirections.actionHomeFragmentToOtherUsersFragment(userId)
+        view?.findNavController()?.navigate(action)
     }
 }

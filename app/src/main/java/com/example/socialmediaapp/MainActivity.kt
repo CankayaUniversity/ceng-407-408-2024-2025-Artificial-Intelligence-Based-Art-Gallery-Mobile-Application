@@ -3,8 +3,10 @@ package com.example.socialmediaapp
 import android.os.Build
 import android.os.Bundle
 import androidx.annotation.RequiresApi
+import androidx.navigation.findNavController
 import com.example.socialmediaapp.activities.BaseActivity
 import com.example.socialmediaapp.fragments.HomeFragment
+import com.example.socialmediaapp.fragments.OtherUsersFragment
 
 @Suppress("DEPRECATION")
 class MainActivity : BaseActivity() {
@@ -21,6 +23,18 @@ class MainActivity : BaseActivity() {
         // Girişten geldiyse HomeFragment'a yönlendir
         if (intent.getBooleanExtra("fromSignIn", false)) {
             loadFragment(HomeFragment(),"Home")
+        }
+
+        if (intent.getBooleanExtra("showOtherUser", false)) {
+            val userId = intent.getStringExtra("userId")
+            val fragment = OtherUsersFragment().apply {
+                arguments = Bundle().apply {
+                    putString("userId", userId)
+                }
+            }
+            loadFragment(fragment, "OtherUser")
+        } else if (savedInstanceState == null || intent.getBooleanExtra("fromSignIn", false)) {
+            loadFragment(HomeFragment(), "Home")
         }
     }
 
