@@ -102,12 +102,38 @@ class MyFeedAdapter: RecyclerView.Adapter<FeedHolder>() {
 
         val commentInput = view.findViewById<EditText>(R.id.bottomSheetCommentInput)
         val commentButton = view.findViewById<Button>(R.id.bottomSheetCommentButton)
+        val commentsRecyclerView = view.findViewById<RecyclerView>(R.id.commentsRecyclerView)
+
+        // Set up RecyclerView for comments
+        commentsRecyclerView.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(context)
+        val commentAdapter = CommentAdapter()
+        commentsRecyclerView.adapter = commentAdapter
+
+        // Get ViewModel instance to fetch comments
+        val viewModel = androidx.lifecycle.ViewModelProvider((context as androidx.fragment.app.FragmentActivity))
+            .get(com.example.socialmediaapp.mvvm.ViewModel::class.java)
+
+        // Load comments for this post
+        viewModel.getPostComments(feed.postid!!).observe(context as androidx.lifecycle.LifecycleOwner) { comments ->
+            commentAdapter.setComments(comments)
+
+            // If there are no comments, show a message
+            val noCommentsView = view.findViewById<TextView>(R.id.noCommentsText)
+            if (comments.isEmpty()) {
+                noCommentsView?.visibility = View.VISIBLE
+                commentsRecyclerView.visibility = View.GONE
+            } else {
+                noCommentsView?.visibility = View.GONE
+                commentsRecyclerView.visibility = View.VISIBLE
+            }
+        }
 
         commentButton.setOnClickListener {
             val comment = commentInput.text.toString()
             if (comment.isNotEmpty()) {
                 commentClickListener?.addComment(feed.postid!!, comment)
-                bottomSheetDialog.dismiss()
+                commentInput.text.clear()
+                // Note: We don't dismiss the dialog so user can see their comment added
             } else {
                 Toast.makeText(context, "Comment cannot be empty!", Toast.LENGTH_SHORT).show()
             }
@@ -115,6 +141,12 @@ class MyFeedAdapter: RecyclerView.Adapter<FeedHolder>() {
 
         bottomSheetDialog.show()
     }
+
+
+
+
+
+
     override fun getItemCount(): Int {
         return feedlist.size
     }

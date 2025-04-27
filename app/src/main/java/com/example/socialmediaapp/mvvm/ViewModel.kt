@@ -357,4 +357,31 @@ class ViewModel: ViewModel() {
 
 
 
+    fun getPostComments(postId: String): LiveData<List<Map<String, Any>>> {
+        val comments = MutableLiveData<List<Map<String, Any>>>()
+        val firestore = FirebaseFirestore.getInstance()
+
+        firestore.collection("Posts")
+            .document(postId)
+            .collection("comments")
+            .orderBy("time", com.google.firebase.firestore.Query.Direction.DESCENDING)
+            .addSnapshotListener { snapshot, exception ->
+                if (exception != null) {
+                    Log.e("Firestore", "Error getting comments: ${exception.message}")
+                    comments.postValue(emptyList())
+                    return@addSnapshotListener
+                }
+
+                val commentsList = snapshot?.documents?.mapNotNull { doc ->
+                    doc.data
+                } ?: emptyList()
+
+                comments.postValue(commentsList)
+            }
+
+        return comments
+    }
+
+
+
 }
