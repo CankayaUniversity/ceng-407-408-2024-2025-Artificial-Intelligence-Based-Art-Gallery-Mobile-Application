@@ -1,5 +1,5 @@
 package com.example.socialmediaapp.activities
-
+import com.example.socialmediaapp.fragments.NotificationFragment
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -59,8 +59,6 @@ abstract class BaseActivity : AppCompatActivity() {
 
     abstract fun getContentLayoutId(): Int
 
-    // In BaseActivity.kt, modify the setupBottomNavigation() method
-
     private fun setupBottomNavigation() {
         val bottomNavigation = findViewById<BottomNavigationView>(R.id.bottom_navigation)
 
@@ -103,10 +101,16 @@ abstract class BaseActivity : AppCompatActivity() {
                     loadFragment(SearchFragment(), "Search")
                     true
                 }
+                R.id.nav_notifications -> {
+                    loadFragment(NotificationFragment(), "Notifications")
+                    true
+                }
                 else -> false
             }
         }
     }
+
+
 
     // Method to update toolbar title
     fun setToolbarTitle(title: String) {
