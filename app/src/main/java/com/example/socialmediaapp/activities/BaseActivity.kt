@@ -117,13 +117,8 @@ abstract class BaseActivity : AppCompatActivity() {
         val menuButton = findViewById<ImageButton>(R.id.menu_button)
 
         menuButton.setOnClickListener {
-            FirebaseAuth.getInstance().signOut()
-
-            // Giriş ekranına yönlendir
-            val intent = Intent(this, SignInAc::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            startActivity(intent)
-            finish() // Mevcut aktiviteyi sonlandır
+            val menuPopupHandler = MenuPopupHandler(this)
+            menuPopupHandler.showMenuPopup()
         }
     }
 
