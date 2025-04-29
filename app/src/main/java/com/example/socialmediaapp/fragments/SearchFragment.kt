@@ -322,7 +322,7 @@ class SearchFragment : Fragment(), OnPostClickListener {
         val spinnerAdapter = ArrayAdapter.createFromResource(
             requireContext(),
             R.array.filter_options_search,
-            android.R.layout.simple_spinner_item
+            R.layout.spinner_item
         ).apply {
             setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         }

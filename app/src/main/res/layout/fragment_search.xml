@@ -35,34 +35,44 @@
 
                 <EditText
                     android:id="@+id/searchitem"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_alignLeft="@+id/searchfragment_icon"
-                    android:layout_centerInParent="true"
-                    android:layout_marginStart="35dp"
-                    android:layout_marginEnd="1dp"
+                    android:layout_toEndOf="@id/searchfragment_icon"
+                    android:layout_toStartOf="@+id/filter_spinner"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
                     android:textColor="#FFFFFF"
                     android:textColorHint="#80FFFFFF"
-                    android:hint="Search For People, Keywords"
+                    android:hint="Search For People"
                     android:inputType="text"
-                    android:background="@null"/>
+                    android:background="@null" />
+
+                <View
+                    android:id="@+id/divider"
+                    android:layout_width="1dp"
+                    android:layout_height="24dp"
+                    android:layout_toEndOf="@id/searchitem"
+                    android:layout_toStartOf="@id/filter_spinner"
+                    android:layout_centerVertical="true"
+                    android:background="#80FFFFFF" />
+
+                <Spinner
+                    android:id="@+id/filter_spinner"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:spinnerMode="dropdown"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="3dp"
+                    />
+
             </RelativeLayout>
 
 
         </androidx.appcompat.widget.Toolbar>
 
-        <Spinner
-            android:id="@+id/filter_spinner"
-            android:textColor="#FFFFFF"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:spinnerMode="dropdown"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="5dp"
-            />
+
 
     </com.google.android.material.appbar.AppBarLayout>
 
