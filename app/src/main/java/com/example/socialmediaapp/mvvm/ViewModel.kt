@@ -10,6 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import androidx.lifecycle.viewModelScope
 import com.example.socialmediaapp.modal.Feed
 import com.example.socialmediaapp.modal.Users
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.auth.User
 import kotlinx.coroutines.launch
 
@@ -559,6 +560,27 @@ class ViewModel: ViewModel() {
         return comments
     }
 
+
+    fun updatePostLikeStatus(postId: String, isLiked: Boolean, userId: String) {
+        // Get a reference to the post in Firestore
+        val postRef = FirebaseFirestore.getInstance().collection("Posts").document(postId)
+
+        if (isLiked) {
+            // Like the post
+            postRef.update(
+                "likes", FieldValue.increment(1),
+                "likers", FieldValue.arrayUnion(userId)
+            )
+        } else {
+            // Unlike the post
+            postRef.update(
+                "likes", FieldValue.increment(-1),
+                "likers", FieldValue.arrayRemove(userId)
+            )
+        }
+
+        // No need to reload the entire feed - the UI will update with the local change
+    }
 
 
 }

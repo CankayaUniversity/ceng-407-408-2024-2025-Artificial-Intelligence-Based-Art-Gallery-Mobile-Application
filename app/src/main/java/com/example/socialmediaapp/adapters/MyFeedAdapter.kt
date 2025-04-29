@@ -19,6 +19,7 @@ import java.util.Date
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
+import androidx.recyclerview.widget.DiffUtil
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -68,20 +69,8 @@ class MyFeedAdapter: RecyclerView.Adapter<FeedHolder>() {
 
         holder.likecount.text = "${feed.likes} Likes"
 
-        // Set up like icon click listener with animation
+        // Set up like icon click listener
         holder.likeIcon.setOnClickListener {
-            // Toggle the like icon for immediate visual feedback
-            if (feed.likers?.contains(currentUserId) == true) {
-                holder.likeIcon.setImageResource(R.drawable.ic_like)
-            } else {
-                holder.likeIcon.setImageResource(R.drawable.ic_like_filled)
-                // Optional: Add animation when liking
-                holder.likeIcon.animate().scaleX(1.2f).scaleY(1.2f).setDuration(100).withEndAction {
-                    holder.likeIcon.animate().scaleX(1f).scaleY(1f).setDuration(100).start()
-                }.start()
-            }
-
-            // Trigger the actual database update
             likeListener?.onLikeClick(feed)
         }
 
@@ -103,7 +92,6 @@ class MyFeedAdapter: RecyclerView.Adapter<FeedHolder>() {
             showStoryBottomSheet(holder.itemView.context, feed)
         }
     }
-
 
     // Helper method to update the like icon
     private fun updateLikeIcon(holder: FeedHolder, feed: Feed, currentUserId: String) {
@@ -214,7 +202,14 @@ class MyFeedAdapter: RecyclerView.Adapter<FeedHolder>() {
     }
 
     fun setFeedList(list: List<Feed>) {
+        // Use DiffUtil to efficiently update only changed items
+        val diffCallback = FeedDiffCallback(this.feedlist, list)
+        val diffResult = DiffUtil.calculateDiff(diffCallback)
+
         this.feedlist = list
+
+        // Use diffResult to notify adapter of specific changes
+        diffResult.dispatchUpdatesTo(this)
     }
 
     fun setLikeListener(listener: onLikeClickListener) {
@@ -227,6 +222,36 @@ class MyFeedAdapter: RecyclerView.Adapter<FeedHolder>() {
 
     fun setCommentClickListener(listener: onCommentClickListener) {
         this.commentClickListener = listener
+    }
+}
+
+// Add a DiffUtil.Callback implementation to efficiently update the RecyclerView
+class FeedDiffCallback(
+    private val oldList: List<Feed>,
+    private val newList: List<Feed>
+) : DiffUtil.Callback() {
+
+    override fun getOldListSize(): Int = oldList.size
+
+    override fun getNewListSize(): Int = newList.size
+
+    override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+        return oldList[oldItemPosition].postid == newList[newItemPosition].postid
+    }
+
+    override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+        val oldItem = oldList[oldItemPosition]
+        val newItem = newList[newItemPosition]
+
+        // Compare relevant fields that might change
+        return oldItem.likes == newItem.likes &&
+                oldItem.likers?.size == newItem.likers?.size &&
+                oldItem.caption == newItem.caption
+    }
+
+    override fun getChangePayload(oldItemPosition: Int, newItemPosition: Int): Any? {
+        // If needed, you can add specific change payloads here
+        return super.getChangePayload(oldItemPosition, newItemPosition)
     }
 }
 
