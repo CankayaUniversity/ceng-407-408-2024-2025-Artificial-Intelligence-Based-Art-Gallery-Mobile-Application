@@ -134,6 +134,8 @@ class ViewModel: ViewModel() {
         return users
     }
 
+    //private val _posts = MutableLiveData<List<Posts>>()
+
     private val _feeds = MutableLiveData<List<Feed>>()
     fun loadMyFeed(): LiveData<List<Feed>> {
         val firestore = FirebaseFirestore.getInstance()
@@ -628,36 +630,41 @@ class ViewModel: ViewModel() {
             }
     }
 
-    fun getAllPostsExceptCurrentUser(): LiveData<List<Posts>> {
-        val posts = MutableLiveData<List<Posts>>()
+
+/*
+    fun loadMyFeed(): LiveData<List<Feed>> {
         val firestore = FirebaseFirestore.getInstance()
-        val currentUserId = Utils.getUiLoggedIn()
 
         viewModelScope.launch(Dispatchers.IO) {
-            try {
+            getThePeopleIFollow { followedUserIds ->
+                val filteredUserIds = followedUserIds.filter { it != Utils.getUiLoggedIn() }
+
+                if (filteredUserIds.isEmpty()) {
+                    _feeds.postValue(emptyList())
+                    return@getThePeopleIFollow
+                }
+
                 firestore.collection("Posts")
-                    .whereNotEqualTo("userid", currentUserId)
-                    .addSnapshotListener { snapshot, exception ->
-                        if (exception != null) {
-                            // Handle the exception here
-                            Log.e("Firebase", "Error fetching posts: ${exception.message}")
+                    .whereIn("userid", filteredUserIds)
+                    .addSnapshotListener { value, error ->
+                        if (error != null) {
+                            _feeds.postValue(emptyList())
                             return@addSnapshotListener
                         }
 
-                        val postList = snapshot?.documents?.mapNotNull {
-                            it.toObject(Posts::class.java)
-                        }?.sortedByDescending { it.time }
+                        val feed = value?.documents?.mapNotNull {
+                            it.toObject(Feed::class.java)
+                        } ?: emptyList()
 
-                        posts.postValue(postList ?: emptyList())
+                        _feeds.postValue(feed.sortedByDescending { it.time })
                     }
-            } catch (e: Exception) {
-                Log.e("Firebase", "Exception in getAllPostsExceptCurrentUser: ${e.message}")
-                // Handle any exceptions that occur during the Firestore operation
             }
         }
 
-        return posts
+        return _feeds
     }
+*/
+
 
 
 
@@ -678,6 +685,52 @@ class ViewModel: ViewModel() {
         _feeds.value = _feeds.value?.sortedByDescending { it.comments }
     }
 
+
+    private val _posts = MutableLiveData<List<Posts>>()
+    val posts: LiveData<List<Posts>> get() = _posts
+
+    fun getAllPostsExceptCurrentUser(): LiveData<List<Posts>> {
+        val firestore = FirebaseFirestore.getInstance()
+        val currentUserId = Utils.getUiLoggedIn()
+
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                firestore.collection("Posts")
+                    .whereNotEqualTo("userid", currentUserId)
+                    .addSnapshotListener { snapshot, exception ->
+                        if (exception != null) {
+                            Log.e("Firebase", "Error fetching posts: ${exception.message}")
+                            _posts.postValue(emptyList())
+                            return@addSnapshotListener
+                        }
+
+                        val postList = snapshot?.documents?.mapNotNull {
+                            it.toObject(Posts::class.java)
+                        }?.sortedByDescending { it.likes }
+
+                        _posts.postValue(postList ?: emptyList())
+                    }
+            } catch (e: Exception) {
+                Log.e("Firebase", "Exception in getAllPostsExceptCurrentUser: ${e.message}")
+                _posts.postValue(emptyList())
+            }
+        }
+
+        return _posts
+    }
+
+
+    fun sortFeedMostLikedSearch() {
+        getAllPostsExceptCurrentUser()
+    }
+
+    fun sortFeedDescendingDateSearch() {
+        _posts.value = _posts.value?.sortedByDescending { it.time }
+    }
+
+    fun sortFeedAscendingDateSearch() {
+        _posts.value = _posts.value?.sortedBy { it.time }
+    }
 
 
     fun getPostComments(postId: String): LiveData<List<Map<String, Any>>> {

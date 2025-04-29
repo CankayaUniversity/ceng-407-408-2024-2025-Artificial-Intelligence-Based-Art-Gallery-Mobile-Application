@@ -53,10 +53,15 @@
     <string name="error_liking_post">Error liking post: %1$s</string>
 
     <string-array name="filter_options">
-        <item>Descending Date</item>
-        <item>Ascending Date</item>
+        <item>Newest</item>
+        <item>Oldest</item>
         <item>Most Liked</item>
         <item>Most Commented</item>
+    </string-array>
+    <string-array name="filter_options_search">
+        <item>Most Liked</item>
+        <item>Newest</item>
+        <item>Oldest</item>
     </string-array>
 
 </resources>

@@ -18,15 +18,19 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <!-- Profile Header Background -->
-            <View
-                android:id="@+id/profileHeaderBackground"
+
+            <ImageView
+                android:id="@+id/background_image"
                 android:layout_width="match_parent"
                 android:layout_height="140dp"
-                android:background="@color/blue"
+                android:src="@drawable/options2"
+                android:elevation="0dp"
+                android:scaleType="fitXY"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                />
+
 
             <!-- Profile Image -->
             <de.hdodenhof.circleimageview.CircleImageView

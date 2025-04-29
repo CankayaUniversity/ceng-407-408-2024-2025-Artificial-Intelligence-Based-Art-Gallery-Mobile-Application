@@ -10,7 +10,10 @@ import android.text.TextWatcher
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.EditText
+import android.widget.Spinner
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -53,6 +56,8 @@ class SearchFragment : Fragment(), OnPostClickListener {
 
     private lateinit var vm: ViewModel
 
+
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -91,6 +96,8 @@ class SearchFragment : Fragment(), OnPostClickListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        setupFilterSpinner()
 
         // Initialize adapter with the fragment as context, and add a click listener
         userAdapter = context?.let {
@@ -308,7 +315,41 @@ class SearchFragment : Fragment(), OnPostClickListener {
         // Handle post click - navigate to post detail or perform other actions
         Toast.makeText(context, "Post clicked: ${post.caption}", Toast.LENGTH_SHORT).show()
     }
+
+
+    private fun setupFilterSpinner() {
+        val spinner = requireActivity().findViewById<Spinner>(R.id.filter_spinner)
+        val spinnerAdapter = ArrayAdapter.createFromResource(
+            requireContext(),
+            R.array.filter_options_search,
+            android.R.layout.simple_spinner_item
+        ).apply {
+            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        }
+
+        spinner.adapter = spinnerAdapter
+        spinner.setSelection(0)
+        spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+                val selectedOption = parent.getItemAtPosition(position).toString()
+                Toast.makeText(requireContext(), "Filtered by $selectedOption", Toast.LENGTH_SHORT).show()
+
+                when (selectedOption) {
+                    "Newest" -> vm.sortFeedDescendingDateSearch()
+                    "Oldest" -> vm.sortFeedAscendingDateSearch()
+                    "Most Liked" -> vm.sortFeedMostLikedSearch()
+                }
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>) {
+                // No action needed
+            }
+        }
+    }
+
+
 }
+
 
 // Post click listener interface
 interface OnPostClickListener {

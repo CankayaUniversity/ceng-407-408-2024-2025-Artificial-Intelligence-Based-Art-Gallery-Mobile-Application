@@ -47,7 +47,23 @@
                     android:inputType="text"
                     android:background="@null"/>
             </RelativeLayout>
+
+
         </androidx.appcompat.widget.Toolbar>
+
+        <Spinner
+            android:id="@+id/filter_spinner"
+            android:textColor="#FFFFFF"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:spinnerMode="dropdown"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="5dp"
+            />
+
     </com.google.android.material.appbar.AppBarLayout>
 
     <!-- Container for search mode -->

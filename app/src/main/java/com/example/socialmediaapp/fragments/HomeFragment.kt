@@ -97,8 +97,8 @@ class HomeFragment : Fragment(), onDoubleTapClickListener, onUserClickListener {
                 Toast.makeText(requireContext(), "Filtered by $selectedOption", Toast.LENGTH_SHORT).show()
 
                 when (selectedOption) {
-                    "Descending Date" -> vm.sortFeedDescendingDate()
-                    "Ascending Date" -> vm.sortFeedAscendingDate()
+                    "Newest" -> vm.sortFeedDescendingDate()
+                    "Oldest" -> vm.sortFeedAscendingDate()
                     "Most Liked" -> vm.sortFeedMostLiked()
                     "Most Commented" -> vm.sortFeedMostCommented()
                 }
