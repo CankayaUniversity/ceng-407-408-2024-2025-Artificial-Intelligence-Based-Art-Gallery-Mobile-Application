@@ -10,4 +10,6 @@ data class Feed(
     val imageposter: String?= "",
     val time:        Long?= null,
     val caption:     String? ="",
+
+    val likers: List<String>? = null // <-- Bunu ekle
     ){}

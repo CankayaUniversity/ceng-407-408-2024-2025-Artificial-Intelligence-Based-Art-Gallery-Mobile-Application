@@ -19,7 +19,7 @@ import com.example.socialmediaapp.R
 import com.example.socialmediaapp.Utils
 import com.example.socialmediaapp.adapters.MyFeedAdapter
 import com.example.socialmediaapp.adapters.onCommentClickListener
-import com.example.socialmediaapp.adapters.onDoubleTapClickListener
+import com.example.socialmediaapp.adapters.onLikeClickListener
 import com.example.socialmediaapp.adapters.onUserClickListener
 import com.example.socialmediaapp.databinding.FragmentHomeBinding
 import com.example.socialmediaapp.modal.Feed
@@ -28,7 +28,7 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.android.material.bottomsheet.BottomSheetDialog
 
-class HomeFragment : Fragment(), onDoubleTapClickListener, onUserClickListener {
+class HomeFragment : Fragment(), onLikeClickListener, onUserClickListener {
     private lateinit var vm: ViewModel
     private lateinit var binding: FragmentHomeBinding
     private lateinit var adapter: MyFeedAdapter
@@ -57,7 +57,7 @@ class HomeFragment : Fragment(), onDoubleTapClickListener, onUserClickListener {
 
     private fun setupFeedAdapter() {
         adapter = MyFeedAdapter()
-        adapter.setListener(this@HomeFragment)
+        adapter.setLikeListener(this@HomeFragment)
         adapter.setUserClickListener(this@HomeFragment)
         adapter.setCommentClickListener(object : onCommentClickListener {
             override fun addComment(postId: String, comment: String) {
@@ -110,7 +110,7 @@ class HomeFragment : Fragment(), onDoubleTapClickListener, onUserClickListener {
         }
     }
 
-    override fun onDoubleTap(feed: Feed) {
+    override fun onLikeClick(feed: Feed) {
         val currentUserId = Utils.getUiLoggedIn()
         val postId = feed.postid ?: return
 
@@ -128,13 +128,15 @@ class HomeFragment : Fragment(), onDoubleTapClickListener, onUserClickListener {
                     postRef.update(
                         "likes", likes + 1,
                         "likers", FieldValue.arrayUnion(currentUserId)
-                    )
-                        .addOnSuccessListener {
-                            println("Post liked!")
+                    ).addOnSuccessListener {
+                        println("Post liked!")
+                        // Feed listesi yeniden yüklensin
+                        vm.loadMyFeed().observe(viewLifecycleOwner) { updatedFeedList ->
+                            adapter.setFeedList(updatedFeedList)
+                            adapter.notifyDataSetChanged()
                         }
-                        .addOnFailureListener { exception ->
-                            println("Failed to update like: $exception")
-                        }
+                    }
+
                 }
             }
         }
