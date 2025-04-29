@@ -24,9 +24,7 @@
             android:scaleType="fitCenter"
             android:src="@drawable/image_placeholder"
             android:adjustViewBounds="true"
-
             />
-
 
         <!-- İkinci Satır: Kullanıcı Bilgileri -->
         <LinearLayout
@@ -100,28 +98,35 @@
                     android:layout_height="0dp"
                     android:layout_weight="1" />
 
+                <!-- Like Icon -->
+                <ImageView
+                    android:id="@+id/likeIcon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_like"
+                    android:contentDescription="Like" />
+
+                <View
+                    android:layout_width="16dp"
+                    android:layout_height="0dp" />
+
                 <ImageView
                     android:id="@+id/commentIcon"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@drawable/ic_comment"
-                    android:contentDescription="Comment">
-
-                </ImageView>
+                    android:contentDescription="Comment" />
 
                 <View
-                    android:layout_width="0dp"
-                    android:layout_height="0dp"
-                    android:layout_weight="1" />
+                    android:layout_width="16dp"
+                    android:layout_height="0dp" />
 
                 <ImageView
                     android:id="@+id/storyIcon"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@drawable/ic_story"
-                    android:contentDescription="Comment"
-
-                    />
+                    android:contentDescription="Story" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>
