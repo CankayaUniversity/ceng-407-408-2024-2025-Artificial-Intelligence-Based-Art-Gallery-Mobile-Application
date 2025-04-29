@@ -16,7 +16,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import android.widget.ImageButton
 import android.widget.ImageView
-
+import com.example.socialmediaapp.fragments.NotificationFragment
 
 
 abstract class BaseActivity : AppCompatActivity() {
@@ -103,6 +103,17 @@ abstract class BaseActivity : AppCompatActivity() {
                     loadFragment(SearchFragment(), "Search")
                     true
                 }
+                R.id.nav_notifications -> {
+                    if (this !is MainActivity) {
+                        startActivity(Intent(this, MainActivity::class.java)
+                            .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
+                        finish()
+                    } else {
+                        loadFragment(NotificationFragment(), "Notifications")
+                    }
+                    true
+                }
+
                 else -> false
             }
         }

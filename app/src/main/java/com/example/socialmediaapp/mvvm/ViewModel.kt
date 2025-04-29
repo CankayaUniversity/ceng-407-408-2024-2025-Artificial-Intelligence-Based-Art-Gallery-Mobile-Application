@@ -168,57 +168,6 @@ class ViewModel: ViewModel() {
     }
 
 
-
-
-/*
-    fun loadMyFeed(): LiveData<List<Feed>> {
-        val firestore = FirebaseFirestore.getInstance()
-        val feeds = MutableLiveData<List<Feed>>()
-
-        viewModelScope.launch(Dispatchers.IO) {
-            getThePeopleIFollow { followedUserIds ->
-                try {
-                    // Ensure current user's ID is NOT included when fetching posts
-                    val filteredUserIds = followedUserIds.filter { it != Utils.getUiLoggedIn() }
-
-                    // If no followed users, return empty list
-                    if (filteredUserIds.isEmpty()) {
-                        feeds.postValue(emptyList())
-                        return@getThePeopleIFollow
-                    }
-
-                    firestore.collection("Posts")
-                        .whereIn("userid", filteredUserIds)
-                        .addSnapshotListener { value, error ->
-                            if (error != null) {
-                                Log.e("FeedLoad", "Error loading feed: ${error.message}")
-                                feeds.postValue(emptyList())
-                                return@addSnapshotListener
-                            }
-
-                            val feed = mutableListOf<Feed>()
-                            value?.documents?.forEach { documentSnapshot ->
-                                val pModal = documentSnapshot.toObject(Feed::class.java)
-                                pModal?.let {
-                                    feed.add(it)
-                                }
-                            }
-
-                            // Displaying the latest posts first
-                            val sortedFeed = feed.sortedByDescending { it.time }
-                            feeds.postValue(sortedFeed)
-                        }
-
-                } catch (e: Exception) {
-                    Log.e("FeedLoad", "Exception in loadMyFeed: ${e.message}")
-                    feeds.postValue(emptyList())
-                }
-            }
-        }
-
-        return feeds
-    }
-*/
     // get the ids of those who I follow
     fun getThePeopleIFollow(callback: (List<String>) -> Unit)
     {
