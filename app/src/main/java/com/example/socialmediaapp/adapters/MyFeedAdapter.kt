@@ -42,14 +42,8 @@ class MyFeedAdapter: RecyclerView.Adapter<FeedHolder>() {
 
         val currentUserId = com.example.socialmediaapp.Utils.getUiLoggedIn()
 
-        // Kullanıcı bu gönderiyi beğenmişse filled icon göster
-        if (feed.likers?.contains(currentUserId) == true) {
-            holder.likeIcon.setImageResource(R.drawable.ic_like_filled)
-        } else {
-            holder.likeIcon.setImageResource(R.drawable.ic_like)
-        }
-
-
+        // Set the appropriate like icon based on whether the user has liked this post
+        updateLikeIcon(holder, feed, currentUserId)
 
         holder.userNamePoster.text = feed.username
         holder.userNameCaption.text = feed.caption
@@ -74,8 +68,20 @@ class MyFeedAdapter: RecyclerView.Adapter<FeedHolder>() {
 
         holder.likecount.text = "${feed.likes} Likes"
 
-        // Set up like icon click listener
+        // Set up like icon click listener with animation
         holder.likeIcon.setOnClickListener {
+            // Toggle the like icon for immediate visual feedback
+            if (feed.likers?.contains(currentUserId) == true) {
+                holder.likeIcon.setImageResource(R.drawable.ic_like)
+            } else {
+                holder.likeIcon.setImageResource(R.drawable.ic_like_filled)
+                // Optional: Add animation when liking
+                holder.likeIcon.animate().scaleX(1.2f).scaleY(1.2f).setDuration(100).withEndAction {
+                    holder.likeIcon.animate().scaleX(1f).scaleY(1f).setDuration(100).start()
+                }.start()
+            }
+
+            // Trigger the actual database update
             likeListener?.onLikeClick(feed)
         }
 
@@ -95,6 +101,16 @@ class MyFeedAdapter: RecyclerView.Adapter<FeedHolder>() {
         holder.itemView.findViewById<ImageView>(R.id.storyIcon).setOnClickListener {
             // Get the story information from Firebase
             showStoryBottomSheet(holder.itemView.context, feed)
+        }
+    }
+
+
+    // Helper method to update the like icon
+    private fun updateLikeIcon(holder: FeedHolder, feed: Feed, currentUserId: String) {
+        if (feed.likers?.contains(currentUserId) == true) {
+            holder.likeIcon.setImageResource(R.drawable.ic_like_filled)
+        } else {
+            holder.likeIcon.setImageResource(R.drawable.ic_like)
         }
     }
 

@@ -3,7 +3,7 @@ package com.example.socialmediaapp.modal
 data class Feed(
     val username:    String? ="",
     val comments:    Int?=0,
-    val likes:       Int?=0,
+    var likes:       Int?=0,
     val postid:      String? = "",
     val userid:      String?= "",
     val image:       String?= "",
@@ -11,5 +11,5 @@ data class Feed(
     val time:        Long?= null,
     val caption:     String? ="",
 
-    val likers: List<String>? = null // <-- Bunu ekle
+    var likers: List<String>? = null // <-- Bunu ekle
     ){}

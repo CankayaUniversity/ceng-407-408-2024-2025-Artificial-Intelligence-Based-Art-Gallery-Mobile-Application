@@ -110,6 +110,7 @@ class HomeFragment : Fragment(), onLikeClickListener, onUserClickListener {
         }
     }
 
+
     override fun onLikeClick(feed: Feed) {
         val currentUserId = Utils.getUiLoggedIn()
         val postId = feed.postid ?: return
@@ -120,23 +121,50 @@ class HomeFragment : Fragment(), onLikeClickListener, onUserClickListener {
         postRef.get().addOnSuccessListener { document ->
             if (document != null && document.exists()) {
                 val likes = document.getLong("likes")?.toInt() ?: 0
-                val likers = document.get("likers") as? List<String>
+                val likers = document.get("likers") as? List<String> ?: listOf()
 
-                if (!likers.isNullOrEmpty() && likers.contains(currentUserId)) {
-                    println("You have already liked this post!")
+                if (likers.contains(currentUserId)) {
+                    // User has already liked the post - Unlike it
+                    postRef.update(
+                        "likes", kotlin.math.max(0, likes - 1), // Ensure likes don't go below 0
+                        "likers", FieldValue.arrayRemove(currentUserId)
+                    ).addOnSuccessListener {
+                        Toast.makeText(requireContext(), "Post unliked!", Toast.LENGTH_SHORT).show()
+
+                        // Update the feed item locally for immediate UI feedback
+                        feed.likes = (feed.likes ?: 0) - 1
+                        if (feed.likers != null) {
+                            val updatedLikers = feed.likers!!.toMutableList()
+                            updatedLikers.remove(currentUserId)
+                            feed.likers = updatedLikers
+                        }
+                        adapter.notifyDataSetChanged()
+
+                        // Also reload feed list from database
+                        vm.loadMyFeed()
+                    }
                 } else {
+                    // User hasn't liked the post yet - Like it
                     postRef.update(
                         "likes", likes + 1,
                         "likers", FieldValue.arrayUnion(currentUserId)
                     ).addOnSuccessListener {
-                        println("Post liked!")
-                        // Feed listesi yeniden yüklensin
-                        vm.loadMyFeed().observe(viewLifecycleOwner) { updatedFeedList ->
-                            adapter.setFeedList(updatedFeedList)
-                            adapter.notifyDataSetChanged()
-                        }
-                    }
+                        Toast.makeText(requireContext(), "Post liked!", Toast.LENGTH_SHORT).show()
 
+                        // Update the feed item locally for immediate UI feedback
+                        feed.likes = (feed.likes ?: 0) + 1
+                        if (feed.likers == null) {
+                            feed.likers = listOf(currentUserId)
+                        } else {
+                            val updatedLikers = feed.likers!!.toMutableList()
+                            updatedLikers.add(currentUserId)
+                            feed.likers = updatedLikers
+                        }
+                        adapter.notifyDataSetChanged()
+
+                        // Also reload feed list from database
+                        vm.loadMyFeed()
+                    }
                 }
             }
         }
