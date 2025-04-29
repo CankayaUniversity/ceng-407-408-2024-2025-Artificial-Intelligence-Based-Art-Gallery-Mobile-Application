@@ -53,4 +53,21 @@
     <color name="buttonColor">#475AD7</color>
     <color name="textPrimary">#FFFFFF</color>
     <color name="textSecondary">#CCCCCC</color>
+
+    <!-- Challenge Design Default Colors -->
+    <color name="challenge_completed_bg">#E8F5E9</color>
+    <color name="challenge_ongoing_bg">#FFFFFF</color>
+    <color name="completed_green">#4CAF50</color>
+    <color name="progress_bar_tint">#2196F3</color>
+    <color name="points_color">#FF9800</color>
+    <color name="background_color">#151928</color>
+    <color name="purple_primary">#6F2DFF</color>
+    <color name="white_70">#B3FFFFFF</color>
+    <color name="default_challenge_bg">#283149</color>
+    <color name="like_challenge_bg">#3F51B5</color>
+    <color name="follower_challenge_bg">#4CAF50</color>
+    <color name="comment_challenge_bg">#FF9800</color>
+    <color name="progress_tint">#6F2DFF</color>
+    <color name="following_challenge_bg">#D9555A</color>
+
 </resources>

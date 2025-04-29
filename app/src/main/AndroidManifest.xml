@@ -59,7 +59,7 @@
             android:exported="false"/>
 
         <activity
-            android:name=".activities.ChallengesActivity"
+            android:name=".activities.ChallengesPageActivity"
             android:exported="false"/>
 
         <activity
@@ -73,7 +73,7 @@
             android:theme="@style/AppTheme" />
 
         <activity
-            android:name=".activities.AchievementsActivity"
+            android:name=".activities.AchievementsPageActivity"
             android:exported="false"/>
 
         <provider

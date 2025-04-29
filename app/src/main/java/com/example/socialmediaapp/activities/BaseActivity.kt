@@ -128,9 +128,9 @@ abstract class BaseActivity : AppCompatActivity() {
 
         trophyIcon.setOnClickListener {
             // Check if already on ChallengesActivity to avoid recreation
-            if (this !is ChallengesActivity) {
+            if (this !is ChallengesPageActivity) {
                 // Navigate to ChallengesActivity
-                val intent = Intent(this, ChallengesActivity::class.java)
+                val intent = Intent(this, ChallengesPageActivity::class.java)
                 startActivity(intent)
             }
         }
