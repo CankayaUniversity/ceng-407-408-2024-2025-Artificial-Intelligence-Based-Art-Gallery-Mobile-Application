@@ -1,5 +1,6 @@
 package com.example.socialmediaapp.activities
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -23,124 +24,148 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
+import java.util.HashSet
 
 class AchievementsPageActivity : BaseActivity() {
     override fun getContentLayoutId(): Int {
+        // Make sure this matches the exact name of your XML layout file
         return R.layout.activity_achievements
     }
 
     private lateinit var achievementsContainer: LinearLayout
     private lateinit var emptyView: TextView
+    private lateinit var challengesTab: TextView
+    private lateinit var achievementsTab: TextView
 
     private val auth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
     private val firestore: FirebaseFirestore by lazy { FirebaseFirestore.getInstance() }
+
+    // Track already displayed achievements to prevent duplicates
+    private val displayedAchievements = HashSet<String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setToolbarTitle("Achievements")
 
+        // Initialize views AFTER super.onCreate has inflated the layout
         initializeViews()
+        setupTabListeners()
         loadAchievements()
     }
 
     private fun initializeViews() {
-        achievementsContainer = findViewById(R.id.achievementsContainer)
-        emptyView = findViewById(R.id.emptyView)
+        // The correct way to find views in a child activity of BaseActivity
+        val rootView = findViewById<View>(R.id.fragment_container)
+
+        // Now find views within the inflated layout
+        achievementsContainer = rootView.findViewById(R.id.achievementsContainer)
+        emptyView = rootView.findViewById(R.id.emptyView)
+        challengesTab = rootView.findViewById(R.id.challengesTab)
+        achievementsTab = rootView.findViewById(R.id.achievementsTab)
+
+        // Set achievements tab as selected initially
+        challengesTab.isSelected = false
+        achievementsTab.isSelected = true
+        challengesTab.setBackgroundResource(R.drawable.tab_unselected_background)
+        achievementsTab.setBackgroundResource(R.drawable.tab_selected_background)
+    }
+
+    private fun setupTabListeners() {
+        challengesTab.setOnClickListener {
+            // Navigate to challenges
+            val intent = Intent(this, ChallengesPageActivity::class.java)
+            startActivity(intent)
+            overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
+        }
+
+        achievementsTab.setOnClickListener {
+            // Already on achievements tab, do nothing
+            if (!achievementsTab.isSelected) {
+                challengesTab.isSelected = false
+                achievementsTab.isSelected = true
+                challengesTab.setBackgroundResource(R.drawable.tab_unselected_background)
+                achievementsTab.setBackgroundResource(R.drawable.tab_selected_background)
+                // No need to reload as we're already on this page
+            }
+        }
     }
 
     private fun loadAchievements() {
         val currentUser = auth.currentUser ?: return
         achievementsContainer.removeAllViews()
         emptyView.visibility = View.GONE
+        displayedAchievements.clear() // Clear tracking set before loading
 
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                // First try to get achievements from the new UserAchievements collection
+                val allAchievements = mutableListOf<AchievementData>()
+
+                // Get achievements from the UserAchievements collection
                 val achievementsQuery = firestore.collection("UserAchievements")
-                    .whereEqualTo("userid", currentUser.uid)
+                    .whereEqualTo("userId", currentUser.uid)
                     .orderBy("completedAt", Query.Direction.DESCENDING)
                     .get()
                     .await()
 
-                if (!achievementsQuery.isEmpty) {
-                    // Use the new UserAchievements collection
-                    withContext(Dispatchers.Main) {
-                        if (achievementsQuery.documents.isEmpty()) {
-                            emptyView.visibility = View.VISIBLE
-                            emptyView.text = "No achievements found"
-                        } else {
-                            for (doc in achievementsQuery.documents) {
-                                val challengeName = doc.getString("achievementName") ?: "Unknown Achievement"
-                                val constraint = doc.getLong("constraints")?.toInt() ?: 0
-                                val progress = doc.getLong("progress")?.toInt() ?: 0
-                                val points = doc.getLong("points")?.toInt() ?: 0
-                                val type = doc.getString("type") ?: ""
-                                val completedAt = doc.getTimestamp("completedAt")
+                for (doc in achievementsQuery.documents) {
+                    val challengeName = doc.getString("achievementName") ?:
+                    doc.getString("challengeName") ?: "Unknown Achievement"
+                    val constraint = doc.getLong("constraints")?.toInt() ?: 0
+                    val progress = doc.getLong("progress")?.toInt() ?: 0
+                    val points = doc.getLong("points")?.toInt() ?: 0
+                    val type = doc.getString("type") ?: ""
+                    val completedAt = doc.getTimestamp("completedAt")
 
-                                // Format completed date for display
-                                val completedDateStr = if (completedAt != null) {
-                                    formatDate(completedAt.toDate())
-                                } else {
-                                    "Unknown date"
-                                }
+                    // Generate a unique identifier for this achievement
+                    // Normalize the challenge name to ensure consistent comparison
+                    val uniqueKey = "${challengeName.lowercase().trim()}_${type}"
 
-                                val achievementCard = createAchievementCard(
-                                    challengeName,
-                                    constraint,
-                                    progress,
-                                    points,
-                                    type,
-                                    completedDateStr,
-                                    doc.id
-                                )
-                                achievementsContainer.addView(achievementCard)
-                            }
-                        }
+                    // Skip if we've already added this achievement to our list
+                    if (uniqueKey in displayedAchievements) {
+                        continue
                     }
-                } else {
-                    // Fall back to the old approach (filtering completed challenges from UserChallanges)
-                    val challengesQuery = firestore.collection("UserChallanges")
-                        .whereEqualTo("userid", currentUser.uid)
-                        .whereEqualTo("completed", true)
-                        .get()
-                        .await()
 
-                    withContext(Dispatchers.Main) {
-                        if (challengesQuery.documents.isEmpty()) {
-                            emptyView.visibility = View.VISIBLE
-                            emptyView.text = "No achievements found"
-                        } else {
-                            for (doc in challengesQuery.documents) {
-                                val challengeName = doc.getString("challangeName") ?:
-                                doc.getString("challengeName") ?:
-                                "Unknown Challenge"
+                    // Add to displayed set to prevent duplicates
+                    displayedAchievements.add(uniqueKey)
 
-                                val constraint = doc.getLong("constraints")?.toInt() ?: 0
-                                val progress = doc.getLong("process")?.toInt() ?:
-                                doc.getLong("progress")?.toInt() ?: 0
-                                val points = doc.getLong("points")?.toInt() ?: 0
-                                val type = doc.getString("type") ?: ""
+                    // Format completed date for display
+                    val completedDateStr = if (completedAt != null) {
+                        formatDate(completedAt.toDate())
+                    } else {
+                        "Unknown date"
+                    }
 
-                                // Use expiration as a placeholder since we don't have completedAt
-                                val expirationValue = doc.get("expiration")
-                                val dateStr = when (expirationValue) {
-                                    is Timestamp -> formatDate(expirationValue.toDate())
-                                    is String -> expirationValue
-                                    is Long -> formatDate(Date(expirationValue))
-                                    else -> "Unknown"
-                                }
+                    allAchievements.add(
+                        AchievementData(
+                            uniqueKey = uniqueKey,
+                            name = challengeName,
+                            constraint = constraint,
+                            progress = progress,
+                            points = points,
+                            type = type,
+                            completedDate = completedDateStr,
+                            docId = doc.id
+                        )
+                    )
+                }
 
-                                val achievementCard = createAchievementCard(
-                                    challengeName,
-                                    constraint,
-                                    progress,
-                                    points,
-                                    type,
-                                    dateStr,
-                                    doc.id
-                                )
-                                achievementsContainer.addView(achievementCard)
-                            }
+                withContext(Dispatchers.Main) {
+                    if (allAchievements.isEmpty()) {
+                        emptyView.visibility = View.VISIBLE
+                        emptyView.text = "No achievements found"
+                    } else {
+                        // Display each achievement
+                        for (achievement in allAchievements) {
+                            val achievementCard = createAchievementCard(
+                                challengeName = achievement.name,
+                                constraint = achievement.constraint,
+                                progress = achievement.progress,
+                                points = achievement.points,
+                                type = achievement.type,
+                                completedDate = achievement.completedDate,
+                                docId = achievement.docId
+                            )
+                            achievementsContainer.addView(achievementCard)
                         }
                     }
                 }
@@ -163,6 +188,7 @@ class AchievementsPageActivity : BaseActivity() {
         completedDate: String,
         docId: String
     ): CardView {
+        // Make sure this layout file exists in your project
         val cardView = layoutInflater.inflate(
             R.layout.item_achievement_card,
             achievementsContainer,
@@ -215,6 +241,18 @@ class AchievementsPageActivity : BaseActivity() {
         return cardView
     }
 
+    // Data class to represent achievement information
+    private data class AchievementData(
+        val uniqueKey: String,  // Unique identifier to detect duplicates
+        val name: String,
+        val constraint: Int,
+        val progress: Int,
+        val points: Int,
+        val type: String,
+        val completedDate: String,
+        val docId: String
+    )
+
     private fun formatDate(date: Date): String {
         val outputFormat = SimpleDateFormat("MMMM d, yyyy 'at' hh:mm:ss a z", Locale.US)
         outputFormat.timeZone = TimeZone.getTimeZone("UTC")
@@ -261,6 +299,19 @@ class AchievementsPageActivity : BaseActivity() {
                 }
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        // Set the proper tab selection state when returning to this activity
+        challengesTab.isSelected = false
+        achievementsTab.isSelected = true
+        challengesTab.setBackgroundResource(R.drawable.tab_unselected_background)
+        achievementsTab.setBackgroundResource(R.drawable.tab_selected_background)
+
+        // Reload achievements in case data changed while away
+        loadAchievements()
     }
 
     // Override the back button behavior

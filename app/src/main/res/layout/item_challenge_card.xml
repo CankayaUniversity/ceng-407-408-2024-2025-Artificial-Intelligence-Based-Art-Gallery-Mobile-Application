@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="12dp"
-    app:cardBackgroundColor="@color/default_challenge_bg"
     app:cardCornerRadius="12dp"
-    app:cardElevation="4dp">
+    app:cardElevation="4dp"
+    app:cardBackgroundColor="@color/card_background_dark">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -15,78 +14,73 @@
         android:padding="16dp">
 
         <ImageView
-            android:id="@+id/statusIcon"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_marginEnd="8dp"
-            android:src="@drawable/ic_check_circle"
-            android:visibility="invisible"
-            app:layout_constraintBottom_toBottomOf="@+id/challengeNameTextView"
-            app:layout_constraintEnd_toStartOf="@+id/challengeNameTextView"
+            android:id="@+id/badgeIcon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_achievement_badge"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/challengeNameTextView"
-            app:tint="@color/white" />
+            app:layout_constraintBottom_toBottomOf="@+id/expirationTextView" />
 
         <TextView
             android:id="@+id/challengeNameTextView"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
-            android:layout_marginEnd="8dp"
+            android:layout_marginStart="16dp"
             android:textColor="@color/white"
             android:textSize="16sp"
             android:textStyle="bold"
-            app:layout_constraintEnd_toStartOf="@+id/pointsTextView"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:text="Have total 2 likes on your posts" />
+            android:text="Challenge Name"
+            app:layout_constraintStart_toEndOf="@id/badgeIcon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/pointsTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/white"
+            android:layout_marginTop="4dp"
+            android:layout_marginStart="16dp"
+            android:textColor="@color/accent"
             android:textSize="14sp"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:text="150 pts" />
-
-        <ProgressBar
-            android:id="@+id/challengeProgressBar"
-            style="?android:attr/progressBarStyleHorizontal"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:layout_marginEnd="8dp"
-            android:max="100"
-            android:progressTint="@color/progress_tint"
-            app:layout_constraintEnd_toStartOf="@+id/progressTextView"
-            app:layout_constraintStart_toStartOf="@+id/challengeNameTextView"
-            app:layout_constraintTop_toBottomOf="@+id/challengeNameTextView"
-            tools:progress="50" />
-
-        <TextView
-            android:id="@+id/progressTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/white"
-            android:textSize="14sp"
-            app:layout_constraintBottom_toBottomOf="@+id/challengeProgressBar"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/challengeProgressBar"
-            tools:text="1/2" />
+            android:text="50 pts"
+            app:layout_constraintStart_toEndOf="@id/badgeIcon"
+            app:layout_constraintTop_toBottomOf="@id/challengeNameTextView" />
 
         <TextView
             android:id="@+id/expirationTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:textColor="@color/white_70"
+            android:layout_marginTop="4dp"
+            android:layout_marginStart="16dp"
+            android:textColor="@color/gray"
             android:textSize="12sp"
-            app:layout_constraintStart_toStartOf="@+id/challengeProgressBar"
-            app:layout_constraintTop_toBottomOf="@+id/challengeProgressBar"
-            tools:text="Expires: Jun 30, 2025" />
+            android:text="Expires: May 31, 2025"
+            app:layout_constraintStart_toEndOf="@id/badgeIcon"
+            app:layout_constraintTop_toBottomOf="@id/pointsTextView" />
+
+        <ProgressBar
+            android:id="@+id/challengeProgressBar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="0dp"
+            android:layout_height="12dp"
+            android:layout_marginTop="12dp"
+            android:progress="25"
+            android:progressDrawable="@drawable/progress_drawable"
+            app:layout_constraintTop_toBottomOf="@id/expirationTextView"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <TextView
+            android:id="@+id/progressTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="@color/white"
+            android:textSize="12sp"
+            android:text="1/4"
+            app:layout_constraintTop_toBottomOf="@id/challengeProgressBar"
+            app:layout_constraintEnd_toEndOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>

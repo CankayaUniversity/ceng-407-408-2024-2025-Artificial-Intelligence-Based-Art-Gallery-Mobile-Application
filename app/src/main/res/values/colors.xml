@@ -63,11 +63,28 @@
     <color name="background_color">#151928</color>
     <color name="purple_primary">#6F2DFF</color>
     <color name="white_70">#B3FFFFFF</color>
-    <color name="default_challenge_bg">#283149</color>
-    <color name="like_challenge_bg">#3F51B5</color>
-    <color name="follower_challenge_bg">#4CAF50</color>
-    <color name="comment_challenge_bg">#FF9800</color>
     <color name="progress_tint">#6F2DFF</color>
-    <color name="following_challenge_bg">#D9555A</color>
+
+    <!-- Base App Colors -->
+    <color name="background_dark">#001028</color>
+    <color name="card_background_dark">#001E40</color>
+    <color name="tab_background">#002A56</color>
+    <color name="tab_selected">#0047A8</color>
+    <color name="transparent">#00000000</color>
+    <color name="green_complete">#4CAF50</color>
+
+    <!-- Progress Bar Colors -->
+    <color name="progress_background">#1AFFFFFF</color>
+    <color name="progress_fill">#4CAF50</color>
+
+    <!-- Challenge Type Colors -->
+    <color name="like_challenge_bg">#003366</color>
+    <color name="follower_challenge_bg">#004D40</color>
+    <color name="comment_challenge_bg">#3F2655</color>
+    <color name="following_challenge_bg">#004D99</color>
+    <color name="default_challenge_bg">#002a56</color>
+
+    <!-- Achievement Background Colors -->
+    <color name="achievement_bg_blue">#003366</color>
 
 </resources>
