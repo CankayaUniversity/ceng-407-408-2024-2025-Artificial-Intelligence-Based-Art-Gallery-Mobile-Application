@@ -14,24 +14,25 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.RecyclerView
 import com.example.socialmediaapp.MainActivity
 import com.example.socialmediaapp.R
 import com.example.socialmediaapp.Utils
 import com.example.socialmediaapp.adapters.MyFeedAdapter
 import com.example.socialmediaapp.adapters.onCommentClickListener
-import com.example.socialmediaapp.adapters.onDoubleTapClickListener
+import com.example.socialmediaapp.adapters.onLikeClickListener
 import com.example.socialmediaapp.adapters.onUserClickListener
 import com.example.socialmediaapp.databinding.FragmentHomeBinding
 import com.example.socialmediaapp.modal.Feed
 import com.example.socialmediaapp.mvvm.ViewModel
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.android.material.bottomsheet.BottomSheetDialog
 
-class HomeFragment : Fragment(), onDoubleTapClickListener, onUserClickListener {
+class HomeFragment : Fragment(), onLikeClickListener, onUserClickListener {
     private lateinit var vm: ViewModel
     private lateinit var binding: FragmentHomeBinding
     private lateinit var adapter: MyFeedAdapter
+    private var scrollPosition: Int = 0
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -49,6 +50,7 @@ class HomeFragment : Fragment(), onDoubleTapClickListener, onUserClickListener {
         setupFeedAdapter()
         observeFeed()
         setupFilterSpinner()
+        setupScrollListener()
     }
 
     private fun initViewModel() {
@@ -57,7 +59,7 @@ class HomeFragment : Fragment(), onDoubleTapClickListener, onUserClickListener {
 
     private fun setupFeedAdapter() {
         adapter = MyFeedAdapter()
-        adapter.setListener(this@HomeFragment)
+        adapter.setLikeListener(this@HomeFragment)
         adapter.setUserClickListener(this@HomeFragment)
         adapter.setCommentClickListener(object : onCommentClickListener {
             override fun addComment(postId: String, comment: String) {
@@ -69,13 +71,40 @@ class HomeFragment : Fragment(), onDoubleTapClickListener, onUserClickListener {
                 }
             }
         })
+        binding.feedRecycler.adapter = adapter
+    }
+
+    private fun setupScrollListener() {
+        binding.feedRecycler.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+                // Save the current first visible item position
+                val layoutManager = recyclerView.layoutManager as androidx.recyclerview.widget.LinearLayoutManager
+                scrollPosition = layoutManager.findFirstVisibleItemPosition()
+            }
+        })
     }
 
     private fun observeFeed() {
         binding.lifecycleOwner = viewLifecycleOwner
         vm.loadMyFeed().observe(viewLifecycleOwner, Observer { feedList ->
+            val previousSize = adapter.feedlist.size
+
+            // Update adapter with new data
             adapter.setFeedList(feedList)
-            binding.feedRecycler.adapter = adapter
+
+            // Notify adapter of the new data
+            if (previousSize == 0) {
+                // If this is the first load, use notifyDataSetChanged
+                adapter.notifyDataSetChanged()
+            } else {
+                // Otherwise notify that the dataset has been modified to maintain scroll position
+                adapter.notifyItemRangeChanged(0, feedList.size)
+
+                // Restore scroll position
+                (binding.feedRecycler.layoutManager as androidx.recyclerview.widget.LinearLayoutManager)
+                    .scrollToPosition(scrollPosition)
+            }
         })
     }
 
@@ -96,6 +125,10 @@ class HomeFragment : Fragment(), onDoubleTapClickListener, onUserClickListener {
                 val selectedOption = parent.getItemAtPosition(position).toString()
                 Toast.makeText(requireContext(), "Filtered by $selectedOption", Toast.LENGTH_SHORT).show()
 
+                // Save current scroll position before sorting
+                val layoutManager = binding.feedRecycler.layoutManager as androidx.recyclerview.widget.LinearLayoutManager
+                scrollPosition = layoutManager.findFirstVisibleItemPosition()
+
                 when (selectedOption) {
                     "Newest" -> vm.sortFeedDescendingDate()
                     "Oldest" -> vm.sortFeedAscendingDate()
@@ -110,31 +143,89 @@ class HomeFragment : Fragment(), onDoubleTapClickListener, onUserClickListener {
         }
     }
 
-    override fun onDoubleTap(feed: Feed) {
+    override fun onLikeClick(feed: Feed) {
         val currentUserId = Utils.getUiLoggedIn()
         val postId = feed.postid ?: return
 
         val firestore = FirebaseFirestore.getInstance()
         val postRef = firestore.collection("Posts").document(postId)
 
+        // Find the position of the item in the adapter
+        val position = adapter.feedlist.indexOfFirst { it.postid == postId }
+        if (position == -1) return // Item not found in list
+
+        // Save the current scroll position
+        val layoutManager = binding.feedRecycler.layoutManager as androidx.recyclerview.widget.LinearLayoutManager
+        scrollPosition = layoutManager.findFirstVisibleItemPosition()
+
         postRef.get().addOnSuccessListener { document ->
             if (document != null && document.exists()) {
                 val likes = document.getLong("likes")?.toInt() ?: 0
-                val likers = document.get("likers") as? List<String>
+                val likers = document.get("likers") as? List<String> ?: listOf()
 
-                if (!likers.isNullOrEmpty() && likers.contains(currentUserId)) {
-                    println("You have already liked this post!")
+                if (likers.contains(currentUserId)) {
+                    // User has already liked the post - Unlike it
+                    postRef.update(
+                        "likes", kotlin.math.max(0, likes - 1), // Ensure likes don't go below 0
+                        "likers", FieldValue.arrayRemove(currentUserId)
+                    ).addOnSuccessListener {
+                        Toast.makeText(requireContext(), "Post unliked!", Toast.LENGTH_SHORT).show()
+
+                        // Update the feed item locally for immediate UI feedback
+                        feed.likes = (feed.likes ?: 0) - 1
+                        if (feed.likers != null) {
+                            val updatedLikers = feed.likers!!.toMutableList()
+                            updatedLikers.remove(currentUserId)
+                            feed.likers = updatedLikers
+                        }
+
+                        // Notify only the changed item
+                        adapter.notifyItemChanged(position)
+
+                        // Restore scroll position
+                        layoutManager.scrollToPosition(scrollPosition)
+                    }
                 } else {
+                    // User hasn't liked the post yet - Like it
                     postRef.update(
                         "likes", likes + 1,
                         "likers", FieldValue.arrayUnion(currentUserId)
-                    )
-                        .addOnSuccessListener {
-                            println("Post liked!")
+                    ).addOnSuccessListener {
+                        Toast.makeText(requireContext(), "Post liked!", Toast.LENGTH_SHORT).show()
+
+                        // Update the feed item locally for immediate UI feedback
+                        feed.likes = (feed.likes ?: 0) + 1
+                        if (feed.likers == null) {
+                            feed.likers = listOf(currentUserId)
+                        } else {
+                            val updatedLikers = feed.likers!!.toMutableList()
+                            updatedLikers.add(currentUserId)
+                            feed.likers = updatedLikers
                         }
-                        .addOnFailureListener { exception ->
-                            println("Failed to update like: $exception")
+
+                        // Create notification for post owner
+                        val postOwnerId = feed.userid ?: ""
+
+                        // Get current user info for notification
+                        vm.getCurrentUserInfo { username, userImage ->
+                            // Create like notification
+                            vm.createNotification(
+                                toUserId = postOwnerId,
+                                fromUserId = currentUserId,
+                                fromUsername = username,
+                                fromUserImage = userImage,
+                                type = "like",
+                                postId = postId,
+                                postCaption = feed.caption ?: ""
+                            )
                         }
+
+                        // Notify only the changed item
+                        adapter.notifyItemChanged(position)
+
+                        // Restore scroll position
+                        layoutManager.scrollToPosition(scrollPosition)
+                    }
                 }
             }
         }

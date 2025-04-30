@@ -1,4 +1,3 @@
-
 @file:Suppress("DEPRECATION")
 
 package com.example.socialmediaapp.adapters
@@ -6,7 +5,6 @@ package com.example.socialmediaapp.adapters
 import android.annotation.SuppressLint
 import android.content.Context
 import android.text.format.DateUtils
-import android.view.GestureDetector
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -15,24 +13,22 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.socialmediaapp.R
 import de.hdodenhof.circleimageview.CircleImageView
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import com.bumptech.glide.Glide
 import com.example.socialmediaapp.modal.Feed
 import java.util.Date
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
-import androidx.core.view.GestureDetectorCompat
+import androidx.recyclerview.widget.DiffUtil
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.firestore.FirebaseFirestore
 
 class MyFeedAdapter: RecyclerView.Adapter<FeedHolder>() {
     var feedlist = listOf<Feed>()
-    private var listener: onDoubleTapClickListener? = null
+    private var likeListener: onLikeClickListener? = null
     private var userClickListener: onUserClickListener? = null
     private var commentClickListener: onCommentClickListener? = null
 
-    @SuppressLint("ClickableViewAccessibility")
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
@@ -44,6 +40,11 @@ class MyFeedAdapter: RecyclerView.Adapter<FeedHolder>() {
     @SuppressLint("SetTextI18n", "ClickableViewAccessibility")
     override fun onBindViewHolder(holder: FeedHolder, position: Int) {
         val feed = feedlist[position]
+
+        val currentUserId = com.example.socialmediaapp.Utils.getUiLoggedIn()
+
+        // Set the appropriate like icon based on whether the user has liked this post
+        updateLikeIcon(holder, feed, currentUserId)
 
         holder.userNamePoster.text = feed.username
         holder.userNameCaption.text = feed.caption
@@ -68,16 +69,9 @@ class MyFeedAdapter: RecyclerView.Adapter<FeedHolder>() {
 
         holder.likecount.text = "${feed.likes} Likes"
 
-        val doubleClickGestureDetector = GestureDetector(holder.itemView.context, object : GestureDetector.SimpleOnGestureListener() {
-            override fun onDoubleTap(e: MotionEvent): Boolean {
-                listener?.onDoubleTap(feed)
-                return true
-            }
-        })
-
-        holder.itemView.setOnTouchListener { _, event ->
-            doubleClickGestureDetector.onTouchEvent(event)
-            true
+        // Set up like icon click listener
+        holder.likeIcon.setOnClickListener {
+            likeListener?.onLikeClick(feed)
         }
 
         holder.userNamePoster.setOnClickListener {
@@ -92,16 +86,22 @@ class MyFeedAdapter: RecyclerView.Adapter<FeedHolder>() {
             showCommentBottomSheet(holder.itemView.context, feed)
         }
 
-        // Add this code after the commentIcon click listener in onBindViewHolder method
+        // Add story icon click listener
         holder.itemView.findViewById<ImageView>(R.id.storyIcon).setOnClickListener {
             // Get the story information from Firebase
             showStoryBottomSheet(holder.itemView.context, feed)
         }
-
-
-
-
     }
+
+    // Helper method to update the like icon
+    private fun updateLikeIcon(holder: FeedHolder, feed: Feed, currentUserId: String) {
+        if (feed.likers?.contains(currentUserId) == true) {
+            holder.likeIcon.setImageResource(R.drawable.ic_like_filled)
+        } else {
+            holder.likeIcon.setImageResource(R.drawable.ic_like)
+        }
+    }
+
     private fun showStoryBottomSheet(context: Context, feed: Feed) {
         val bottomSheetDialog = BottomSheetDialog(context)
         val view = LayoutInflater.from(context).inflate(R.layout.layout_story_bottom_sheet, null)
@@ -150,8 +150,6 @@ class MyFeedAdapter: RecyclerView.Adapter<FeedHolder>() {
         bottomSheetDialog.show()
     }
 
-
-
     private fun showCommentBottomSheet(context: Context, feed: Feed) {
         val bottomSheetDialog = BottomSheetDialog(context)
         val view = LayoutInflater.from(context).inflate(R.layout.layout_comment_bottom_sheet, null)
@@ -199,21 +197,23 @@ class MyFeedAdapter: RecyclerView.Adapter<FeedHolder>() {
         bottomSheetDialog.show()
     }
 
-
-
-
-
-
     override fun getItemCount(): Int {
         return feedlist.size
     }
 
     fun setFeedList(list: List<Feed>) {
+        // Use DiffUtil to efficiently update only changed items
+        val diffCallback = FeedDiffCallback(this.feedlist, list)
+        val diffResult = DiffUtil.calculateDiff(diffCallback)
+
         this.feedlist = list
+
+        // Use diffResult to notify adapter of specific changes
+        diffResult.dispatchUpdatesTo(this)
     }
 
-    fun setListener(listener: onDoubleTapClickListener) {
-        this.listener = listener
+    fun setLikeListener(listener: onLikeClickListener) {
+        this.likeListener = listener
     }
 
     fun setUserClickListener(listener: onUserClickListener) {
@@ -223,7 +223,36 @@ class MyFeedAdapter: RecyclerView.Adapter<FeedHolder>() {
     fun setCommentClickListener(listener: onCommentClickListener) {
         this.commentClickListener = listener
     }
+}
 
+// Add a DiffUtil.Callback implementation to efficiently update the RecyclerView
+class FeedDiffCallback(
+    private val oldList: List<Feed>,
+    private val newList: List<Feed>
+) : DiffUtil.Callback() {
+
+    override fun getOldListSize(): Int = oldList.size
+
+    override fun getNewListSize(): Int = newList.size
+
+    override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+        return oldList[oldItemPosition].postid == newList[newItemPosition].postid
+    }
+
+    override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+        val oldItem = oldList[oldItemPosition]
+        val newItem = newList[newItemPosition]
+
+        // Compare relevant fields that might change
+        return oldItem.likes == newItem.likes &&
+                oldItem.likers?.size == newItem.likers?.size &&
+                oldItem.caption == newItem.caption
+    }
+
+    override fun getChangePayload(oldItemPosition: Int, newItemPosition: Int): Any? {
+        // If needed, you can add specific change payloads here
+        return super.getChangePayload(oldItemPosition, newItemPosition)
+    }
 }
 
 // FeedHolder güncellemesi:
@@ -235,6 +264,7 @@ class FeedHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     val time: TextView = itemView.findViewById(R.id.feedtime)
     val likecount: TextView = itemView.findViewById(R.id.likecount)
     val commentIcon: ImageView = itemView.findViewById(R.id.commentIcon)
+    val likeIcon: ImageView = itemView.findViewById(R.id.likeIcon)
     val cardView: androidx.cardview.widget.CardView = itemView.findViewById(R.id.cardview)
 }
 
@@ -243,13 +273,10 @@ fun Int.dpToPx(context: android.content.Context): Int {
     return (this * context.resources.displayMetrics.density).toInt()
 }
 
-
-interface onDoubleTapClickListener{
-
+interface onLikeClickListener {
     // Create feed modal
-    fun onDoubleTap(feed: Feed)
+    fun onLikeClick(feed: Feed)
 }
-
 
 interface onUserClickListener {
     fun onUserClick(userId: String)
