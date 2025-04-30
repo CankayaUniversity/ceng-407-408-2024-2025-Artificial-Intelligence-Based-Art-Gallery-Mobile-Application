@@ -9,6 +9,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Dispatchers
 import androidx.lifecycle.viewModelScope
 import com.example.socialmediaapp.modal.Feed
+import com.example.socialmediaapp.modal.Notification
 import com.example.socialmediaapp.modal.Users
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.auth.User
@@ -264,7 +265,7 @@ class ViewModel: ViewModel() {
         return postCount
     }
 
-    // Added for follow functionality
+    // Update followUser in ViewModel.kt to include notification
     fun followUser(userId: String): LiveData<Boolean> {
         val success = MutableLiveData<Boolean>()
         val firestore = FirebaseFirestore.getInstance()
@@ -308,6 +309,18 @@ class ViewModel: ViewModel() {
                                                             firestore.collection("Users").document(currentUserId)
                                                                 .update("following", currentFollowing + 1)
                                                                 .addOnSuccessListener {
+                                                                    // Get current user info for notification
+                                                                    getCurrentUserInfo { username, userImage ->
+                                                                        // Create follow notification
+                                                                        createNotification(
+                                                                            toUserId = userId,
+                                                                            fromUserId = currentUserId,
+                                                                            fromUsername = username,
+                                                                            fromUserImage = userImage,
+                                                                            type = "follow"
+                                                                        )
+                                                                    }
+
                                                                     success.postValue(true)
                                                                 }
                                                                 .addOnFailureListener {
@@ -332,7 +345,7 @@ class ViewModel: ViewModel() {
                         success.postValue(false)
                     }
             } catch (e: Exception) {
-                Log.e("Firebase", "Takip edilirken hata oluştu: ${e.message}")
+                Log.e("Firebase", "Error while following: ${e.message}")
                 success.postValue(false)
             }
         }
@@ -446,14 +459,16 @@ class ViewModel: ViewModel() {
 
 
 
+    // Modify addComment function in ViewModel.kt
     fun addComment(postId: String, commentText: String) {
         val firestore = FirebaseFirestore.getInstance()
 
-        // Giriş yapan kullanıcının ID'si ve adı
+        // Current user's ID and name
         val userId = Utils.getUiLoggedIn()
         val username = name.value ?: "Unknown"
+        val userImage = image.value ?: ""
 
-        // Yorum verisi
+        // Comment data
         val commentData = mapOf(
             "userId" to userId,
             "username" to username,
@@ -463,23 +478,64 @@ class ViewModel: ViewModel() {
 
         val postRef = firestore.collection("Posts").document(postId)
 
-        // Yorum verisini alt koleksiyona ekle
+        // Add comment to subcollection
         postRef.collection("comments")
             .add(commentData)
             .addOnSuccessListener {
-                Log.d("Firestore", "Yorum başarıyla eklendi.")
+                Log.d("Firestore", "Comment added successfully.")
 
-                // Yorum sayısını artır
+                // Increment comment count
                 postRef.update("comments", com.google.firebase.firestore.FieldValue.increment(1))
                     .addOnSuccessListener {
-                        Log.d("Firestore", "Yorum sayısı güncellendi.")
+                        Log.d("Firestore", "Comment count updated.")
+
+                        // Get post info to create notification
+                        postRef.get().addOnSuccessListener { documentSnapshot ->
+                            if (documentSnapshot.exists()) {
+                                val post = documentSnapshot.toObject(Posts::class.java)
+                                val postOwnerId = post?.userid ?: ""
+                                val postCaption = post?.caption ?: ""
+
+                                // Create notification for post owner
+                                createNotification(
+                                    toUserId = postOwnerId,
+                                    fromUserId = userId,
+                                    fromUsername = username,
+                                    fromUserImage = userImage,
+                                    type = "comment",
+                                    postId = postId,
+                                    postCaption = postCaption,
+                                    text = commentText
+                                )
+                            }
+                        }
                     }
                     .addOnFailureListener { e ->
-                        Log.e("Firestore", "Yorum sayısı güncellenemedi: ${e.message}")
+                        Log.e("Firestore", "Failed to update comment count: ${e.message}")
                     }
             }
             .addOnFailureListener { e ->
-                Log.e("Firestore", "Yorum eklenirken hata oluştu: ${e.message}")
+                Log.e("Firestore", "Error adding comment: ${e.message}")
+            }
+    }
+
+    // Add this function to ViewModel.kt to get current user's info
+    fun getCurrentUserInfo(callback: (String, String) -> Unit) {
+        val firestore = FirebaseFirestore.getInstance()
+
+        firestore.collection("Users").document(Utils.getUiLoggedIn())
+            .get()
+            .addOnSuccessListener { document ->
+                if (document != null && document.exists()) {
+                    val username = document.getString("username") ?: "Unknown"
+                    val userImage = document.getString("image") ?: ""
+                    callback(username, userImage)
+                } else {
+                    callback("Unknown", "")
+                }
+            }
+            .addOnFailureListener {
+                callback("Unknown", "")
             }
     }
 
@@ -580,6 +636,115 @@ class ViewModel: ViewModel() {
         }
 
         // No need to reload the entire feed - the UI will update with the local change
+    }
+
+
+
+    fun createNotification(
+        toUserId: String,
+        fromUserId: String,
+        fromUsername: String,
+        fromUserImage: String,
+        type: String,
+        postId: String = "",
+        postCaption: String = "",
+        text: String = ""
+    ) {
+        val firestore = FirebaseFirestore.getInstance()
+        val notificationId = firestore.collection("Notifications").document().id
+
+        val notification = Notification(
+            id = notificationId,
+            userId = toUserId,
+            fromUserId = fromUserId,
+            fromUsername = fromUsername,
+            fromUserImage = fromUserImage,
+            type = type,
+            postId = postId,
+            postCaption = postCaption,
+            text = text,
+            time = System.currentTimeMillis(),
+            seen = false
+        )
+
+        // Don't create notifications for user's own actions
+        if (toUserId == fromUserId) {
+            return
+        }
+
+        firestore.collection("Notifications").document(notificationId)
+            .set(notification)
+            .addOnSuccessListener {
+                Log.d("Notification", "Notification created successfully")
+            }
+            .addOnFailureListener { e ->
+                Log.e("Notification", "Error creating notification: ${e.message}")
+            }
+    }
+
+    // Function to get notifications for current user
+    fun getNotifications(): LiveData<List<Notification>> {
+        val notifications = MutableLiveData<List<Notification>>()
+        val firestore = FirebaseFirestore.getInstance()
+
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                firestore.collection("Notifications")
+                    .whereEqualTo("userId", Utils.getUiLoggedIn())
+                    .orderBy("time", com.google.firebase.firestore.Query.Direction.DESCENDING)
+                    .addSnapshotListener { snapshot, exception ->
+                        if (exception != null) {
+                            Log.e("Firebase", "Error fetching notifications: ${exception.message}")
+                            return@addSnapshotListener
+                        }
+
+                        val notificationList = snapshot?.documents?.mapNotNull {
+                            it.toObject(Notification::class.java)
+                        } ?: emptyList()
+
+                        notifications.postValue(notificationList)
+                    }
+            } catch (e: Exception) {
+                Log.e("Firebase", "Exception in getNotifications: ${e.message}")
+            }
+        }
+
+        return notifications
+    }
+
+    // Function to mark notification as seen
+    fun markNotificationAsSeen(notificationId: String) {
+        val firestore = FirebaseFirestore.getInstance()
+
+        firestore.collection("Notifications").document(notificationId)
+            .update("seen", true)
+            .addOnSuccessListener {
+                Log.d("Notification", "Notification marked as seen")
+            }
+            .addOnFailureListener { e ->
+                Log.e("Notification", "Error marking notification as seen: ${e.message}")
+            }
+    }
+
+    // Function to get unread notification count
+    fun getUnreadNotificationCount(): LiveData<Int> {
+        val count = MutableLiveData<Int>()
+        val firestore = FirebaseFirestore.getInstance()
+
+        firestore.collection("Notifications")
+            .whereEqualTo("userId", Utils.getUiLoggedIn())
+            .whereEqualTo("seen", false)
+            .addSnapshotListener { snapshot, exception ->
+                if (exception != null) {
+                    Log.e("Firebase", "Error fetching unread notifications: ${exception.message}")
+                    count.postValue(0)
+                    return@addSnapshotListener
+                }
+
+                count.postValue(snapshot?.size() ?: 0)
+            }
+
+        return count
     }
 
 
