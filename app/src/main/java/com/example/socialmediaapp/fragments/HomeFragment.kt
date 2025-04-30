@@ -203,6 +203,23 @@ class HomeFragment : Fragment(), onLikeClickListener, onUserClickListener {
                             feed.likers = updatedLikers
                         }
 
+                        // Create notification for post owner
+                        val postOwnerId = feed.userid ?: ""
+
+                        // Get current user info for notification
+                        vm.getCurrentUserInfo { username, userImage ->
+                            // Create like notification
+                            vm.createNotification(
+                                toUserId = postOwnerId,
+                                fromUserId = currentUserId,
+                                fromUsername = username,
+                                fromUserImage = userImage,
+                                type = "like",
+                                postId = postId,
+                                postCaption = feed.caption ?: ""
+                            )
+                        }
+
                         // Notify only the changed item
                         adapter.notifyItemChanged(position)
 
