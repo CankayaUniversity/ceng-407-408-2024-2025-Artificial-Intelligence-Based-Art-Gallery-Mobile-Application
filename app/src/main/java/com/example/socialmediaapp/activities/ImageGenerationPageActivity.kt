@@ -1,7 +1,8 @@
 package com.example.socialmediaapp.activities
 
-import org.json.JSONArray
+import android.annotation.SuppressLint
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
@@ -12,9 +13,12 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ProgressBar
+import android.widget.ScrollView
+import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
 import androidx.cardview.widget.CardView
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.graphics.toColorInt
 import androidx.lifecycle.lifecycleScope
 import com.example.socialmediaapp.R
@@ -26,6 +30,7 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONArray
 import org.json.JSONObject
 import java.util.concurrent.TimeUnit
 
@@ -48,10 +53,10 @@ class ImageGenerationPageActivity : BaseActivity() {
     private lateinit var styleCardCartoon: CardView
     private lateinit var styleCardAnime: CardView
     private lateinit var styleCardHyperrealistic: CardView
-
     private var selectedStyle: String = "none"
     private val MAX_PROMPT_LENGTH = 300
-
+    private lateinit var sharedPreferences: SharedPreferences
+    private val PREF_NAME = "ThemePrefs"
     // Your Azure OpenAI API credentials - replace with actual keys in production
     private val AZURE_OPENAI_DALLE_ENDPOINT = "https://mindsart-storygeneration.openai.azure.com/openai/deployments/MindsArt-dall-e-3/images/generations?api-version=2024-02-01"
     private val AZURE_OPENAI_DALLE_API_KEY = "Bd5xyYWvSIZMUzaaBOhBMM8mVpoP9Ldk4EWBa4REpuM4MZ3HLIFIJQQJ99BCACfhMk5XJ3w3AAABACOG34N4"
@@ -65,6 +70,7 @@ class ImageGenerationPageActivity : BaseActivity() {
         .writeTimeout(60, TimeUnit.SECONDS)
         .build()
 
+    @SuppressLint("UseSwitchCompatOrMaterialCode")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // Set title for this activity
@@ -72,6 +78,14 @@ class ImageGenerationPageActivity : BaseActivity() {
 
         initializeViews()
         setupListeners()
+        sharedPreferences = getSharedPreferences(PREF_NAME, MODE_PRIVATE)
+        val mainLayout = findViewById<ScrollView>(R.id.image_generation)
+
+        if (sharedPreferences.getBoolean(PREF_NAME, false)) {
+            mainLayout.setBackgroundColor("#3F51B5".toColorInt())
+        }
+
+
     }
 
     private fun initializeViews() {

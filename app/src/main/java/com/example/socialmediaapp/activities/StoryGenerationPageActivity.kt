@@ -33,8 +33,11 @@ import java.io.IOException
 import java.util.Locale
 import java.util.UUID
 import android.content.ContentValues
+import android.content.SharedPreferences
 import android.media.MediaScannerConnection
 import android.provider.MediaStore
+import android.widget.LinearLayout
+import androidx.constraintlayout.widget.ConstraintLayout
 
 class StoryGenerationPageActivity: BaseActivity() {
     override fun getContentLayoutId(): Int {
@@ -50,7 +53,8 @@ class StoryGenerationPageActivity: BaseActivity() {
     private lateinit var followersRadioButton: RadioButton
     private lateinit var tagDisplay: TextView
     private lateinit var toolbarTitle : TextView
-
+    private lateinit var sharedPreferences: SharedPreferences
+    private val PREF_NAME = "ThemePrefs"
     private var imageUrl: String? = null
     private var story: String? = null
     private var prompt: String? = null
@@ -146,6 +150,13 @@ class StoryGenerationPageActivity: BaseActivity() {
                 publicRadioButton.buttonTintList = ColorStateList.valueOf("#3389FF".toColorInt())
                 followersRadioButton.buttonTintList = ColorStateList.valueOf(Color.GRAY)
             }
+        }
+
+        sharedPreferences = getSharedPreferences(PREF_NAME, MODE_PRIVATE)
+        val mainLayout = findViewById<LinearLayout>(R.id.story_generation)
+
+        if (sharedPreferences.getBoolean(PREF_NAME, false)) {
+            mainLayout.setBackgroundColor("#3F51B5".toColorInt())
         }
 
     }

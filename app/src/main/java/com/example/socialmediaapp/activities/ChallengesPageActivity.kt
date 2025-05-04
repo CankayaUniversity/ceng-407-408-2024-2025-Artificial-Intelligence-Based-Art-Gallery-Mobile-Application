@@ -1,15 +1,19 @@
 package com.example.socialmediaapp.activities
 
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ProgressBar
+import android.widget.ScrollView
 import android.widget.TextView
 import androidx.cardview.widget.CardView
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.toColorInt
 import androidx.lifecycle.lifecycleScope
 import com.example.socialmediaapp.R
 import com.google.firebase.Timestamp
@@ -34,7 +38,8 @@ class ChallengesPageActivity : BaseActivity() {
     private lateinit var emptyView: TextView
     private lateinit var challengesTab: TextView
     private lateinit var achievementsTab: TextView
-
+    private lateinit var sharedPreferences: SharedPreferences
+    private val PREF_NAME = "ThemePrefs"
     private val auth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
     private val firestore: FirebaseFirestore by lazy { FirebaseFirestore.getInstance() }
 
@@ -49,6 +54,14 @@ class ChallengesPageActivity : BaseActivity() {
         initializeViews()
         setupTabListeners()
         loadChallenges()
+
+        sharedPreferences = getSharedPreferences(PREF_NAME, MODE_PRIVATE)
+        val mainLayout = findViewById<ConstraintLayout>(R.id.challenges)
+
+        if (sharedPreferences.getBoolean(PREF_NAME, false)) {
+            mainLayout.setBackgroundColor("#3F51B5".toColorInt())
+        }
+
     }
 
     private fun initializeViews() {

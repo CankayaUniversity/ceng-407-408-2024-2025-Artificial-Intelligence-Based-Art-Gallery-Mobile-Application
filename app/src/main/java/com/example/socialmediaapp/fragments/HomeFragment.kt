@@ -1,15 +1,24 @@
 package com.example.socialmediaapp.fragments
 
+import android.content.Context.MODE_PRIVATE
 import android.content.Intent
+import android.content.SharedPreferences
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.LinearLayout
 import android.widget.Spinner
 import android.widget.Toast
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.graphics.toColorInt
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -18,6 +27,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.socialmediaapp.MainActivity
 import com.example.socialmediaapp.R
 import com.example.socialmediaapp.Utils
+import com.example.socialmediaapp.activities.BaseActivity
 import com.example.socialmediaapp.adapters.MyFeedAdapter
 import com.example.socialmediaapp.adapters.onCommentClickListener
 import com.example.socialmediaapp.adapters.onLikeClickListener
@@ -33,7 +43,8 @@ class HomeFragment : Fragment(), onLikeClickListener, onUserClickListener {
     private lateinit var binding: FragmentHomeBinding
     private lateinit var adapter: MyFeedAdapter
     private var scrollPosition: Int = 0
-
+    private lateinit var sharedPreferences: SharedPreferences
+    private val PREF_NAME = "ThemePrefs"
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -41,6 +52,7 @@ class HomeFragment : Fragment(), onLikeClickListener, onUserClickListener {
     ): View? {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_home, container, false)
         return binding.root
+
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -51,7 +63,17 @@ class HomeFragment : Fragment(), onLikeClickListener, onUserClickListener {
         observeFeed()
         setupFilterSpinner()
         setupScrollListener()
+        sharedPreferences = this.requireActivity().getSharedPreferences(PREF_NAME, MODE_PRIVATE)
+        val mainLayout = this.activity?.findViewById<ConstraintLayout>(R.id.home)
+
+        if (sharedPreferences.getBoolean(PREF_NAME, false)) {
+            if (mainLayout != null) {
+                mainLayout.setBackgroundColor("#3F51B5".toColorInt())
+            }
+        }
     }
+
+
 
     private fun initViewModel() {
         vm = ViewModelProvider(this).get(ViewModel::class.java)
