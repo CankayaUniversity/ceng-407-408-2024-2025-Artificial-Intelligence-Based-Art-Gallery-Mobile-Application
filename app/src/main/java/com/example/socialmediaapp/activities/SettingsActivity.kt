@@ -47,6 +47,7 @@ class SettingsActivity() : BaseActivity() {
             onBackPressed()
         }
 
+        // Get layout id
         val mainLayout = findViewById<ConstraintLayout>(R.id.settings)
 
         if (sharedPreferences.getBoolean(PREF_NAME, false)) {
