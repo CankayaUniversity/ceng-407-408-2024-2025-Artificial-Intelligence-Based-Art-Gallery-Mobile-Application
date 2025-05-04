@@ -71,7 +71,8 @@ class NotificationFragment : Fragment() {
                 when (notification.type) {
                     "like", "comment" -> {
                         // Navigate to post details
-                        navigateToPostDetails(notification.postId)
+                        //navigateToPostDetails(notification.postId)
+                        navigateToUserProfile(notification.fromUserId)
                     }
                     "follow" -> {
                         // Navigate to user profile
