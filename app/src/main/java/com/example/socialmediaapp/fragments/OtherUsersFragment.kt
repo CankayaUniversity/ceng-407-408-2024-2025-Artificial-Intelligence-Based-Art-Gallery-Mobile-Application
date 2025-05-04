@@ -44,6 +44,11 @@ class OtherUsersFragment : Fragment() {
         // ViewModel'i oluştur
         viewModel = ViewModelProvider(this).get(ViewModel::class.java)
 
+        // Back button setup
+        binding.backButton.setOnClickListener {
+            requireActivity().onBackPressed()
+        }
+
         // Kullanıcı bilgilerini gözlemle
         userId?.let { id ->
             // Kullanıcı detaylarını yükle
@@ -70,14 +75,6 @@ class OtherUsersFragment : Fragment() {
                 binding.postsCountText.text = postCount.toString()
             }
         }
-
-        // Alt navbar'a profil resmini ekle
-       // viewModel.image.observe(viewLifecycleOwner, Observer { imageUrl ->
-       //     Glide.with(requireContext()).load(imageUrl).into(binding.imageViewBottom)
-       // })
-
-        // Alt navbar'ın tıklanabilirlik işlevleri
-       // setupBottomNavBar()
 
         // Set up follow button click listener
         binding.followButton.setOnClickListener {
@@ -106,7 +103,6 @@ class OtherUsersFragment : Fragment() {
             }
         }
 
-
         userId?.let { id ->
             viewModel.checkIfFollowing(id).observe(viewLifecycleOwner) { following ->
                 isFollowing = following
@@ -119,7 +115,6 @@ class OtherUsersFragment : Fragment() {
                 Glide.with(requireContext()).load(user.image).into(binding.profileImage)
             })
         }
-
     }
 
     private fun updateFollowButton(following: Boolean) {
@@ -131,29 +126,6 @@ class OtherUsersFragment : Fragment() {
             } else {
                 ContextCompat.getColorStateList(requireContext(), R.color.button_blue)
             }
-        }
-    }
-
-    // Alt navbar için tıklanabilirlik
-    private fun setupBottomNavBar() {
-        binding.feed.setOnClickListener {
-            view?.findNavController()?.navigate(R.id.action_otherUsersFragment_to_homeFragment)
-        }
-
-        binding.imageViewBottom.setOnClickListener {
-            view?.findNavController()?.navigate(R.id.action_otherUsersFragment_to_profileFragment)
-        }
-
-        binding.addPost.setOnClickListener {
-            view?.findNavController()?.navigate(R.id.action_otherUsersFragment_to_createPostFragment)
-        }
-
-        binding.addFriendsImage.setOnClickListener {
-            view?.findNavController()?.navigate(R.id.action_otherUsersFragment_to_userToFollowFragment)
-        }
-
-        binding.settingsImage.setOnClickListener {
-            view?.findNavController()?.navigate(R.id.action_otherUsersFragment_to_settingsFragment)
         }
     }
 }
