@@ -87,8 +87,10 @@ class NotificationFragment : Fragment() {
         vm.getNotifications().observe(viewLifecycleOwner, Observer { notifications ->
             if (notifications.isEmpty()) {
                 binding.emptyNotificationsText.visibility = View.VISIBLE
+                //binding.notificationsRecyclerView.visibility = View.GONE
             } else {
                 binding.emptyNotificationsText.visibility = View.GONE
+                //binding.notificationsRecyclerView.visibility = View.VISIBLE
             }
 
             adapter.setNotifications(notifications)
