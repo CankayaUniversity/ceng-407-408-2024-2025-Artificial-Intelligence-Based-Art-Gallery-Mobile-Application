@@ -70,6 +70,8 @@ abstract class BaseActivity : AppCompatActivity() {
         when {
             this is MainActivity && targetFragment == "notifications" ->
                 bottomNavigation.selectedItemId = R.id.nav_notifications
+            this is MainActivity && targetFragment == "search" ->
+                bottomNavigation.selectedItemId = R.id.nav_search
             this is MainActivity ->
                 bottomNavigation.selectedItemId = R.id.nav_home
             this is ProfilePageActivity ->
@@ -134,9 +136,25 @@ abstract class BaseActivity : AppCompatActivity() {
                     true
                 }
                 R.id.nav_search -> {
+                    /*
                     supportFragmentManager.popBackStack(null, androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE)
                     loadFragment(SearchFragment(), "Search")
+
                     true
+                    */
+
+                    if (this !is MainActivity) {
+                        val intent = Intent(this, MainActivity::class.java)
+                        intent.putExtra("targetFragment", "search")
+                        startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
+                        finish()
+                    } else {
+
+                        supportFragmentManager.popBackStack(null, androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                        loadFragment(SearchFragment(), "Search")
+                    }
+                    true
+
                 }
                 R.id.nav_notifications -> {
                     if (this !is MainActivity) {

@@ -35,6 +35,9 @@ class MainActivity : BaseActivity() {
         else if (intent.getStringExtra("targetFragment") == "notifications") {
             loadFragment(com.example.socialmediaapp.fragments.NotificationFragment(), "Notifications")
         }
+        else if (intent.getStringExtra("targetFragment") == "search") {
+            loadFragment(com.example.socialmediaapp.fragments.SearchFragment(), "Search")
+        }
 
         // İlk defa açılıyorsa default olarak home
         else if (savedInstanceState == null) {
