@@ -86,6 +86,9 @@
                 android:name="userId"
                 app:argType="string" />
         </action>
+        <action
+            android:id="@+id/action_searchFragment_to_profilePageActivity"
+            app:destination="@id/profilePageActivity" />
     </fragment>
     <fragment
         android:id="@+id/otherUsersFragment"
@@ -114,10 +117,16 @@
     <activity
         android:id="@+id/profilePageActivity"
         android:name="com.example.socialmediaapp.activities.ProfilePageActivity"
-        android:label="ProfilePageActivity" />
+        android:label="ProfilePageActivity" >
+
+    </activity>
     <activity
         android:id="@+id/imageGenerationPageActivity"
         android:name="com.example.socialmediaapp.activities.ImageGenerationPageActivity"
         android:label="activity_image_generation_page"
         tools:layout="@layout/activity_image_generation_page" />
+    <fragment
+        android:id="@+id/notificationFragment"
+        android:name="com.example.socialmediaapp.fragments.NotificationFragment"
+        android:label="NotificationFragment" />
 </navigation>

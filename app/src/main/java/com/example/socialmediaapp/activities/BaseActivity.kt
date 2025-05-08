@@ -65,11 +65,19 @@ abstract class BaseActivity : AppCompatActivity() {
     private fun setupBottomNavigation() {
         val bottomNavigation = findViewById<BottomNavigationView>(R.id.bottom_navigation)
 
-        // Set the selected item without triggering the listener
-        when (this) {
-            is MainActivity -> bottomNavigation.selectedItemId = R.id.nav_home
-            is ProfilePageActivity -> bottomNavigation.selectedItemId = R.id.nav_profile
-            is ImageGenerationPageActivity -> bottomNavigation.selectedItemId = R.id.nav_create
+        // Yeni: intent'ten hedef fragment'ı al
+        val targetFragment = intent.getStringExtra("targetFragment")
+
+        // Seçili item'ı belirle
+        when {
+            this is MainActivity && targetFragment == "notifications" ->
+                bottomNavigation.selectedItemId = R.id.nav_notifications
+            this is MainActivity ->
+                bottomNavigation.selectedItemId = R.id.nav_home
+            this is ProfilePageActivity ->
+                bottomNavigation.selectedItemId = R.id.nav_profile
+            this is ImageGenerationPageActivity ->
+                bottomNavigation.selectedItemId = R.id.nav_create
         }
 
         bottomNavigation.setOnItemSelectedListener { item ->
@@ -106,19 +114,20 @@ abstract class BaseActivity : AppCompatActivity() {
                 }
                 R.id.nav_notifications -> {
                     if (this !is MainActivity) {
-                        startActivity(Intent(this, MainActivity::class.java)
-                            .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
+                        val intent = Intent(this, MainActivity::class.java)
+                        intent.putExtra("targetFragment", "notifications")
+                        startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
                         finish()
                     } else {
                         loadFragment(NotificationFragment(), "Notifications")
                     }
                     true
                 }
-
                 else -> false
             }
         }
     }
+
 
     // Method to update toolbar title
     fun setToolbarTitle(title: String) {

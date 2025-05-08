@@ -15,16 +15,7 @@ class MainActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Eğer daha önce bir fragment yüklenmediyse HomeFragment'ı yükle
-        if (savedInstanceState == null) {
-            loadFragment(HomeFragment(),"Home")
-        }
-
-        // Girişten geldiyse HomeFragment'a yönlendir
-        if (intent.getBooleanExtra("fromSignIn", false)) {
-            loadFragment(HomeFragment(),"Home")
-        }
-
+        // "Diğer kullanıcı profili" gösterilecekse öncelikli
         if (intent.getBooleanExtra("showOtherUser", false)) {
             val userId = intent.getStringExtra("userId")
             val fragment = OtherUsersFragment().apply {
@@ -33,7 +24,20 @@ class MainActivity : BaseActivity() {
                 }
             }
             loadFragment(fragment, "Profile")
-        } else if (savedInstanceState == null || intent.getBooleanExtra("fromSignIn", false)) {
+        }
+
+        // Girişten geldiyse
+        else if (intent.getBooleanExtra("fromSignIn", false)) {
+            loadFragment(HomeFragment(), "Home")
+        }
+
+        // Bildirim fragment'ı gösterilecekse
+        else if (intent.getStringExtra("targetFragment") == "notifications") {
+            loadFragment(com.example.socialmediaapp.fragments.NotificationFragment(), "Notifications")
+        }
+
+        // İlk defa açılıyorsa default olarak home
+        else if (savedInstanceState == null) {
             loadFragment(HomeFragment(), "Home")
         }
     }
