@@ -21,6 +21,9 @@ import com.example.socialmediaapp.fragments.NotificationFragment
 
 abstract class BaseActivity : AppCompatActivity() {
 
+    // Önceki fragment'ı takip etmek için değişken eklendi
+    private var currentFragment: Fragment? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_base)
@@ -43,18 +46,15 @@ abstract class BaseActivity : AppCompatActivity() {
     }
 
     fun loadFragment(fragment: Fragment, title: String) {
-        // Clear any existing back stack
-        for (i in 0 until supportFragmentManager.backStackEntryCount) {
-            supportFragmentManager.popBackStack()
-        }
-
-        // Replace fragment
+        // fragment'ı back stack'e ekle
         supportFragmentManager.beginTransaction()
             .setCustomAnimations(R.anim.fade_in, R.anim.fade_out)
             .replace(R.id.fragment_container, fragment)
-            .commitNow()
+            .addToBackStack(null)
+            .commit()
 
-        // Toolbar başlığını güncelle
+        currentFragment = fragment
+
         setToolbarTitle(title)
     }
 
@@ -101,6 +101,8 @@ abstract class BaseActivity : AppCompatActivity() {
                             .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
                         finish()
                     } else {
+                        // Ana ekrana dönmek için tüm fragmentları temizle
+                        supportFragmentManager.popBackStack(null, androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE)
                         loadFragment(HomeFragment(), "Home")
                     }
                     true
@@ -110,6 +112,10 @@ abstract class BaseActivity : AppCompatActivity() {
                         startActivity(Intent(this, ImageGenerationPageActivity::class.java)
                             .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
                         finish()
+                    } else {
+                        supportFragmentManager.popBackStack(null, androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE)
+
+                        setToolbarTitle("Create")
                     }
                     true
                 }
@@ -118,10 +124,17 @@ abstract class BaseActivity : AppCompatActivity() {
                         startActivity(Intent(this, ProfilePageActivity::class.java)
                             .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
                         finish()
+                    } else {
+                        // Eğer zaten ProfilePageActivity'deysek ama farklı bir fragment'ta olabiliriz
+                        // Profil ana ekranını yeniden yükle
+                        supportFragmentManager.popBackStack(null, androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE)
+
+                        setToolbarTitle("Profile")
                     }
                     true
                 }
                 R.id.nav_search -> {
+                    supportFragmentManager.popBackStack(null, androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE)
                     loadFragment(SearchFragment(), "Search")
                     true
                 }
@@ -132,6 +145,8 @@ abstract class BaseActivity : AppCompatActivity() {
                         startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
                         finish()
                     } else {
+
+                        supportFragmentManager.popBackStack(null, androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE)
                         loadFragment(NotificationFragment(), "Notifications")
                     }
                     true
@@ -139,8 +154,27 @@ abstract class BaseActivity : AppCompatActivity() {
                 else -> false
             }
         }
+
+        supportFragmentManager.addOnBackStackChangedListener {
+
+            if (supportFragmentManager.backStackEntryCount == 0) {
+                // Back stack boşsa, aktiviteye göre bottom navigation seçimini güncelle
+                when (this) {
+                    is MainActivity -> bottomNavigation.selectedItemId = R.id.nav_home
+                    is ProfilePageActivity -> bottomNavigation.selectedItemId = R.id.nav_profile
+                    is ImageGenerationPageActivity -> bottomNavigation.selectedItemId = R.id.nav_create
+                }
+            }
+        }
     }
 
+    override fun onBackPressed() {
+        if (supportFragmentManager.backStackEntryCount > 0) {
+            supportFragmentManager.popBackStack()
+        } else {
+            super.onBackPressed()
+        }
+    }
 
     // Method to update toolbar title
     fun setToolbarTitle(title: String) {
@@ -156,7 +190,6 @@ abstract class BaseActivity : AppCompatActivity() {
         }
     }
 
-    // Add the new method to handle trophy icon click
     private fun setupTrophyIcon() {
         val trophyIcon = findViewById<ImageView>(R.id.trophy_icon)
 
@@ -167,6 +200,13 @@ abstract class BaseActivity : AppCompatActivity() {
                 val intent = Intent(this, ChallengesPageActivity::class.java)
                 startActivity(intent)
             }
+            else {
+
+                supportFragmentManager.popBackStack(null, androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE)
+
+                setToolbarTitle("Challenges")
+            }
         }
     }
 }
+
