@@ -60,12 +60,10 @@ abstract class BaseActivity : AppCompatActivity() {
 
     abstract fun getContentLayoutId(): Int
 
-    // In BaseActivity.kt, modify the setupBottomNavigation() method
-
     private fun setupBottomNavigation() {
         val bottomNavigation = findViewById<BottomNavigationView>(R.id.bottom_navigation)
 
-        // Yeni: intent'ten hedef fragment'ı al
+        // intent'ten hedef fragment'ı al
         val targetFragment = intent.getStringExtra("targetFragment")
 
         // Seçili item'ı belirle
@@ -78,6 +76,21 @@ abstract class BaseActivity : AppCompatActivity() {
                 bottomNavigation.selectedItemId = R.id.nav_profile
             this is ImageGenerationPageActivity ->
                 bottomNavigation.selectedItemId = R.id.nav_create
+
+
+            this is AchievementsPageActivity -> {
+                // Hiçbir item seçili olmasın, navbar butonlarının arka plan rengini değiştirmesin
+                bottomNavigation.menu.setGroupCheckable(0, false, true)
+                bottomNavigation.labelVisibilityMode = BottomNavigationView.LABEL_VISIBILITY_UNLABELED
+            }
+            this is SettingsActivity -> {
+                bottomNavigation.menu.setGroupCheckable(0, false, true)
+                bottomNavigation.labelVisibilityMode = BottomNavigationView.LABEL_VISIBILITY_UNLABELED
+            }
+            this is ChallengesPageActivity -> {
+                bottomNavigation.menu.setGroupCheckable(0, false, true)
+                bottomNavigation.labelVisibilityMode = BottomNavigationView.LABEL_VISIBILITY_UNLABELED
+            }
         }
 
         bottomNavigation.setOnItemSelectedListener { item ->
