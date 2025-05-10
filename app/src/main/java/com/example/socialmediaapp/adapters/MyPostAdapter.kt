@@ -11,18 +11,17 @@ import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.bumptech.glide.Glide
 import com.example.socialmediaapp.R
 
-class MyPostAdapter: RecyclerView.Adapter<PostHolder>()
-{
+class MyPostAdapter: RecyclerView.Adapter<PostHolder>() {
 
     var mypostlist = listOf<Posts>()
+    private var onPostClickListener: ((Posts) -> Unit)? = null
+
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
     ): PostHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.postitems, parent, false)
-
         return PostHolder(view)
-
     }
 
     override fun onBindViewHolder(
@@ -30,9 +29,12 @@ class MyPostAdapter: RecyclerView.Adapter<PostHolder>()
         position: Int
     ) {
         val post = mypostlist[position]
-
-
         Glide.with(holder.itemView.context).load(post.image).into(holder.image)
+
+        // Set click listener on the image
+        holder.image.setOnClickListener {
+            onPostClickListener?.invoke(post)
+        }
     }
 
     override fun getItemCount(): Int {
@@ -44,15 +46,16 @@ class MyPostAdapter: RecyclerView.Adapter<PostHolder>()
         mypostlist = list
         diffResult.dispatchUpdatesTo(this)
     }
-}
 
+    // Add a method to set the click listener
+    fun setOnPostClickListener(listener: (Posts) -> Unit) {
+        onPostClickListener = listener
+    }
+}
 
 class PostHolder(itemView: View) : ViewHolder(itemView){
-
     val image: ImageView = itemView.findViewById(R.id.postImage)
-
 }
-
 
 class MyDiffCallback(
     private val oldList: List<Posts>,
