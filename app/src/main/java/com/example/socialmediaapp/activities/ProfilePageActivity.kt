@@ -17,6 +17,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.GridLayout
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -345,6 +346,8 @@ class ProfilePageActivity : BaseActivity() {
         val detailStoryTextView = dialog.findViewById<TextView>(R.id.detailStoryTextView)
         val detailLikesTextView = dialog.findViewById<TextView>(R.id.detailLikesTextView)
         val detailCommentsTextView = dialog.findViewById<TextView>(R.id.detailCommentsTextView)
+        val commentsContainer = dialog.findViewById<LinearLayout>(R.id.commentsContainer)
+        val commentsLabel = dialog.findViewById<TextView>(R.id.commentsLabel)
         val closeButton = dialog.findViewById<Button>(R.id.closeButton)
 
         // Load image and set text views
@@ -365,8 +368,110 @@ class ProfilePageActivity : BaseActivity() {
             dialog.dismiss()
         }
 
+        // Setup comments section
+        if (comments > 0) {
+            commentsLabel.visibility = View.VISIBLE
+            commentsContainer.visibility = View.VISIBLE
+
+            // Load comments for this post from Firestore
+            loadComments(docId, commentsContainer)
+        } else {
+            commentsLabel.text = "No comments yet"
+            commentsContainer.visibility = View.GONE
+        }
+
         dialog.show()
     }
+
+    private fun loadComments(postId: String, commentsContainer: LinearLayout) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val commentsSnapshot = firestore.collection("Posts")
+                    .document(postId)
+                    .collection("comments")
+                    .orderBy("time", Query.Direction.DESCENDING)
+                    .limit(10) // Limit to 10 most recent comments
+                    .get()
+                    .await()
+
+                withContext(Dispatchers.Main) {
+                    commentsContainer.removeAllViews()
+
+                    if (commentsSnapshot.isEmpty) {
+                        val textView = TextView(this@ProfilePageActivity)
+                        textView.text = "No comments yet"
+                        textView.textSize = 14f
+                        textView.setTextColor(ContextCompat.getColor(this@ProfilePageActivity, android.R.color.white))
+                        commentsContainer.addView(textView)
+                        return@withContext
+                    }
+
+                    for (commentDoc in commentsSnapshot.documents) {
+                        val username = commentDoc.getString("username") ?: "Unknown User"
+                        val commentText = commentDoc.getString("comment") ?: ""
+                        val timestamp = commentDoc.getTimestamp("time")
+
+                        // Inflate comment layout
+                        val commentView = layoutInflater.inflate(
+                            R.layout.item_comment,
+                            commentsContainer,
+                            false
+                        )
+
+                        // Set comment data
+                        val usernameTextView = commentView.findViewById<TextView>(R.id.commentUsername)
+                        val commentTextView = commentView.findViewById<TextView>(R.id.commentText)
+                        val timeTextView = commentView.findViewById<TextView>(R.id.commentTime)
+
+                        usernameTextView.text = username
+                        commentTextView.text = commentText
+
+                        // Format the timestamp
+                        timeTextView.text = if (timestamp != null) {
+                            val now = com.google.firebase.Timestamp.now().toDate().time
+                            val commentTime = timestamp.toDate().time
+                            val diffInMillis = now - commentTime
+
+                            when {
+                                diffInMillis < 60 * 1000 -> "just now"
+                                diffInMillis < 60 * 60 * 1000 -> "${diffInMillis / (60 * 1000)}m ago"
+                                diffInMillis < 24 * 60 * 60 * 1000 -> "${diffInMillis / (60 * 60 * 1000)}h ago"
+                                else -> "${diffInMillis / (24 * 60 * 60 * 1000)}d ago"
+                            }
+                        } else {
+                            "unknown time"
+                        }
+
+                        commentsContainer.addView(commentView)
+
+                        // Add a divider except after the last comment
+                        if (commentDoc != commentsSnapshot.documents.last()) {
+                            val divider = View(this@ProfilePageActivity)
+                            val dividerParams = LinearLayout.LayoutParams(
+                                LinearLayout.LayoutParams.MATCH_PARENT,
+                                1
+                            )
+                            dividerParams.setMargins(0, 8, 0, 8)
+                            divider.layoutParams = dividerParams
+                            divider.setBackgroundColor(ContextCompat.getColor(this@ProfilePageActivity, android.R.color.darker_gray))
+                            commentsContainer.addView(divider)
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("ProfilePage", "Error loading comments", e)
+                withContext(Dispatchers.Main) {
+                    val textView = TextView(this@ProfilePageActivity)
+                    textView.text = "Failed to load comments"
+                    textView.textSize = 14f
+                    textView.setTextColor(ContextCompat.getColor(this@ProfilePageActivity, android.R.color.white))
+                    commentsContainer.addView(textView)
+                }
+            }
+        }
+    }
+
+
 
     private fun showProfilePictureEditDialog() {
         val dialog = Dialog(this)
