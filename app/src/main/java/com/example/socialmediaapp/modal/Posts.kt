@@ -1,11 +1,14 @@
 package com.example.socialmediaapp.modal
 
 data class Posts (val username: String? = "",
-                  val image:String?="",
+                  var image:String?="",
                   val time: Long?=null,
-                  val caption: String?="",
-                  val likes: Int?= 0,
+                  var caption: String?="",
+                  var likes: Int?= 0,
                   val userid: String?="",
-                  val postid: String?="",
+                  var postid: String?="",
+                  var comments: Int? = null,
                   val profileImage: String?= "",){
+    var title: String? = null
+    var story: String? = null
 }

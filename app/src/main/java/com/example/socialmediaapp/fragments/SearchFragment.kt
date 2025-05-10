@@ -2,43 +2,53 @@
 
 package com.example.socialmediaapp.fragments
 
+import android.app.Dialog
 import android.content.Intent
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.Window
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.Spinner
+import android.widget.TextView
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.Navigation
-import androidx.navigation.fragment.findNavController
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.socialmediaapp.MainActivity
 import com.example.socialmediaapp.R
-import com.example.socialmediaapp.adapters.MyFeedAdapter
-import com.google.firebase.auth.FirebaseAuth
 import com.example.socialmediaapp.adapters.PostsAdapter
 import com.example.socialmediaapp.adapters.SearchUsersAdapter
 import com.example.socialmediaapp.modal.Posts
 import com.example.socialmediaapp.modal.Users
 import com.example.socialmediaapp.mvvm.ViewModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import java.util.Locale
 
 class SearchFragment : Fragment(), OnPostClickListener {
 
-    // View and ResycleView attributes
+    // View and RecyclerView attributes
     private var recyclerView: RecyclerView? = null
     private var allPostsRecyclerView: RecyclerView? = null
     private var userPostsRecyclerView: RecyclerView? = null
@@ -56,7 +66,8 @@ class SearchFragment : Fragment(), OnPostClickListener {
 
     private lateinit var vm: ViewModel
 
-
+    // Firestore reference
+    private val firestore: FirebaseFirestore by lazy { FirebaseFirestore.getInstance() }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -188,7 +199,6 @@ class SearchFragment : Fragment(), OnPostClickListener {
         }
     }
 
-    // Rest of your methods remain the same...
     private fun toggleView() {
         if (searchItem!!.text.toString().isEmpty()) {
             // Only toggle view when search is empty
@@ -225,6 +235,7 @@ class SearchFragment : Fragment(), OnPostClickListener {
                 for (document in value?.documents ?: emptyList()) {
                     val post = document.toObject(Posts::class.java)
                     if (post != null) {
+                        post.postid = document.id  // Make sure postid is set
                         postsList.add(post)
                     }
                 }
@@ -277,6 +288,7 @@ class SearchFragment : Fragment(), OnPostClickListener {
                 for (document in value?.documents ?: emptyList()) {
                     val post = document.toObject(Posts::class.java)
                     if (post != null) {
+                        post.postid = document.id  // Make sure postid is set
                         postsList.add(post)
                     }
                 }
@@ -311,11 +323,97 @@ class SearchFragment : Fragment(), OnPostClickListener {
         }
     }
 
+    // This is where we implement the enhanced artwork details functionality
     override fun onPostClick(post: Posts) {
-        // Handle post click - navigate to post detail or perform other actions
-        Toast.makeText(context, "Post clicked: ${post.caption}", Toast.LENGTH_SHORT).show()
+        // Get post ID
+        val postId = post.postid ?: return
+
+        // Fetch additional artwork details and show dialog
+        fetchArtworkDetailsAndShowDialog(postId, post)
     }
 
+    private fun fetchArtworkDetailsAndShowDialog(postId: String, post: Posts) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                // Get the basic information from the Post
+                val imageUrl = post.image ?: ""
+                var title = post.caption ?: "Untitled"
+                var story = ""
+                val likes = post.likes ?: 0
+                val comments = post.comments ?: 0
+
+                // Fetch additional artwork details from Images collection
+                val imagesQuery = firestore.collection("Images")
+                    .whereEqualTo("postid", postId)
+                    .limit(1)
+                    .get()
+                    .await()
+
+                if (!imagesQuery.isEmpty) {
+                    val imageDoc = imagesQuery.documents[0]
+                    story = imageDoc.getString("story") ?: ""
+                    title = imageDoc.getString("title") ?: title
+                }
+
+                // Show dialog on main thread
+                withContext(Dispatchers.Main) {
+                    showArtworkDetailsDialog(imageUrl, title, story, likes, comments, postId)
+                }
+            } catch (e: Exception) {
+                Log.e("SearchFragment", "Error fetching artwork details", e)
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(
+                        context,
+                        "Failed to load artwork details: ${e.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
+    }
+
+    private fun showArtworkDetailsDialog(
+        imageUrl: String,
+        title: String,
+        story: String,
+        likes: Int,
+        comments: Int,
+        docId: String
+    ) {
+        val dialog = Dialog(requireContext())
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        dialog.setCancelable(true)
+        dialog.setContentView(R.layout.dialog_artwork_details)
+        dialog.window?.setBackgroundDrawable(ColorDrawable(ContextCompat.getColor(requireContext(), R.color.semi_transparent)))
+
+        // Initialize dialog views
+        val detailImageView = dialog.findViewById<ImageView>(R.id.detailImageView)
+        val detailTitleTextView = dialog.findViewById<TextView>(R.id.detailTitleTextView)
+        val detailStoryTextView = dialog.findViewById<TextView>(R.id.detailStoryTextView)
+        val detailLikesTextView = dialog.findViewById<TextView>(R.id.detailLikesTextView)
+        val detailCommentsTextView = dialog.findViewById<TextView>(R.id.detailCommentsTextView)
+        val closeButton = dialog.findViewById<Button>(R.id.closeButton)
+
+        // Load image and set text views
+        Glide.with(this)
+            .load(imageUrl)
+            .fitCenter()
+            .placeholder(R.drawable.placeholder_image2)
+            .error(R.drawable.error_image)
+            .into(detailImageView)
+
+        detailTitleTextView.text = title
+        detailStoryTextView.text = story
+        detailLikesTextView.text = "$likes likes"
+        detailCommentsTextView.text = "$comments comments"
+
+        // Set close button listener
+        closeButton.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
 
     private fun setupFilterSpinner() {
         val spinner = requireActivity().findViewById<Spinner>(R.id.filter_spinner)
@@ -346,10 +444,7 @@ class SearchFragment : Fragment(), OnPostClickListener {
             }
         }
     }
-
-
 }
-
 
 // Post click listener interface
 interface OnPostClickListener {
