@@ -39,6 +39,39 @@
                 android:adjustViewBounds="true"
                 android:scaleType="fitCenter" />
 
+
+            <!-- Artist Info -->
+            <LinearLayout
+                android:id="@+id/artistInfoContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="16dp"
+                android:gravity="center_vertical"
+                android:visibility="gone">
+
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/artistImageView"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:src="@drawable/ic_profile"
+                    app:civ_border_width="1dp"
+                    app:civ_border_color="@android:color/white" />
+
+                <TextView
+                    android:id="@+id/artistNameTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Artist Name"
+                    android:textColor="@android:color/white"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:layout_marginStart="8dp" />
+
+            </LinearLayout>
+
+
+
             <!-- Artwork Story -->
             <TextView
                 android:layout_width="match_parent"

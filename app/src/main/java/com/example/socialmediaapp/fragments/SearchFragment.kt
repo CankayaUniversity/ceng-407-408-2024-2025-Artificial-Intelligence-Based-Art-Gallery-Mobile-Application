@@ -40,6 +40,7 @@ import com.example.socialmediaapp.mvvm.ViewModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import de.hdodenhof.circleimageview.CircleImageView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -341,6 +342,11 @@ class SearchFragment : Fragment(), OnPostClickListener {
                 var story = ""
                 val likes = post.likes ?: 0
                 val comments = post.comments ?: 0
+                val userId = post.userid ?: ""
+
+                // User information
+                var userName = ""
+                var userImageUrl = ""
 
                 // Fetch additional artwork details from Images collection
                 val imagesQuery = firestore.collection("Images")
@@ -355,9 +361,22 @@ class SearchFragment : Fragment(), OnPostClickListener {
                     title = imageDoc.getString("title") ?: title
                 }
 
+                // Fetch user information
+                val userQuery = firestore.collection("Users")
+                    .whereEqualTo("userid", userId)
+                    .limit(1)
+                    .get()
+                    .await()
+
+                if (!userQuery.isEmpty) {
+                    val userDoc = userQuery.documents[0]
+                    userName = userDoc.getString("username") ?: "Unknown Artist"
+                    userImageUrl = userDoc.getString("imageurl") ?: ""
+                }
+
                 // Show dialog on main thread
                 withContext(Dispatchers.Main) {
-                    showArtworkDetailsDialog(imageUrl, title, story, likes, comments, postId)
+                    showArtworkDetailsDialog(imageUrl, title, story, likes, comments, postId, userId, userName, userImageUrl)
                 }
             } catch (e: Exception) {
                 Log.e("SearchFragment", "Error fetching artwork details", e)
@@ -378,7 +397,10 @@ class SearchFragment : Fragment(), OnPostClickListener {
         story: String,
         likes: Int,
         comments: Int,
-        docId: String
+        docId: String,
+        userId: String,
+        userName: String,
+        userImageUrl: String
     ) {
         val dialog = Dialog(requireContext())
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -394,18 +416,59 @@ class SearchFragment : Fragment(), OnPostClickListener {
         val detailCommentsTextView = dialog.findViewById<TextView>(R.id.detailCommentsTextView)
         val closeButton = dialog.findViewById<Button>(R.id.closeButton)
 
-        // Load image and set text views
-        Glide.with(this)
+        // Artist information views
+        val artistImageView = dialog.findViewById<CircleImageView>(R.id.artistImageView)
+        val artistNameTextView = dialog.findViewById<TextView>(R.id.artistNameTextView)
+        val artistInfoContainer = dialog.findViewById<View>(R.id.artistInfoContainer)
+
+        artistInfoContainer.visibility = View.VISIBLE
+
+        // Log debugging info
+        Log.d("ArtworkDetails", "Loading artist image from URL: $userImageUrl")
+
+        // Load main artwork image
+        Glide.with(requireContext())
             .load(imageUrl)
             .fitCenter()
             .placeholder(R.drawable.placeholder_image2)
             .error(R.drawable.error_image)
             .into(detailImageView)
 
+        // Set text data
         detailTitleTextView.text = title
-        detailStoryTextView.text = story
+        detailStoryTextView.text = if (story.isNotEmpty()) story else "No story available for this artwork."
         detailLikesTextView.text = "$likes likes"
         detailCommentsTextView.text = "$comments comments"
+
+        // Set artist information
+        artistNameTextView.text = userName
+
+        // Improve artist profile image loading
+        if (userImageUrl.isNotEmpty()) {
+            try {
+                Glide.with(requireContext())
+                    .load(userImageUrl)
+                    .placeholder(R.drawable.ic_profile)
+                    .error(R.drawable.ic_profile)
+                    .into(artistImageView)
+
+                Log.d("ArtworkDetails", "Artist image loading attempt completed")
+            } catch (e: Exception) {
+                Log.e("ArtworkDetails", "Error loading artist image", e)
+                // Set default image in case of error
+                artistImageView.setImageResource(R.drawable.ic_profile)
+            }
+        } else {
+            // Set default image if URL is empty
+            Log.d("ArtworkDetails", "No artist image URL available, using default")
+            artistImageView.setImageResource(R.drawable.ic_profile)
+        }
+
+        // Set click listener for artist container to navigate to profile
+        artistInfoContainer.setOnClickListener {
+            navigateToUserProfile(userId)
+            dialog.dismiss()
+        }
 
         // Set close button listener
         closeButton.setOnClickListener {
