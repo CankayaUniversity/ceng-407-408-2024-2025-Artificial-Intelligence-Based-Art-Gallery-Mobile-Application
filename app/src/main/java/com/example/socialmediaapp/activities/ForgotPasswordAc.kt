@@ -1,6 +1,7 @@
 package com.example.socialmediaapp.activities
 
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -23,6 +24,16 @@ class ForgotPasswordAc : AppCompatActivity() {
         setContentView(R.layout.activity_forgot_password)
 
         binding = DataBindingUtil.setContentView(this,R.layout.activity_forgot_password)
+
+        // Return to previous page upon back button press
+        try {
+            val backButton = findViewById<View>(R.id.backButton)
+            backButton?.setOnClickListener {
+                onBackPressed()
+            }
+        } catch (e: Exception) {
+            // Button doesn't exist in the layout, ignore
+        }
 
         binding.btnSubmit.setOnClickListener{
             val email: String = binding.etForgotEmail.text.toString().trim { it <= ' ' }
