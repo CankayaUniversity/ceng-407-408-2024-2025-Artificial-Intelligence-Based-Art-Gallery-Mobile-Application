@@ -350,6 +350,8 @@ class ProfilePageActivity : BaseActivity() {
         val commentsLabel = dialog.findViewById<TextView>(R.id.commentsLabel)
         val closeButton = dialog.findViewById<Button>(R.id.closeButton)
 
+        commentsLabel.visibility = View.VISIBLE;
+
         // Load image and set text views
         Glide.with(this)
             .load(imageUrl)
