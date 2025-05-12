@@ -18,7 +18,7 @@
         <ImageView
             android:id="@+id/resultImageView"
             android:layout_width="match_parent"
-            android:layout_height="300dp"
+            android:layout_height="200dp"
             android:scaleType="centerCrop"
             tools:src="@tools:sample/backgrounds/scenic" />
 
@@ -37,7 +37,7 @@
         android:id="@+id/storyCard"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_weight="1.2"
         android:layout_marginHorizontal="16dp"
         android:layout_marginTop="16dp"
         app:cardBackgroundColor="@color/navy_blue"
@@ -114,7 +114,6 @@
         android:layout_marginBottom="16dp"
         android:orientation="horizontal">
 
-        <!-- Changed from Button to TextView to display tag -->
         <TextView
             android:id="@+id/tagDisplay"
             android:layout_width="0dp"
@@ -137,7 +136,6 @@
             android:src="@drawable/ic_shares" />
     </LinearLayout>
 
-    <!-- Send Button in its own row -->
     <Button
         android:id="@+id/sendButton"
         android:layout_width="match_parent"
