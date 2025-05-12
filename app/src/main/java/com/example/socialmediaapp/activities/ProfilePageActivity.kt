@@ -611,21 +611,48 @@ class ProfilePageActivity : BaseActivity() {
 
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                // Get bitmap from uri
+                // Log for debugging
+                Log.d("ProfilePage", "Starting profile image upload for user: ${currentUser.uid}")
+
+                // Get bitmap from uri with proper scaling
                 val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, imageUri)
+
+                // Resize the image to a reasonable size (800px width)
+                val resizedBitmap = resizeBitmap(bitmap, 800)
                 val baos = ByteArrayOutputStream()
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 90, baos)
+                resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 80, baos)
                 val imageData = baos.toByteArray()
 
-                // Create a unique file name
+                // Log the image size for debugging
+                Log.d("ProfilePage", "Image size after compression: ${imageData.size} bytes")
+
+                // IMPORTANT: Make sure this path matches your Firebase Storage Rules
                 val imageName = "ProfileImages/${currentUser.uid}/${UUID.randomUUID()}.jpg"
                 val storageRef = storage.reference.child(imageName)
 
-                // Upload the image
-                storageRef.putBytes(imageData).await()
-                val photoUrl = storageRef.downloadUrl.await().toString()
+                Log.d("ProfilePage", "Uploading to path: $imageName")
 
-                // Update Firestore user document
+                // Use putBytes with task snapshot to monitor progress
+                val uploadTask = storageRef.putBytes(imageData)
+
+                uploadTask.addOnProgressListener { taskSnapshot ->
+                    val progress = (100.0 * taskSnapshot.bytesTransferred / taskSnapshot.totalByteCount)
+                    Log.d("ProfilePage", "Upload progress: ${progress.toInt()}%")
+                }
+
+                uploadTask.addOnFailureListener { exception ->
+                    Log.e("ProfilePage", "Upload failure: ${exception.message}", exception)
+                }
+
+                // Wait for upload to complete
+                uploadTask.await()
+                Log.d("ProfilePage", "Upload completed successfully")
+
+                // Get the download URL
+                val photoUrl = storageRef.downloadUrl.await().toString()
+                Log.d("ProfilePage", "Download URL: $photoUrl")
+
+                // Update user document in Firestore
                 val updates = hashMapOf<String, Any>(
                     "image" to photoUrl
                 )
@@ -637,10 +664,13 @@ class ProfilePageActivity : BaseActivity() {
 
                 withContext(Dispatchers.Main) {
                     progressDialog.dismiss()
-                    // Update UI
+
+                    // Update UI with the new image
                     Glide.with(this@ProfilePageActivity)
                         .load(photoUrl)
                         .circleCrop()
+                        .placeholder(R.drawable.default_profile)
+                        .error(R.drawable.default_profile)
                         .into(profileImageView)
 
                     Toast.makeText(
@@ -656,8 +686,55 @@ class ProfilePageActivity : BaseActivity() {
                     Toast.makeText(
                         this@ProfilePageActivity,
                         "Failed to update profile image: ${e.message}",
-                        Toast.LENGTH_SHORT
+                        Toast.LENGTH_LONG
                     ).show()
+                }
+            }
+        }
+    }
+
+    // Helper method to resize bitmap
+    private fun resizeBitmap(bitmap: Bitmap, maxWidth: Int): Bitmap {
+        val width = bitmap.width
+        val height = bitmap.height
+
+        if (width <= maxWidth) {
+            return bitmap
+        }
+
+        val aspectRatio = width.toFloat() / height.toFloat()
+        val newHeight = (maxWidth / aspectRatio).toInt()
+
+        return Bitmap.createScaledBitmap(bitmap, maxWidth, newHeight, true)
+    }
+
+    // Add this method to your Activity to test if Storage is properly configured
+    private fun testStorageAccess() {
+        if (auth.currentUser == null) {
+            Log.e("ProfilePage", "User not authenticated")
+            return
+        }
+
+        val testRef = storage.reference.child("test.txt")
+        val testData = "Test data".toByteArray()
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                testRef.putBytes(testData).await()
+                Log.d("ProfilePage", "Storage test successful")
+
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@ProfilePageActivity,
+                        "Firebase Storage is accessible",
+                        Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Log.e("ProfilePage", "Storage test failed", e)
+
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@ProfilePageActivity,
+                        "Storage test failed: ${e.message}",
+                        Toast.LENGTH_LONG).show()
                 }
             }
         }
