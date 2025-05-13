@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package com.example.socialmediaapp.fragments
 
 import android.app.Dialog
@@ -102,8 +100,11 @@ class SearchFragment : Fragment(), OnPostClickListener {
             toggleView()
         }
 
-        // Initialize user list and adapter
+        // Initialize user list
         mUser = ArrayList()
+
+        // Initialize ViewModel first
+        vm = ViewModelProvider(this).get(ViewModel::class.java)
 
         return view
     }
@@ -113,12 +114,18 @@ class SearchFragment : Fragment(), OnPostClickListener {
 
         setupFilterSpinner()
 
-        // Initialize adapter with the fragment as context, and add a click listener
+        // Initialize adapter with the fragment as context AND the ViewModel
         userAdapter = context?.let {
-            SearchUsersAdapter(it, mUser as ArrayList<Users>, true) { userId ->
-                // Handle navigation to other user's profile
-                navigateToUserProfile(userId)
-            }
+            SearchUsersAdapter(
+                it,
+                mUser as ArrayList<Users>,
+                true,
+                vm, // Pass the ViewModel to the adapter
+                { userId ->
+                    // Handle navigation to other user's profile
+                    navigateToUserProfile(userId)
+                }
+            )
         }
         recyclerView?.adapter = userAdapter
 
@@ -170,13 +177,13 @@ class SearchFragment : Fragment(), OnPostClickListener {
         searchResultsContainer?.visibility = View.GONE
         allPostsRecyclerView?.visibility = View.VISIBLE
 
-        vm = ViewModelProvider(this).get(ViewModel::class.java)
-
         // Load all posts from other users
         vm.getAllPostsExceptCurrentUser().observe(viewLifecycleOwner, Observer { posts ->
             allPostsAdapter?.setPosts(posts)
         })
     }
+
+    // Rest of your SearchFragment methods remain the same...
 
     // Safe navigation method
     private fun navigateToUserProfile(userId: String) {
@@ -367,7 +374,7 @@ class SearchFragment : Fragment(), OnPostClickListener {
                         val userDoc = firestore.collection("Users").document(userId).get().await()
                         if (userDoc.exists()) {
                             userName = userDoc.getString("username") ?: "Unknown Artist"
-                            userImageUrl = userDoc.getString("image") ?: "" // 🔄 CHANGED HERE
+                            userImageUrl = userDoc.getString("image") ?: ""
                             Log.d("ArtworkDetails", "Fetched artist name: $userName")
                             Log.d("ArtworkDetails", "Fetched artist image URL: $userImageUrl")
                         } else {
@@ -394,7 +401,6 @@ class SearchFragment : Fragment(), OnPostClickListener {
         }
     }
 
-
     private fun showArtworkDetailsDialog(
         imageUrl: String,
         title: String,
@@ -406,6 +412,7 @@ class SearchFragment : Fragment(), OnPostClickListener {
         userName: String,
         userImageUrl: String
     ) {
+        // Dialog implementation remains the same...
         // Make sure we're still attached to a context
         val currentContext = context ?: return
 
@@ -479,8 +486,6 @@ class SearchFragment : Fragment(), OnPostClickListener {
 
         dialog.show()
     }
-
-
 
     private fun setupFilterSpinner() {
         val spinner = requireActivity().findViewById<Spinner>(R.id.filter_spinner)

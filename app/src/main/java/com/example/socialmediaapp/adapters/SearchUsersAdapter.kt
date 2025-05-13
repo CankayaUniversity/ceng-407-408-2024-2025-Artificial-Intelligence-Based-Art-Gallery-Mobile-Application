@@ -1,4 +1,3 @@
-
 package com.example.socialmediaapp.adapters
 
 import android.content.Context
@@ -15,20 +14,15 @@ import com.example.socialmediaapp.modal.Users
 import de.hdodenhof.circleimageview.CircleImageView
 import android.view.View as AndroidViewView
 import com.example.socialmediaapp.R
-import com.example.socialmediaapp.Utils
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.firestore.FieldValue
-import com.google.firebase.firestore.FirebaseFirestore
+import com.example.socialmediaapp.mvvm.ViewModel
 
 class SearchUsersAdapter(
     private var mContext: Context,
     private var mUser: List<Users>,
     private var isFragment: Boolean = false,
+    private val viewModel: ViewModel, // Added ViewModel parameter
     private val onUserClicked: (String) -> Unit // Callback for user clicks
 ) : RecyclerView.Adapter<SearchUsersAdapter.ViewHolder>() {
-
-    private val firebaseUser: FirebaseUser? = FirebaseAuth.getInstance().currentUser
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(mContext).inflate(R.layout.user_item_layout, parent, false)
@@ -44,8 +38,12 @@ class SearchUsersAdapter(
         holder.userNameTextView.text = user.username
         Glide.with(holder.itemView.context).load(user.image).into(holder.userProfileImage)
 
-        // Check following status
-        checkFollowingStatus(user.userid.toString(), holder.followButton)
+        // Check following status using ViewModel
+        user.userid?.let { userId ->
+            viewModel.checkIfFollowing(userId).observeForever { isFollowing ->
+                holder.followButton.text = if (isFollowing) "Following" else "Follow"
+            }
+        }
 
         // Set click listener on the entire item view
         holder.itemView.setOnClickListener {
@@ -63,12 +61,24 @@ class SearchUsersAdapter(
             }
         }
 
-        // Follow/Unfollow functionality
+        // Follow/Unfollow functionality using ViewModel
         holder.followButton.setOnClickListener {
-            if (holder.followButton.text.toString() == "Follow") {
-                followUser(user)
-            } else {
-                unfollowUser(user)
+            user.userid?.let { userId ->
+                if (holder.followButton.text.toString() == "Follow") {
+                    // Use ViewModel to follow user
+                    viewModel.followUser(userId).observeForever { success ->
+                        if (success) {
+                            holder.followButton.text = "Following"
+                        }
+                    }
+                } else {
+                    // Use ViewModel to unfollow user
+                    viewModel.unfollowUser(userId).observeForever { success ->
+                        if (success) {
+                            holder.followButton.text = "Follow"
+                        }
+                    }
+                }
             }
         }
     }
@@ -81,108 +91,4 @@ class SearchUsersAdapter(
         var userFullnameTextView: TextView = itemView.findViewById(R.id.user_item_search_fullname)
         var userProfileImage: CircleImageView = itemView.findViewById(R.id.user_item_image)
     }
-
-    // Rest of your methods remain the same
-    fun followUser(user: Users) {
-        val firestore = FirebaseFirestore.getInstance()
-        val userDocRef = firestore.collection("Users").document(Utils.getUiLoggedIn())
-
-        // Increment the logged-in user's following count
-        userDocRef.update("following", FieldValue.increment(1))
-
-        val userToFollowDocRef = firestore.collection("Users").document(user.userid!!)
-
-        // Increment the user being followed's followers count
-        userToFollowDocRef.update("followers", FieldValue.increment(1))
-
-        val followDocRef = firestore.collection("Follow").document(Utils.getUiLoggedIn())
-
-        followDocRef.get().addOnSuccessListener { documentSnapshot ->
-            if (documentSnapshot.exists()) {
-                // Collection exists, update the list
-                val existingIds = documentSnapshot.get("following_id") as? List<String>
-                val newIds = existingIds?.toMutableList() ?: mutableListOf()
-                newIds.add(user.userid)
-                followDocRef.update(hashMapOf("following_id" to newIds) as Map<String, Any>)
-            } else {
-                // Logged user following a new user
-                val followData = hashMapOf(
-                    "following_id" to listOf(user.userid)
-                )
-                followDocRef.set(followData)
-            }
-        }
-    }
-
-    fun unfollowUser(user: Users) {
-        val firestore = FirebaseFirestore.getInstance()
-        val userDocRef = firestore.collection("Users").document(Utils.getUiLoggedIn())
-        val userToUnfollowDocRef = firestore.collection("Users").document(user.userid!!)
-
-        userDocRef.get().addOnSuccessListener { userSnapshot ->
-            if (userSnapshot.exists()) {
-                val followingCount = userSnapshot.getLong("following") ?: 0
-
-                firestore.runTransaction { transaction ->
-                    val userToUnfollowSnapshot = transaction.get(userToUnfollowDocRef)
-
-                    val followersCount = userToUnfollowSnapshot.getLong("followers") ?: 0
-                    val newFollowersCount = if (followersCount > 0) followersCount - 1 else 0
-                    transaction.update(userToUnfollowDocRef, "followers", newFollowersCount)
-
-                    val newFollowingCount = if (followingCount > 0) followingCount - 1 else 0
-                    transaction.update(userDocRef, "following", newFollowingCount)
-                }.addOnSuccessListener {
-                    firestore.collection("Follow").document(Utils.getUiLoggedIn()).get().addOnSuccessListener { documentSnapshot ->
-                        if (documentSnapshot.exists()) {
-                            val followingIds = documentSnapshot.get("following_id") as? List<String>
-                            val newIds = followingIds?.toMutableList() ?: mutableListOf()
-
-                            if (newIds.contains(user.userid)) {
-                                newIds.remove(user.userid)
-                            }
-
-                            if (newIds.isEmpty()) {
-                                documentSnapshot.reference.delete()
-                            } else {
-                                val followDocRef = firestore.collection("Follow").document(Utils.getUiLoggedIn())
-                                followDocRef.set(hashMapOf("following_id" to newIds))
-                            }
-                        }
-                    }
-                }.addOnFailureListener { exception ->
-                    // Handle transaction failure
-                    Log.e("Unfollow", "Failed to unfollow user", exception)
-                }
-            }
-        }
-    }
-
-    private fun checkFollowingStatus(uid: String, followButton: Button) {
-        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
-
-        val followRef = FirebaseFirestore.getInstance()
-            .collection("Follow")
-            .document(currentUserId)
-
-        followRef.addSnapshotListener { snapshot, error ->
-            if (error != null) {
-                Log.e("Firestore Error", error.message.toString())
-                return@addSnapshotListener
-            }
-
-            if (snapshot != null && snapshot.exists()) {
-                val followingIds = snapshot.get("following_id") as? List<String>
-
-                if (followingIds != null && followingIds.contains(uid)) {
-                    followButton.text = "Following"
-                } else {
-                    followButton.text = "Follow"
-                }
-            } else {
-                followButton.text = "Follow"
-            }
-        }
-    }
 }
-
