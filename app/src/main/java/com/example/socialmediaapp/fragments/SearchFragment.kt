@@ -30,6 +30,8 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.request.RequestOptions
 import com.example.socialmediaapp.MainActivity
 import com.example.socialmediaapp.R
 import com.example.socialmediaapp.adapters.PostsAdapter
@@ -336,7 +338,6 @@ class SearchFragment : Fragment(), OnPostClickListener {
     private fun fetchArtworkDetailsAndShowDialog(postId: String, post: Posts) {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                // Get the basic information from the Post
                 val imageUrl = post.image ?: ""
                 var title = post.caption ?: "Untitled"
                 var story = ""
@@ -344,11 +345,10 @@ class SearchFragment : Fragment(), OnPostClickListener {
                 val comments = post.comments ?: 0
                 val userId = post.userid ?: ""
 
-                // User information
                 var userName = ""
                 var userImageUrl = ""
 
-                // Fetch additional artwork details from Images collection
+                // Fetch artwork details from Images collection
                 val imagesQuery = firestore.collection("Images")
                     .whereEqualTo("postid", postId)
                     .limit(1)
@@ -361,20 +361,23 @@ class SearchFragment : Fragment(), OnPostClickListener {
                     title = imageDoc.getString("title") ?: title
                 }
 
-                // Fetch user information
-                val userQuery = firestore.collection("Users")
-                    .whereEqualTo("userid", userId)
-                    .limit(1)
-                    .get()
-                    .await()
-
-                if (!userQuery.isEmpty) {
-                    val userDoc = userQuery.documents[0]
-                    userName = userDoc.getString("username") ?: "Unknown Artist"
-                    userImageUrl = userDoc.getString("imageurl") ?: ""
+                // Fetch user info from Users collection
+                if (userId.isNotEmpty()) {
+                    try {
+                        val userDoc = firestore.collection("Users").document(userId).get().await()
+                        if (userDoc.exists()) {
+                            userName = userDoc.getString("username") ?: "Unknown Artist"
+                            userImageUrl = userDoc.getString("image") ?: "" // 🔄 CHANGED HERE
+                            Log.d("ArtworkDetails", "Fetched artist name: $userName")
+                            Log.d("ArtworkDetails", "Fetched artist image URL: $userImageUrl")
+                        } else {
+                            Log.w("ArtworkDetails", "User document does not exist for ID: $userId")
+                        }
+                    } catch (e: Exception) {
+                        Log.e("ArtworkDetails", "Error fetching user document", e)
+                    }
                 }
 
-                // Show dialog on main thread
                 withContext(Dispatchers.Main) {
                     showArtworkDetailsDialog(imageUrl, title, story, likes, comments, postId, userId, userName, userImageUrl)
                 }
@@ -391,6 +394,7 @@ class SearchFragment : Fragment(), OnPostClickListener {
         }
     }
 
+
     private fun showArtworkDetailsDialog(
         imageUrl: String,
         title: String,
@@ -402,11 +406,14 @@ class SearchFragment : Fragment(), OnPostClickListener {
         userName: String,
         userImageUrl: String
     ) {
-        val dialog = Dialog(requireContext())
+        // Make sure we're still attached to a context
+        val currentContext = context ?: return
+
+        val dialog = Dialog(currentContext)
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
         dialog.setCancelable(true)
         dialog.setContentView(R.layout.dialog_artwork_details)
-        dialog.window?.setBackgroundDrawable(ColorDrawable(ContextCompat.getColor(requireContext(), R.color.semi_transparent)))
+        dialog.window?.setBackgroundDrawable(ColorDrawable(ContextCompat.getColor(currentContext, R.color.semi_transparent)))
 
         // Initialize dialog views
         val detailImageView = dialog.findViewById<ImageView>(R.id.detailImageView)
@@ -421,13 +428,11 @@ class SearchFragment : Fragment(), OnPostClickListener {
         val artistNameTextView = dialog.findViewById<TextView>(R.id.artistNameTextView)
         val artistInfoContainer = dialog.findViewById<View>(R.id.artistInfoContainer)
 
+        // Show artist information section
         artistInfoContainer.visibility = View.VISIBLE
 
-        // Log debugging info
-        Log.d("ArtworkDetails", "Loading artist image from URL: $userImageUrl")
-
         // Load main artwork image
-        Glide.with(requireContext())
+        Glide.with(currentContext)
             .load(imageUrl)
             .fitCenter()
             .placeholder(R.drawable.placeholder_image2)
@@ -443,31 +448,28 @@ class SearchFragment : Fragment(), OnPostClickListener {
         // Set artist information
         artistNameTextView.text = userName
 
-        // Improve artist profile image loading
+        // Fixed implementation for artist profile image loading
         if (userImageUrl.isNotEmpty()) {
-            try {
-                Glide.with(requireContext())
-                    .load(userImageUrl)
-                    .placeholder(R.drawable.ic_profile)
-                    .error(R.drawable.ic_profile)
-                    .into(artistImageView)
+            Log.d("ArtworkDetails", "Loading artist image from URL: $userImageUrl")
 
-                Log.d("ArtworkDetails", "Artist image loading attempt completed")
-            } catch (e: Exception) {
-                Log.e("ArtworkDetails", "Error loading artist image", e)
-                // Set default image in case of error
-                artistImageView.setImageResource(R.drawable.ic_profile)
-            }
+            // Use a simpler Glide implementation with the view's context
+            Glide.with(artistImageView)  // Use the view's context directly
+                .load(userImageUrl)
+                .placeholder(R.drawable.ic_profile)
+                .error(R.drawable.ic_profile)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .into(artistImageView)
         } else {
-            // Set default image if URL is empty
             Log.d("ArtworkDetails", "No artist image URL available, using default")
             artistImageView.setImageResource(R.drawable.ic_profile)
         }
 
         // Set click listener for artist container to navigate to profile
         artistInfoContainer.setOnClickListener {
-            navigateToUserProfile(userId)
-            dialog.dismiss()
+            if (userId.isNotEmpty()) {
+                navigateToUserProfile(userId)
+                dialog.dismiss()
+            }
         }
 
         // Set close button listener
@@ -477,6 +479,8 @@ class SearchFragment : Fragment(), OnPostClickListener {
 
         dialog.show()
     }
+
+
 
     private fun setupFilterSpinner() {
         val spinner = requireActivity().findViewById<Spinner>(R.id.filter_spinner)
