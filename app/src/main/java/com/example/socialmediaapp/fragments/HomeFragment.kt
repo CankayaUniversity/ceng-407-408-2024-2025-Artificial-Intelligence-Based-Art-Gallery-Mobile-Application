@@ -7,6 +7,7 @@ import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
 import android.text.Editable
+import android.text.Selection
 import android.text.TextWatcher
 import android.util.Log
 import android.view.LayoutInflater
@@ -14,6 +15,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.Spinner
 import android.widget.Toast
@@ -45,6 +47,8 @@ class HomeFragment : Fragment(), onLikeClickListener, onUserClickListener {
     private var scrollPosition: Int = 0
     private lateinit var sharedPreferences: SharedPreferences
     private val PREF_NAME = "ThemePrefs"
+    private val MAX_COMMENT_LENGTH = 2000 // Define maximum character limit for comments
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -85,14 +89,84 @@ class HomeFragment : Fragment(), onLikeClickListener, onUserClickListener {
         adapter.setUserClickListener(this@HomeFragment)
         adapter.setCommentClickListener(object : onCommentClickListener {
             override fun addComment(postId: String, comment: String) {
-                if (comment.isNotEmpty()) {
+                // Check if comment is not empty and within character limit
+                if (comment.isEmpty()) {
+                    Toast.makeText(requireContext(), "Yorum boş olamaz!", Toast.LENGTH_SHORT).show()
+                } else if (comment.length > MAX_COMMENT_LENGTH) {
+                    Toast.makeText(requireContext(), "Yorum maksimum $MAX_COMMENT_LENGTH karakter olabilir!", Toast.LENGTH_SHORT).show()
+                } else {
                     vm.addComment(postId, comment)
                     Toast.makeText(requireContext(), "Yorum eklendi!", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(requireContext(), "Yorum boş olamaz!", Toast.LENGTH_SHORT).show()
                 }
             }
         })
+
+        // HomeFragment.kt içindeki setupFeedAdapter metodundaki TextWatcher
+        adapter.setCommentTextWatcher(object : TextWatcher {
+            private var previousText = ""
+            private var isLimitReached = false
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                // Önceki metni sakla
+                previousText = s?.toString() ?: ""
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                val currentLength = s?.length ?: 0
+
+                // Limit aşılırsa veya limite yaklaşılırsa uyarı göster
+                if (currentLength >= MAX_COMMENT_LENGTH) {
+                    if (!isLimitReached) {
+                        Toast.makeText(requireContext(), "Maksimum karakter limitine ulaştınız!", Toast.LENGTH_SHORT).show()
+                        isLimitReached = true
+                    }
+                } else if (currentLength > MAX_COMMENT_LENGTH * 0.9) {
+                    val remainingChars = MAX_COMMENT_LENGTH - currentLength
+                    if (remainingChars >= 0 && (remainingChars == 200 || remainingChars == 100 || remainingChars == 50 || remainingChars == 20 || remainingChars == 10)) {
+                        Toast.makeText(requireContext(), "$remainingChars karakter kaldı", Toast.LENGTH_SHORT).show()
+                        isLimitReached = false
+                    }
+                } else {
+                    isLimitReached = false
+                }
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+                if (s == null) return
+
+                // Eğer metin 2000 karakterden fazlaysa, önceki haline geri al
+                if (s.length > MAX_COMMENT_LENGTH) {
+                    try {
+                        // Güvenli bir şekilde metni maksimum karakter sayısına kırp
+                        val limitedText = if (previousText.length <= MAX_COMMENT_LENGTH) {
+                            previousText
+                        } else {
+                            previousText.substring(0, MAX_COMMENT_LENGTH)
+                        }
+
+                        // Editable'ı değiştir
+                        s.replace(0, s.length, limitedText)
+
+                        // EditText'i bulma ve imleci metnin sonuna konumlandırma denemesi
+                        val parent = s.getSpanStart(s) as? View
+                        if (parent != null) {
+                            val editText = parent.findViewWithTag<EditText>("commentEditText")
+                            editText?.setSelection(s.length)
+                        }
+
+                        if (!isLimitReached) {
+                            Toast.makeText(requireContext(), "Maksimum karakter limitine ulaştınız!", Toast.LENGTH_SHORT).show()
+                            isLimitReached = true
+                        }
+                    } catch (e: Exception) {
+                        // Herhangi bir hata durumunda, basit bir kırpma yap
+                        s.delete(MAX_COMMENT_LENGTH, s.length)
+                        Log.e("HomeFragment", "Error handling text limit: ${e.message}")
+                    }
+                }
+            }
+        })
+
         binding.feedRecycler.adapter = adapter
     }
 

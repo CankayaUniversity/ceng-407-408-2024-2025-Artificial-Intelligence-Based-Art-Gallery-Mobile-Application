@@ -1,75 +1,107 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- ScrollView ekliyoruz ki içerik uzun olduğunda kayabilsin -->
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="16dp"
-    app:behavior_hideable="true"
-    app:behavior_peekHeight="0dp"
-    app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
-    tools:ignore="ExtraText">
+    android:layout_height="match_parent"
+    android:fillViewport="true">
 
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Comments"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="12dp" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/commentsRecyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:maxHeight="300dp"
-        android:layout_marginBottom="20dp" />
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="#E0E0E0"
-        android:layout_marginBottom="20dp" />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Add a Comment"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="8dp" />
-
-    <!-- Şık arka plan drawable uygulanıyor -->
-    <EditText
-        android:id="@+id/bottomSheetCommentInput"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Write a comment..."
-        android:padding="14dp"
-        android:background="@drawable/edit_text_background"
-        android:layout_marginBottom="20dp" />
-
-    <!-- Modern buton drawable uygulanıyor -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/bottomSheetCommentButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Post a Comment"
-        app:backgroundTint="@color/card_background"
-        android:textAllCaps="false"
-        android:textColor="@android:color/white"
-        app:cornerRadius="8dp" />
-
-
-    <TextView
-        android:id="@+id/noCommentsText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="No comments yet"
-        android:textAlignment="center"
-        android:textColor="#9E9E9E"
+        android:orientation="vertical"
         android:padding="16dp"
-        android:visibility="gone" />
+        app:behavior_hideable="true"
+        app:behavior_peekHeight="0dp"
+        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
+        tools:ignore="ExtraText">
 
-</LinearLayout>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Comments"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="12dp" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/commentsRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxHeight="250dp"
+            android:layout_marginBottom="16dp"
+            android:nestedScrollingEnabled="false" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#E0E0E0"
+            android:layout_marginBottom="16dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Add a Comment"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Comment input container with character counter -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="16dp">
+
+            <!-- Styled background for the EditText - max yüksekliği sınırlandırıyoruz -->
+            <EditText
+                android:id="@+id/bottomSheetCommentInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Write a comment..."
+                android:padding="14dp"
+                android:background="@drawable/edit_text_background"
+                android:inputType="textMultiLine"
+                android:maxLines="5"
+                android:scrollbars="vertical"
+                android:gravity="top|start" />
+
+            <!-- Character counter text view - aligned to the right -->
+            <TextView
+                android:id="@+id/characterCounter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0/2000"
+                android:textSize="12sp"
+                android:textColor="#9E9E9E"
+                android:layout_gravity="end"
+                android:layout_marginTop="4dp"
+                android:layout_marginEnd="4dp" />
+        </LinearLayout>
+
+        <!-- Modern button with material design - daha büyük margin ve fixed height -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/bottomSheetCommentButton"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Post a Comment"
+            app:backgroundTint="@color/card_background"
+            android:textAllCaps="false"
+            android:textColor="@android:color/white"
+            app:cornerRadius="8dp"
+            android:layout_marginBottom="16dp"/>
+
+        <TextView
+            android:id="@+id/noCommentsText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="No comments yet"
+            android:textAlignment="center"
+            android:textColor="#9E9E9E"
+            android:padding="16dp"
+            android:visibility="gone" />
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>
