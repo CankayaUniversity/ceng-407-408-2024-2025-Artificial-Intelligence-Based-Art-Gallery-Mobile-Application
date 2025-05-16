@@ -210,7 +210,7 @@ class ViewModel: ViewModel() {
 
             }
             .addOnFailureListener { exception ->
-                Log.e("Firebase", "Kullanıcı bilgisi alınırken hata oluştu: ${exception.message}")
+                Log.e("Firebase", "\n" + "An error occurred while retrieving user information: ${exception.message}")
             }
 
         return user
@@ -222,7 +222,7 @@ class ViewModel: ViewModel() {
 
         firestore.collection("Posts").whereEqualTo("userid", userId).addSnapshotListener { snapshot, exception ->
             if (exception != null) {
-                Log.e("Firebase", "Gönderiler alınırken hata oluştu: ${exception.message}")
+                Log.e("Firebase", "\n" + "An error occurred while retrieving posts: ${exception.message}")
                 return@addSnapshotListener
             }
 
@@ -247,7 +247,7 @@ class ViewModel: ViewModel() {
                 stats.postValue(mapOf("followers" to followers, "following" to following))
             }
             .addOnFailureListener { exception ->
-                Log.e("Firebase", "Kullanıcı istatistikleri alınırken hata oluştu: ${exception.message}")
+                Log.e("Firebase", "An error occurred while retrieving user statistics: ${exception.message}")
             }
 
         return stats
@@ -262,7 +262,7 @@ class ViewModel: ViewModel() {
                 postCount.postValue(querySnapshot.size())
             }
             .addOnFailureListener { exception ->
-                Log.e("Firebase", "Post sayısı alınırken hata oluştu: ${exception.message}")
+                Log.e("Firebase", "An error occurred while getting the post count: ${exception.message}")
             }
 
         return postCount
@@ -427,7 +427,7 @@ class ViewModel: ViewModel() {
                         success.postValue(false)
                     }
             } catch (e: Exception) {
-                Log.e("Firebase", "Takipten çıkarken hata oluştu: ${e.message}")
+                Log.e("Firebase", "An error occurred while unfollowing: ${e.message}")
                 success.postValue(false)
             }
         }
@@ -451,7 +451,7 @@ class ViewModel: ViewModel() {
                 }
             }
             .addOnFailureListener { exception ->
-                Log.e("Firebase", "Takip durumu kontrol edilirken hata oluştu: ${exception.message}")
+                Log.e("Firebase", "\n" + "An error occurred while checking tracking status: ${exception.message}")
                 isFollowing.postValue(false)
             }
 

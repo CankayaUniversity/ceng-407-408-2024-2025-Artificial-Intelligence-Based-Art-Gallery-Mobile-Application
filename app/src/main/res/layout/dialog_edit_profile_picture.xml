@@ -16,18 +16,7 @@
         android:textSize="18sp"
         android:textStyle="bold" />
 
-    <Button
-        android:id="@+id/takePhotoButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:background="@drawable/rounded_button_background"
-        android:drawableStart="@drawable/ic_gallery"
-        android:drawablePadding="8dp"
-        android:gravity="start|center_vertical"
-        android:padding="12dp"
-        android:text="Take Photo"
-        android:textColor="@android:color/white" />
+
 
     <Button
         android:id="@+id/chooseFromGalleryButton"

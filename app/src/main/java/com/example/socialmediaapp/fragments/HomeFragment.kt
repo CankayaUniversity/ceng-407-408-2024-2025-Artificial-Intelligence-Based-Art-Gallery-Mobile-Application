@@ -87,9 +87,9 @@ class HomeFragment : Fragment(), onLikeClickListener, onUserClickListener {
             override fun addComment(postId: String, comment: String) {
                 if (comment.isNotEmpty()) {
                     vm.addComment(postId, comment)
-                    Toast.makeText(requireContext(), "Yorum eklendi!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "Comment added!", Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(requireContext(), "Yorum boş olamaz!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "Comment can not be empty!", Toast.LENGTH_SHORT).show()
                 }
             }
         })

@@ -482,7 +482,7 @@ class ProfilePageActivity : BaseActivity() {
         dialog.setContentView(R.layout.dialog_edit_profile_picture)
 
         val galleryButton = dialog.findViewById<Button>(R.id.chooseFromGalleryButton)
-        val photoButton = dialog.findViewById<Button>(R.id.takePhotoButton)
+
         val backButton = dialog.findViewById<Button>(R.id.backToEditButton)
 
         galleryButton.setOnClickListener {
@@ -491,12 +491,7 @@ class ProfilePageActivity : BaseActivity() {
             pickImageLauncher.launch(intent)
         }
 
-        photoButton.setOnClickListener {
-            // Launch camera intent
-            // Note: You'd need to implement camera functionality
-            Toast.makeText(this, "Camera functionality coming soon", Toast.LENGTH_SHORT).show()
-            dialog.dismiss()
-        }
+
 
         backButton.setOnClickListener {
             // Return to previous menu
