@@ -1,13 +1,13 @@
 package com.example.socialmediaapp.modal
 
 data class Feed(
-    val username:    String? ="",
+    var username:    String? ="",
     val comments:    Int?=0,
     var likes:       Int?=0,
     val postid:      String? = "",
     val userid:      String?= "",
     val image:       String?= "",
-    val imageposter: String?= "",
+    var imageposter: String?= "",
     val time:        Long?= null,
     val caption:     String? ="",
 

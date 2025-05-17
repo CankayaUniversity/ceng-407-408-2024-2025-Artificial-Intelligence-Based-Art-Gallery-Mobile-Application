@@ -4,8 +4,8 @@ data class Notification(
     val id: String = "",
     val userId: String = "",  // Receiver of notification
     val fromUserId: String = "", // Sender of notification
-    val fromUsername: String = "",
-    val fromUserImage: String = "",
+    var fromUsername: String = "",
+    var fromUserImage: String = "",
     val type: String = "",  // "like", "comment", "follow"
     val postId: String = "", // For like and comment notifications
     val postCaption: String = "", // Caption text for the post

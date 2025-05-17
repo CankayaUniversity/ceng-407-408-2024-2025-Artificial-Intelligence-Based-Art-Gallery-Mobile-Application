@@ -186,20 +186,23 @@ class HomeFragment : Fragment(), onLikeClickListener, onUserClickListener {
         vm.loadMyFeed().observe(viewLifecycleOwner, Observer { feedList ->
             val previousSize = adapter.feedlist.size
 
-            // Update adapter with new data
-            adapter.setFeedList(feedList)
+            // Bu listeyi kullanmadan önce profil resimlerini güncelle
+            updateUserProfileImages(feedList) { updatedFeedList ->
+                // Güncellenmiş verileri adaptöre ilet
+                adapter.setFeedList(updatedFeedList)
 
-            // Notify adapter of the new data
-            if (previousSize == 0) {
-                // If this is the first load, use notifyDataSetChanged
-                adapter.notifyDataSetChanged()
-            } else {
-                // Otherwise notify that the dataset has been modified to maintain scroll position
-                adapter.notifyItemRangeChanged(0, feedList.size)
+                // Adaptörü bilgilendir
+                if (previousSize == 0) {
+                    // İlk yükleme ise, notifyDataSetChanged kullan
+                    adapter.notifyDataSetChanged()
+                } else {
+                    // Değilse, kaydırma pozisyonunu korumak için veri setinin değiştiğini bildir
+                    adapter.notifyItemRangeChanged(0, updatedFeedList.size)
 
-                // Restore scroll position
-                (binding.feedRecycler.layoutManager as androidx.recyclerview.widget.LinearLayoutManager)
-                    .scrollToPosition(scrollPosition)
+                    // Kaydırma pozisyonunu geri yükle
+                    (binding.feedRecycler.layoutManager as androidx.recyclerview.widget.LinearLayoutManager)
+                        .scrollToPosition(scrollPosition)
+                }
             }
         })
     }
@@ -351,6 +354,69 @@ class HomeFragment : Fragment(), onLikeClickListener, onUserClickListener {
                 "Navigation error: ${e.message}",
                 Toast.LENGTH_LONG
             ).show()
+        }
+    }
+
+    private fun updateUserProfileImages(feedList: List<Feed>, completion: (List<Feed>) -> Unit) {
+        // Eğer liste boşsa, hemen bitir
+        if (feedList.isEmpty()) {
+            completion(feedList)
+            return
+        }
+
+        // Kaç kullanıcı verisi alındığını izlemek için kullanılacak sayaç
+        var completedCount = 0
+
+        // Sonuçlar için değiştirilebilir bir liste oluştur
+        val updatedFeedList = feedList.toMutableList()
+
+        // Her gönderi için kullanıcı verilerini güncelle
+        feedList.forEachIndexed { index, feed ->
+            val userId = feed.userid ?: return@forEachIndexed
+
+            // Firestore'dan en güncel kullanıcı bilgilerini al
+            FirebaseFirestore.getInstance().collection("Users").document(userId)
+                .get()
+                .addOnSuccessListener { document ->
+                    if (document != null && document.exists()) {
+                        // Kullanıcı profil resmini al
+                        val updatedProfileImage = document.getString("image")
+
+                        val updatedUsername = document.getString("username")
+
+                        val updatedFeed = feed.copy()
+                        // Eğer kullanıcı adı varsa ve mevcut kullanıcı adından farklıysa güncelle
+                        if (updatedUsername != null && updatedUsername != feed.username) {
+                            // Kullanıcı adını güncelle
+                            updatedFeed.username = updatedUsername
+                            updatedFeedList[index] = updatedFeed
+                        }
+
+                        // Eğer profil resmi varsa ve mevcut resimden farklıysa güncelle
+                        if (updatedProfileImage != null && updatedProfileImage != feed.imageposter) {
+                            // Öğeyi güncelle
+
+                            updatedFeed.imageposter = updatedProfileImage
+                            updatedFeedList[index] = updatedFeed
+                        }
+                    }
+
+                    // Sayacı artır
+                    completedCount++
+
+                    // Tüm kullanıcılar kontrol edildiyse tamamlanma fonksiyonunu çağır
+                    if (completedCount == feedList.size) {
+                        completion(updatedFeedList)
+                    }
+                }
+                .addOnFailureListener { e ->
+                    // Hata durumunda sayacı artır ve kontrol et
+                    Log.e("HomeFragment", "Error updating user profile image", e)
+                    completedCount++
+                    if (completedCount == feedList.size) {
+                        completion(updatedFeedList)
+                    }
+                }
         }
     }
 }
