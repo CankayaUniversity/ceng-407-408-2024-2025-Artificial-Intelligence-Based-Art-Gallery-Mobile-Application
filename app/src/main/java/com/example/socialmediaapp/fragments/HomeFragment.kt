@@ -91,12 +91,12 @@ class HomeFragment : Fragment(), onLikeClickListener, onUserClickListener {
             override fun addComment(postId: String, comment: String) {
                 // Check if comment is not empty and within character limit
                 if (comment.isEmpty()) {
-                    Toast.makeText(requireContext(), "Yorum boş olamaz!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "Comment can not be empty!", Toast.LENGTH_SHORT).show()
                 } else if (comment.length > MAX_COMMENT_LENGTH) {
-                    Toast.makeText(requireContext(), "Yorum maksimum $MAX_COMMENT_LENGTH karakter olabilir!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "Comments can be $MAX_COMMENT_LENGTH character lenght!", Toast.LENGTH_SHORT).show()
                 } else {
                     vm.addComment(postId, comment)
-                    Toast.makeText(requireContext(), "Yorum eklendi!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "Comment added!", Toast.LENGTH_SHORT).show()
                 }
             }
         })
@@ -117,13 +117,13 @@ class HomeFragment : Fragment(), onLikeClickListener, onUserClickListener {
                 // Limit aşılırsa veya limite yaklaşılırsa uyarı göster
                 if (currentLength >= MAX_COMMENT_LENGTH) {
                     if (!isLimitReached) {
-                        Toast.makeText(requireContext(), "Maksimum karakter limitine ulaştınız!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), "\n" + "You have reached the maximum character limit.!", Toast.LENGTH_SHORT).show()
                         isLimitReached = true
                     }
                 } else if (currentLength > MAX_COMMENT_LENGTH * 0.9) {
                     val remainingChars = MAX_COMMENT_LENGTH - currentLength
                     if (remainingChars >= 0 && (remainingChars == 200 || remainingChars == 100 || remainingChars == 50 || remainingChars == 20 || remainingChars == 10)) {
-                        Toast.makeText(requireContext(), "$remainingChars karakter kaldı", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), "$remainingChars character remaining", Toast.LENGTH_SHORT).show()
                         isLimitReached = false
                     }
                 } else {
@@ -155,7 +155,7 @@ class HomeFragment : Fragment(), onLikeClickListener, onUserClickListener {
                         }
 
                         if (!isLimitReached) {
-                            Toast.makeText(requireContext(), "Maksimum karakter limitine ulaştınız!", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(requireContext(), "\n" + "You have reached the maximum character limit.!", Toast.LENGTH_SHORT).show()
                             isLimitReached = true
                         }
                     } catch (e: Exception) {
