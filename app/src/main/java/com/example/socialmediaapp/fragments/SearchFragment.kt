@@ -65,6 +65,9 @@ class SearchFragment : Fragment(), OnPostClickListener {
     private var toggleButton: FloatingActionButton? = null
     private var isShowingUsers = false
 
+    // Add this label to display the search results title
+    private var searchResultsTitle: TextView? = null
+
     private lateinit var vm: ViewModel
 
     // Firestore reference
@@ -159,16 +162,15 @@ class SearchFragment : Fragment(), OnPostClickListener {
                     // Show regular feed when search is empty
                     searchResultsContainer?.visibility = View.GONE
                     allPostsRecyclerView?.visibility = View.VISIBLE
+                    userPostsRecyclerView?.visibility = View.GONE
                 } else {
                     // Show search results (both users and their posts)
                     searchResultsContainer?.visibility = View.VISIBLE
                     allPostsRecyclerView?.visibility = View.GONE
+                    userPostsRecyclerView?.visibility = View.VISIBLE
 
                     // Search for users with matching username
                     searchUser(searchText.toLowerCase(Locale.ROOT))
-
-                    // Search for posts with matching caption
-                    searchPostsByCaption(searchText.toLowerCase(Locale.ROOT))
                 }
             }
         })
@@ -176,14 +178,13 @@ class SearchFragment : Fragment(), OnPostClickListener {
         // Set initial view states
         searchResultsContainer?.visibility = View.GONE
         allPostsRecyclerView?.visibility = View.VISIBLE
+        userPostsRecyclerView?.visibility = View.GONE
 
         // Load all posts from other users
         vm.getAllPostsExceptCurrentUser().observe(viewLifecycleOwner, Observer { posts ->
             allPostsAdapter?.setPosts(posts)
         })
     }
-
-    // Rest of your SearchFragment methods remain the same...
 
     // Safe navigation method
     private fun navigateToUserProfile(userId: String) {
@@ -217,40 +218,17 @@ class SearchFragment : Fragment(), OnPostClickListener {
                 // Show all users
                 searchResultsContainer?.visibility = View.VISIBLE
                 allPostsRecyclerView?.visibility = View.GONE
+                userPostsRecyclerView?.visibility = View.GONE
                 toggleButton?.setImageResource(R.drawable.ic_home_active)
                 retrieveAllUsers()
             } else {
                 // Show all posts
                 searchResultsContainer?.visibility = View.GONE
                 allPostsRecyclerView?.visibility = View.VISIBLE
+                userPostsRecyclerView?.visibility = View.GONE
                 toggleButton?.setImageResource(R.drawable.search)
             }
         }
-    }
-
-    private fun searchPostsByCaption(input: String) {
-        val postsCollection = FirebaseFirestore.getInstance().collection("Posts")
-
-        postsCollection
-            .orderBy("caption")
-            .startAt(input)
-            .endAt(input + "\uf8ff")
-            .addSnapshotListener { value, error ->
-                if (error != null) {
-                    Log.e("Firestore Error", error.message.toString())
-                    return@addSnapshotListener
-                }
-
-                val postsList = ArrayList<Posts>()
-                for (document in value?.documents ?: emptyList()) {
-                    val post = document.toObject(Posts::class.java)
-                    if (post != null) {
-                        post.postid = document.id  // Make sure postid is set
-                        postsList.add(post)
-                    }
-                }
-                userPostsAdapter?.setPosts(postsList)
-            }
     }
 
     private fun searchUser(input: String) {
@@ -276,17 +254,24 @@ class SearchFragment : Fragment(), OnPostClickListener {
                 if (user != null && user.userid != currentUserId) {
                     mUser?.add(user)
 
-                    // Fetch posts for the first matching user
-                    if (mUser?.size == 1) {
-                        user.userid?.let { fetchUserPosts(it) }
+                    // Fetch posts for every matching user
+                    user.userid?.let {
+                        fetchUserPosts(it, user.username ?: "User")
                     }
                 }
             }
             userAdapter?.notifyDataSetChanged()
+
+            // Update UI based on search results
+            if (mUser?.isEmpty() == true) {
+                // No users found
+                searchResultsTitle?.text = "No users found"
+                userPostsRecyclerView?.visibility = View.GONE
+            }
         }
     }
 
-    private fun fetchUserPosts(userId: String) {
+    private fun fetchUserPosts(userId: String, username: String) {
         val postsCollection = FirebaseFirestore.getInstance().collection("Posts")
         postsCollection.whereEqualTo("userid", userId)
             .addSnapshotListener { value, error ->
@@ -302,10 +287,20 @@ class SearchFragment : Fragment(), OnPostClickListener {
                         postsList.add(post)
                     }
                 }
+
+                // Display the user's artwork
                 userPostsAdapter?.setPosts(postsList)
 
-                // Make sure the user posts recycler view is visible
-                userPostsRecyclerView?.visibility = View.VISIBLE
+                // Update the title to show whose artwork we're displaying
+                searchResultsTitle?.text = "$username's Artwork"
+
+                // Update UI based on search results
+                if (postsList.isEmpty()) {
+                    searchResultsTitle?.text = "$username has no artwork yet"
+                } else {
+                    // Make sure the user posts recycler view is visible
+                    userPostsRecyclerView?.visibility = View.VISIBLE
+                }
             }
     }
 
@@ -412,7 +407,6 @@ class SearchFragment : Fragment(), OnPostClickListener {
         userName: String,
         userImageUrl: String
     ) {
-        // Dialog implementation remains the same...
         // Make sure we're still attached to a context
         val currentContext = context ?: return
 
