@@ -26,7 +26,7 @@ point to the other users (if it is private). Depending on the user’s choice, t
 
 
 ## Project Web Page
-https://mindsart2.wixsite.com/my-site-6
+https://mindsart21.wixsite.com/mindsart
 
 ## User Manual
 
