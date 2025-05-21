@@ -32,7 +32,6 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -40,11 +39,20 @@ import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.util.UUID
+import android.widget.ImageButton
 
 class ProfilePageActivity : BaseActivity() {
     override fun getContentLayoutId(): Int {
         return R.layout.activity_profile_page
     }
+
+    private lateinit var navLeftButton: ImageButton
+    private lateinit var navRightButton: ImageButton
+
+    // Variables for pagination
+    private var currentPage = 0
+    private var totalPages = 1
+    private var totalArtworksCount = 0
 
     private lateinit var profileImageView: ImageView
     private lateinit var usernameTextView: TextView
@@ -64,11 +72,11 @@ class ProfilePageActivity : BaseActivity() {
     private var selectedImageUri: Uri? = null
     private var totalLikes = 0
 
-    // Pagination variables
+    // Pagination constants
     private val ARTWORKS_PER_PAGE = 12
-    private var lastDocumentSnapshot: DocumentSnapshot? = null
-    private var isLoadingMoreArtworks = false
-    private var hasMoreArtworks = true
+
+    // Cache for artwork documents
+    private val artworksCache = mutableListOf<DocumentSnapshot>()
 
     // Activity result launcher for image selection
     private val pickImageLauncher = registerForActivityResult(
@@ -88,7 +96,9 @@ class ProfilePageActivity : BaseActivity() {
 
         initializeViews()
         loadUserProfile()
-        loadUserArtworks(true)
+
+        // Load all artworks without sorting
+        loadAllArtworks()
 
         editProfileFab.setOnClickListener {
             showImagePickerOptions()
@@ -100,7 +110,6 @@ class ProfilePageActivity : BaseActivity() {
         if (sharedPreferences.getBoolean(PREF_NAME, false)) {
             mainLayout.setBackgroundColor("#3F51B5".toColorInt())
         }
-
     }
 
     private fun initializeViews() {
@@ -112,6 +121,193 @@ class ProfilePageActivity : BaseActivity() {
         artworksGridLayout = findViewById(R.id.artworksGridLayout)
         editProfileFab = findViewById(R.id.editProfileFab)
         artworksTitleTextView = findViewById(R.id.artworksTitleTextView)
+
+        // Initialize navigation buttons
+        navLeftButton = findViewById(R.id.navLeftButton)
+        navRightButton = findViewById(R.id.navRightButton)
+
+        // Set initial button states
+        navLeftButton.isEnabled = false
+        navLeftButton.alpha = 0.5f
+
+        // Set click listeners for navigation buttons
+        navLeftButton.setOnClickListener {
+            if (currentPage > 0) {
+                currentPage--
+                displayCurrentPage()
+                updateNavigationButtons()
+            }
+        }
+
+        navRightButton.setOnClickListener {
+            if (currentPage < totalPages - 1) {
+                currentPage++
+                displayCurrentPage()
+                updateNavigationButtons()
+            }
+        }
+    }
+
+    private fun loadAllArtworks() {
+        val currentUser = auth.currentUser ?: return
+        val progressDialog = ProgressDialog(this).apply {
+            setCancelable(false)
+            setMessage("Loading your artworks...")
+            show()
+        }
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                // Clear cache first
+                artworksCache.clear()
+
+                // Get all artworks from Images collection where userid matches current user
+                val query = firestore.collection("Images")
+                    .whereEqualTo("userid", currentUser.uid)
+                    .get()
+                    .await()
+
+                // Add all documents to cache
+                artworksCache.addAll(query.documents)
+
+                // Calculate total pages
+                totalArtworksCount = artworksCache.size
+                totalPages = Math.ceil(totalArtworksCount.toDouble() / ARTWORKS_PER_PAGE).toInt()
+                if (totalPages == 0) totalPages = 1
+
+                withContext(Dispatchers.Main) {
+                    progressDialog.dismiss()
+
+                    // Set page title
+                    artworksTitleTextView.text = "My Artworks - $totalArtworksCount Posts"
+
+                    // Update navigation buttons
+                    updateNavigationButtons()
+
+                    // Display the first page
+                    displayCurrentPage()
+
+                    // Show a message if no artworks are found
+                    if (artworksCache.isEmpty()) {
+                        artworksTitleTextView.text = "No Artworks Yet"
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("ProfilePage", "Error loading artworks", e)
+                withContext(Dispatchers.Main) {
+                    progressDialog.dismiss()
+                    Toast.makeText(
+                        this@ProfilePageActivity,
+                        "Failed to load artworks: ${e.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
+    }
+
+    // Display the current page from the cache
+    private fun displayCurrentPage() {
+        // Clear the grid first
+        artworksGridLayout.removeAllViews()
+
+        // Calculate start and end indices for the current page
+        val startIndex = currentPage * ARTWORKS_PER_PAGE
+        val endIndex = minOf(startIndex + ARTWORKS_PER_PAGE, artworksCache.size)
+
+        // Show only the artworks for the current page
+        for (i in startIndex until endIndex) {
+            if (i < artworksCache.size) {
+                val doc = artworksCache[i]
+
+                // Get image attributes
+                val imageUrl = doc.getString("imageUrl") ?: continue
+                val title = doc.getString("title") ?: "Untitled"
+                val story = doc.getString("story") ?: ""
+                val caption = doc.getString("caption") ?: ""
+                val likes = doc.getLong("likes")?.toInt() ?: 0
+                val comments = doc.getLong("comments")?.toInt() ?: 0
+                val postId = doc.getString("postid") ?: doc.id
+
+                // Create artwork card view with the information
+                val cardView = createArtworkCardView(imageUrl, title, story, likes, comments, postId)
+                artworksGridLayout.addView(cardView)
+            }
+        }
+    }
+
+    private fun loadComments(postId: String, commentsContainer: LinearLayout) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                // Look for comments in the Images collection
+                val commentsSnapshot = firestore.collection("Images")
+                    .document(postId)
+                    .collection("comments")
+                    .get()
+                    .await()
+
+                withContext(Dispatchers.Main) {
+                    commentsContainer.removeAllViews()
+
+                    if (commentsSnapshot.isEmpty) {
+                        val textView = TextView(this@ProfilePageActivity)
+                        textView.text = "No comments yet"
+                        textView.textSize = 14f
+                        textView.setTextColor(ContextCompat.getColor(this@ProfilePageActivity, android.R.color.white))
+                        commentsContainer.addView(textView)
+                        return@withContext
+                    }
+
+                    // Take only the first 10 comments
+                    val limitedComments = commentsSnapshot.documents.take(10)
+
+                    for (commentDoc in limitedComments) {
+                        val username = commentDoc.getString("username") ?: "Unknown User"
+                        val commentText = commentDoc.getString("comment") ?: ""
+
+                        // Inflate comment layout
+                        val commentView = layoutInflater.inflate(
+                            R.layout.item_comment,
+                            commentsContainer,
+                            false
+                        )
+
+                        // Set comment data
+                        val usernameTextView = commentView.findViewById<TextView>(R.id.commentUsername)
+                        val commentTextView = commentView.findViewById<TextView>(R.id.commentText)
+                        val timeTextView = commentView.findViewById<TextView>(R.id.commentTime)
+
+                        usernameTextView.text = username
+                        commentTextView.text = commentText
+                        timeTextView.text = "recently"
+
+                        commentsContainer.addView(commentView)
+
+                        // Add a divider except after the last comment
+                        if (commentDoc != limitedComments.last()) {
+                            val divider = View(this@ProfilePageActivity)
+                            val dividerParams = LinearLayout.LayoutParams(
+                                LinearLayout.LayoutParams.MATCH_PARENT,
+                                1
+                            )
+                            dividerParams.setMargins(0, 8, 0, 8)
+                            divider.layoutParams = dividerParams
+                            divider.setBackgroundColor(ContextCompat.getColor(this@ProfilePageActivity, android.R.color.darker_gray))
+                            commentsContainer.addView(divider)
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("ProfilePage", "Error loading comments", e)
+                withContext(Dispatchers.Main) {
+                    val textView = TextView(this@ProfilePageActivity)
+                    textView.text = "Failed to load comments"
+                    textView.textSize = 14f
+                    textView.setTextColor(ContextCompat.getColor(this@ProfilePageActivity, android.R.color.white))
+                    commentsContainer.addView(textView)
+                }
+            }
+        }
     }
 
     private fun loadUserProfile() {
@@ -128,18 +324,25 @@ class ProfilePageActivity : BaseActivity() {
                 val username = userDoc.getString("username") ?: currentUser.displayName ?: "User"
                 val photoUrl = userDoc.getString("image") ?: currentUser.photoUrl?.toString()
                 val followers = userDoc.getLong("followers")?.toInt() ?: 0
-                val follows = userDoc.getLong("following")?.toInt() ?: 0  // Changed from "follows" to "following" to match database
+                val follows = userDoc.getLong("following")?.toInt() ?: 0
 
-                // Calculate total likes from all artworks
-                val artworksQuery = firestore.collection("Posts")
-                    .whereEqualTo("userid", currentUser.uid)
-                    .get()
-                    .await()
+                // Get total likes from Images collection
+                var totalLikesFound = 0
+                try {
+                    val postsQuery = firestore.collection("Images")
+                        .whereEqualTo("userid", currentUser.uid)
+                        .get()
+                        .await()
 
-                totalLikes = 0
-                for (doc in artworksQuery.documents) {
-                    totalLikes += doc.getLong("likes")?.toInt() ?: 0
+                    // Sum up likes from all posts
+                    for (postDoc in postsQuery.documents) {
+                        totalLikesFound += postDoc.getLong("likes")?.toInt() ?: 0
+                    }
+                } catch (e: Exception) {
+                    Log.e("ProfilePage", "Error loading likes", e)
                 }
+
+                totalLikes = totalLikesFound
 
                 withContext(Dispatchers.Main) {
                     // Update UI with user data
@@ -162,117 +365,6 @@ class ProfilePageActivity : BaseActivity() {
                 Log.e("ProfilePage", "Error loading profile", e)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@ProfilePageActivity, "Failed to load profile", Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
-    }
-
-    private fun loadUserArtworks(isInitialLoad: Boolean = false) {
-        val currentUser = auth.currentUser ?: return
-
-        if (isLoadingMoreArtworks) return
-        isLoadingMoreArtworks = true
-
-        if (isInitialLoad) {
-            artworksGridLayout.removeAllViews()
-            lastDocumentSnapshot = null
-        }
-
-        lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                // Debug log
-                Log.d("ProfilePage", "Querying for artworks with userId: ${currentUser.uid}")
-
-                // Updated: Query Posts collection where userid matches current user
-                var query = firestore.collection("Posts")
-                    .whereEqualTo("userid", currentUser.uid)
-                    .orderBy("time", Query.Direction.DESCENDING)  // Changed from "createdAt" to "time" to match StoryGenerationPageActivity
-                    .limit(ARTWORKS_PER_PAGE.toLong())
-
-                lastDocumentSnapshot?.let {
-                    query = query.startAfter(it)
-                }
-
-                val artworksQuery = query.get().await()
-
-                // Logging to debug
-                Log.d("ProfilePage", "Loaded ${artworksQuery.documents.size} artworks for user ${currentUser.uid}")
-                for (doc in artworksQuery.documents) {
-                    Log.d("ProfilePage", "Artwork found: ${doc.id} - ${doc.getString("caption")}")
-                }
-
-                // Check if there are more artworks to load
-                hasMoreArtworks = artworksQuery.documents.size == ARTWORKS_PER_PAGE
-
-                if (artworksQuery.documents.isNotEmpty()) {
-                    lastDocumentSnapshot = artworksQuery.documents.last()
-                }
-
-                withContext(Dispatchers.Main) {
-                    // Update the title of artworks section with total count
-                    val totalArtworksCount = if (isInitialLoad) {
-                        artworksQuery.documents.size
-                    } else {
-                        artworksGridLayout.childCount + artworksQuery.documents.size
-                    }
-
-                    artworksTitleTextView.text = "My Artworks - $totalArtworksCount Posts"
-
-                    // Create and add artwork cards to the grid
-                    for (doc in artworksQuery.documents) {
-                        // Get the image URL from the "image" field in Posts collection
-                        val imageUrl = doc.getString("image")
-                        if (imageUrl.isNullOrEmpty()) {
-                            Log.e("ProfilePage", "Missing image URL for document ${doc.id}")
-                            continue
-                        }
-
-                        val caption = doc.getString("caption") ?: "Untitled"
-                        val likes = doc.getLong("likes")?.toInt() ?: 0
-                        val comments = doc.getLong("comments")?.toInt() ?: 0
-                        val postId = doc.id
-
-                        // Fetch additional artwork details from Images collection using postId
-                        lifecycleScope.launch(Dispatchers.IO) {
-                            try {
-                                val imagesQuery = firestore.collection("Images")
-                                    .whereEqualTo("postid", postId)
-                                    .limit(1)
-                                    .get()
-                                    .await()
-
-                                var story = ""
-                                var title = caption // Default to caption if title not found
-
-                                if (!imagesQuery.isEmpty) {
-                                    val imageDoc = imagesQuery.documents[0]
-                                    story = imageDoc.getString("story") ?: ""
-                                    title = imageDoc.getString("title") ?: caption
-                                }
-
-                                withContext(Dispatchers.Main) {
-                                    // Create artwork card view with the additional information
-                                    val cardView = createArtworkCardView(imageUrl, title, story, likes, comments, postId)
-                                    artworksGridLayout.addView(cardView)
-                                }
-                            } catch (e: Exception) {
-                                Log.e("ProfilePage", "Error fetching artwork details for ${postId}", e)
-                            }
-                        }
-                    }
-
-                    // Show a message if no artworks are found
-                    if (artworksGridLayout.childCount == 0 && artworksQuery.documents.isEmpty()) {
-                        artworksTitleTextView.text = "No Artworks Yet"
-                    }
-
-                    isLoadingMoreArtworks = false
-                }
-            } catch (e: Exception) {
-                Log.e("ProfilePage", "Error loading artworks", e)
-                withContext(Dispatchers.Main) {
-                    isLoadingMoreArtworks = false
-                    Toast.makeText(this@ProfilePageActivity, "Failed to load artworks: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -350,7 +442,7 @@ class ProfilePageActivity : BaseActivity() {
         val commentsLabel = dialog.findViewById<TextView>(R.id.commentsLabel)
         val closeButton = dialog.findViewById<Button>(R.id.closeButton)
 
-        commentsLabel.visibility = View.VISIBLE;
+        commentsLabel.visibility = View.VISIBLE
 
         // Load image and set text views
         Glide.with(this)
@@ -385,96 +477,6 @@ class ProfilePageActivity : BaseActivity() {
         dialog.show()
     }
 
-    private fun loadComments(postId: String, commentsContainer: LinearLayout) {
-        lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                val commentsSnapshot = firestore.collection("Posts")
-                    .document(postId)
-                    .collection("comments")
-                    .orderBy("time", Query.Direction.DESCENDING)
-                    .limit(10) // Limit to 10 most recent comments
-                    .get()
-                    .await()
-
-                withContext(Dispatchers.Main) {
-                    commentsContainer.removeAllViews()
-
-                    if (commentsSnapshot.isEmpty) {
-                        val textView = TextView(this@ProfilePageActivity)
-                        textView.text = "No comments yet"
-                        textView.textSize = 14f
-                        textView.setTextColor(ContextCompat.getColor(this@ProfilePageActivity, android.R.color.white))
-                        commentsContainer.addView(textView)
-                        return@withContext
-                    }
-
-                    for (commentDoc in commentsSnapshot.documents) {
-                        val username = commentDoc.getString("username") ?: "Unknown User"
-                        val commentText = commentDoc.getString("comment") ?: ""
-                        val timestamp = commentDoc.getTimestamp("time")
-
-                        // Inflate comment layout
-                        val commentView = layoutInflater.inflate(
-                            R.layout.item_comment,
-                            commentsContainer,
-                            false
-                        )
-
-                        // Set comment data
-                        val usernameTextView = commentView.findViewById<TextView>(R.id.commentUsername)
-                        val commentTextView = commentView.findViewById<TextView>(R.id.commentText)
-                        val timeTextView = commentView.findViewById<TextView>(R.id.commentTime)
-
-                        usernameTextView.text = username
-                        commentTextView.text = commentText
-
-                        // Format the timestamp
-                        timeTextView.text = if (timestamp != null) {
-                            val now = com.google.firebase.Timestamp.now().toDate().time
-                            val commentTime = timestamp.toDate().time
-                            val diffInMillis = now - commentTime
-
-                            when {
-                                diffInMillis < 60 * 1000 -> "just now"
-                                diffInMillis < 60 * 60 * 1000 -> "${diffInMillis / (60 * 1000)}m ago"
-                                diffInMillis < 24 * 60 * 60 * 1000 -> "${diffInMillis / (60 * 60 * 1000)}h ago"
-                                else -> "${diffInMillis / (24 * 60 * 60 * 1000)}d ago"
-                            }
-                        } else {
-                            "unknown time"
-                        }
-
-                        commentsContainer.addView(commentView)
-
-                        // Add a divider except after the last comment
-                        if (commentDoc != commentsSnapshot.documents.last()) {
-                            val divider = View(this@ProfilePageActivity)
-                            val dividerParams = LinearLayout.LayoutParams(
-                                LinearLayout.LayoutParams.MATCH_PARENT,
-                                1
-                            )
-                            dividerParams.setMargins(0, 8, 0, 8)
-                            divider.layoutParams = dividerParams
-                            divider.setBackgroundColor(ContextCompat.getColor(this@ProfilePageActivity, android.R.color.darker_gray))
-                            commentsContainer.addView(divider)
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                Log.e("ProfilePage", "Error loading comments", e)
-                withContext(Dispatchers.Main) {
-                    val textView = TextView(this@ProfilePageActivity)
-                    textView.text = "Failed to load comments"
-                    textView.textSize = 14f
-                    textView.setTextColor(ContextCompat.getColor(this@ProfilePageActivity, android.R.color.white))
-                    commentsContainer.addView(textView)
-                }
-            }
-        }
-    }
-
-
-
     private fun showProfilePictureEditDialog() {
         val dialog = Dialog(this)
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -482,7 +484,6 @@ class ProfilePageActivity : BaseActivity() {
         dialog.setContentView(R.layout.dialog_edit_profile_picture)
 
         val galleryButton = dialog.findViewById<Button>(R.id.chooseFromGalleryButton)
-
         val backButton = dialog.findViewById<Button>(R.id.backToEditButton)
 
         galleryButton.setOnClickListener {
@@ -490,8 +491,6 @@ class ProfilePageActivity : BaseActivity() {
             val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
             pickImageLauncher.launch(intent)
         }
-
-
 
         backButton.setOnClickListener {
             // Return to previous menu
@@ -608,9 +607,6 @@ class ProfilePageActivity : BaseActivity() {
 
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                // Log for debugging
-                Log.d("ProfilePage", "Starting profile image upload for user: ${currentUser.uid}")
-
                 // Get bitmap from uri with proper scaling
                 val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, imageUri)
 
@@ -620,34 +616,13 @@ class ProfilePageActivity : BaseActivity() {
                 resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 80, baos)
                 val imageData = baos.toByteArray()
 
-                // Log the image size for debugging
-                Log.d("ProfilePage", "Image size after compression: ${imageData.size} bytes")
-
-                // IMPORTANT: Make sure this path matches your Firebase Storage Rules
+                // Upload to Firebase Storage
                 val imageName = "ProfileImages/${currentUser.uid}/${UUID.randomUUID()}.jpg"
                 val storageRef = storage.reference.child(imageName)
-
-                Log.d("ProfilePage", "Uploading to path: $imageName")
-
-                // Use putBytes with task snapshot to monitor progress
-                val uploadTask = storageRef.putBytes(imageData)
-
-                uploadTask.addOnProgressListener { taskSnapshot ->
-                    val progress = (100.0 * taskSnapshot.bytesTransferred / taskSnapshot.totalByteCount)
-                    Log.d("ProfilePage", "Upload progress: ${progress.toInt()}%")
-                }
-
-                uploadTask.addOnFailureListener { exception ->
-                    Log.e("ProfilePage", "Upload failure: ${exception.message}", exception)
-                }
-
-                // Wait for upload to complete
-                uploadTask.await()
-                Log.d("ProfilePage", "Upload completed successfully")
+                storageRef.putBytes(imageData).await()
 
                 // Get the download URL
                 val photoUrl = storageRef.downloadUrl.await().toString()
-                Log.d("ProfilePage", "Download URL: $photoUrl")
 
                 // Update user document in Firestore
                 val updates = hashMapOf<String, Any>(
@@ -705,38 +680,6 @@ class ProfilePageActivity : BaseActivity() {
         return Bitmap.createScaledBitmap(bitmap, maxWidth, newHeight, true)
     }
 
-    // Add this method to your Activity to test if Storage is properly configured
-    private fun testStorageAccess() {
-        if (auth.currentUser == null) {
-            Log.e("ProfilePage", "User not authenticated")
-            return
-        }
-
-        val testRef = storage.reference.child("test.txt")
-        val testData = "Test data".toByteArray()
-
-        lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                testRef.putBytes(testData).await()
-                Log.d("ProfilePage", "Storage test successful")
-
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(this@ProfilePageActivity,
-                        "Firebase Storage is accessible",
-                        Toast.LENGTH_SHORT).show()
-                }
-            } catch (e: Exception) {
-                Log.e("ProfilePage", "Storage test failed", e)
-
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(this@ProfilePageActivity,
-                        "Storage test failed: ${e.message}",
-                        Toast.LENGTH_LONG).show()
-                }
-            }
-        }
-    }
-
     private fun updateUsername(newUsername: String) {
         val currentUser = auth.currentUser ?: return
         val progressDialog = ProgressDialog(this).apply {
@@ -747,14 +690,13 @@ class ProfilePageActivity : BaseActivity() {
 
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-
+                // Check if username already exists
                 val querySnapshot = firestore.collection("Users")
                     .whereEqualTo("username", newUsername)
                     .get()
                     .await()
 
                 if (!querySnapshot.isEmpty) {
-
                     withContext(Dispatchers.Main) {
                         progressDialog.dismiss()
                         Toast.makeText(
@@ -763,29 +705,30 @@ class ProfilePageActivity : BaseActivity() {
                             Toast.LENGTH_SHORT
                         ).show()
                     }
-                }else {
-                    val updates = hashMapOf<String, Any>(
-                        "username" to newUsername
-                    )
-
-                    firestore.collection("Users")
-                        .document(currentUser.uid)
-                        .update(updates)
-                        .await()
-
-                    withContext(Dispatchers.Main) {
-                        progressDialog.dismiss()
-                        // Update UI
-                        usernameTextView.text = newUsername
-
-                        Toast.makeText(
-                            this@ProfilePageActivity,
-                            "Username updated successfully",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
+                    return@launch
                 }
 
+                // Update username in Firestore
+                val updates = hashMapOf<String, Any>(
+                    "username" to newUsername
+                )
+
+                firestore.collection("Users")
+                    .document(currentUser.uid)
+                    .update(updates)
+                    .await()
+
+                withContext(Dispatchers.Main) {
+                    progressDialog.dismiss()
+                    // Update UI
+                    usernameTextView.text = newUsername
+
+                    Toast.makeText(
+                        this@ProfilePageActivity,
+                        "Username updated successfully",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             } catch (e: Exception) {
                 Log.e("ProfilePage", "Error updating username", e)
                 withContext(Dispatchers.Main) {
@@ -797,13 +740,6 @@ class ProfilePageActivity : BaseActivity() {
                     ).show()
                 }
             }
-        }
-    }
-
-    // Add a method to load more artworks when user scrolls down
-    fun loadMoreArtworks() {
-        if (hasMoreArtworks && !isLoadingMoreArtworks) {
-            loadUserArtworks(false)
         }
     }
 
@@ -820,14 +756,26 @@ class ProfilePageActivity : BaseActivity() {
         // Clear existing data
         artworksGridLayout.removeAllViews()
 
+        // Reset pagination variables
+        currentPage = 0
+
         // Reload data
         loadUserProfile()
-        loadUserArtworks(true)
+        loadAllArtworks()
     }
 
     // Override the back button behavior
     override fun onBackPressed() {
         super.onBackPressed()
         overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
+    }
+
+    // Update navigation button states based on current page
+    private fun updateNavigationButtons() {
+        navLeftButton.isEnabled = currentPage > 0
+        navLeftButton.alpha = if (currentPage > 0) 1.0f else 0.5f
+
+        navRightButton.isEnabled = currentPage < totalPages - 1
+        navRightButton.alpha = if (currentPage < totalPages - 1) 1.0f else 0.5f
     }
 }

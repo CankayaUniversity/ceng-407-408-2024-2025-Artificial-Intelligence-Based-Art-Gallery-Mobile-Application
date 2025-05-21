@@ -178,45 +178,46 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="12dp"
-                        android:text="My Artworks - 150 Posts"
+                        android:text="My Artworks - 12 Posts"
                         android:textColor="@android:color/white"
                         android:textSize="16sp"
                         android:textStyle="bold" />
 
-                    <RelativeLayout
+                    <!-- Navigation Buttons -->
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center"
+                        android:layout_marginBottom="8dp">
 
-                        <!-- Left/Right Navigation Buttons -->
                         <ImageButton
                             android:id="@+id/navLeftButton"
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:layout_centerVertical="true"
-                            android:layout_alignParentStart="true"
-                            android:background="@android:color/transparent"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:layout_marginEnd="24dp"
+                            android:background="@drawable/rounded_button_background"
                             android:src="@drawable/ic_chevron_left"
                             app:tint="@android:color/white" />
 
                         <ImageButton
                             android:id="@+id/navRightButton"
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:layout_centerVertical="true"
-                            android:layout_alignParentEnd="true"
-                            android:background="@android:color/transparent"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:layout_marginStart="24dp"
+                            android:background="@drawable/rounded_button_background"
                             android:src="@drawable/ic_chevron_right"
                             app:tint="@android:color/white" />
+                    </LinearLayout>
 
-                        <GridLayout
-                            android:id="@+id/artworksGridLayout"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_centerHorizontal="true"
-                            android:columnCount="3"
-                            android:orientation="horizontal"
-                            android:useDefaultMargins="true" />
-                    </RelativeLayout>
+                    <!-- Artworks Grid -->
+                    <GridLayout
+                        android:id="@+id/artworksGridLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:columnCount="3"
+                        android:orientation="horizontal"
+                        android:useDefaultMargins="true" />
 
                 </LinearLayout>
 

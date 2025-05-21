@@ -303,38 +303,93 @@ class StoryGenerationPageActivity: BaseActivity() {
                     val filename = "ArtMinds_share_${System.currentTimeMillis()}.jpg"
                     val file = File(cacheDir, filename)
 
-                    FileOutputStream(file).use { out ->
-                        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
+                    // Use a try-with-resources equivalent to ensure the stream is closed
+                    try {
+                        FileOutputStream(file).use { out ->
+                            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
+                            out.flush()
+                        }
+                    } catch (e: IOException) {
+                        withContext(Dispatchers.Main) {
+                            Log.e("ShareContent", "Error writing file to cache", e)
+                            Toast.makeText(
+                                this@StoryGenerationPageActivity,
+                                "Failed to prepare image for sharing: ${e.message}",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                        return@launch
                     }
 
-                    val uri = FileProvider.getUriForFile(
-                        this@StoryGenerationPageActivity,
-                        "${packageName}.fileprovider",
-                        file
-                    )
+                    // Create URI through FileProvider
+                    val uri = try {
+                        FileProvider.getUriForFile(
+                            this@StoryGenerationPageActivity,
+                            "${packageName}.fileprovider",
+                            file
+                        )
+                    } catch (e: IllegalArgumentException) {
+                        withContext(Dispatchers.Main) {
+                            Log.e("ShareContent", "FileProvider not configured properly", e)
+                            Toast.makeText(
+                                this@StoryGenerationPageActivity,
+                                "Sharing configuration error. Please contact support.",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                        return@launch
+                    }
 
+                    // Prepare share content text
+                    val shareText = "${storyTitleTextView.text}\n\n${storyContentTextView.text}\n\nCreated with ArtMinds AI"
+
+                    // Create sharing intent
                     val shareIntent = Intent().apply {
                         action = Intent.ACTION_SEND
                         putExtra(Intent.EXTRA_STREAM, uri)
-                        putExtra(Intent.EXTRA_TEXT, "${storyTitleTextView.text}\n\n${storyContentTextView.text}\n\nCreated with ArtMinds AI")
+                        putExtra(Intent.EXTRA_TEXT, shareText)
                         type = "image/jpeg"
                         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                     }
 
                     withContext(Dispatchers.Main) {
-                        startActivity(Intent.createChooser(shareIntent, "Share your creation"))
+                        try {
+                            // Check if there are apps that can handle this intent
+                            val packageManager = packageManager
+                            val activities = packageManager.queryIntentActivities(
+                                shareIntent, 0
+                            )
+
+                            if (activities.isNotEmpty()) {
+                                startActivity(Intent.createChooser(shareIntent, "Share your creation via"))
+                            } else {
+                                Toast.makeText(
+                                    this@StoryGenerationPageActivity,
+                                    "No apps found to handle sharing",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        } catch (e: Exception) {
+                            Log.e("ShareContent", "Error launching share intent", e)
+                            Toast.makeText(
+                                this@StoryGenerationPageActivity,
+                                "Failed to open sharing options: ${e.message}",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
                     }
                 } else {
                     withContext(Dispatchers.Main) {
                         Toast.makeText(
                             this@StoryGenerationPageActivity,
-                            "Failed to share: Image not loaded",
+                            "Failed to share: Image not loaded or invalid",
                             Toast.LENGTH_SHORT
                         ).show()
                     }
                 }
-            } catch (e: IOException) {
+            } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
+                    Log.e("ShareContent", "General error in share function", e)
                     Toast.makeText(
                         this@StoryGenerationPageActivity,
                         "Failed to share: ${e.message}",
@@ -346,6 +401,7 @@ class StoryGenerationPageActivity: BaseActivity() {
     }
 
     // Save the content to Firebase (modified to save in both Posts and Images collections)
+// Save the content to Firebase (modified to save based on visibility selection)
     private fun saveToFirebase() {
         // Check if user is logged in
         val currentUser = auth.currentUser
@@ -381,7 +437,7 @@ class StoryGenerationPageActivity: BaseActivity() {
 
                 // Upload image to Firebase Storage
                 val baos = ByteArrayOutputStream()
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 90, baos)
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
                 val imageData = baos.toByteArray()
 
                 // Create a unique file name
@@ -414,28 +470,8 @@ class StoryGenerationPageActivity: BaseActivity() {
                 // Current timestamp for post
                 val timestamp = System.currentTimeMillis()
 
-                // Create data for Posts collection (for Feed display)
-                val postData = hashMapOf(
-                    "username" to username,
-                    "userid" to currentUser.uid,
-                    "image" to imageDownloadUrl, // The artwork image
-                    "imageposter" to userImageUrl, // User's profile image
-                    "caption" to storyTitleTextView.text.toString(), // Using title as caption
-                    "time" to timestamp,
-                    "postid" to "", // Will update after document creation
-                    "likes" to 0,
-                    "comments" to 0
-                )
-
-                // Add to Posts collection with a generated ID
-                val postDocRef = firestore.collection("Posts").document()
-                val postId = postDocRef.id
-
-                // Update the postid field with the actual document ID
-                postData["postid"] = postId
-
-                // Save to Posts collection
-                postDocRef.set(postData).await()
+                // Generate a post ID regardless of where we save
+                val postId = firestore.collection("Posts").document().id
 
                 // Create data for Images collection (preserving all artwork attributes)
                 val imageDocData = hashMapOf(
@@ -449,11 +485,33 @@ class StoryGenerationPageActivity: BaseActivity() {
                     "likes" to 0,
                     "comments" to 0,
                     "caption" to generatedTag,
-                    "postid" to postId // Reference to the post document
+                    "postid" to postId, // Reference to the post document even if not created
+                    "time" to timestamp, // Adding time field to match Posts collection
+                    "username" to username, // Additional fields for profile display
+                    "imageposter" to userImageUrl
                 )
 
                 // Save to Images collection
-                firestore.collection("Images").document().set(imageDocData).await()
+                firestore.collection("Images").document(postId).set(imageDocData).await()
+
+                // If public, also save to Posts collection for the feed
+                if (isPublic) {
+                    // Create data for Posts collection (for Feed display)
+                    val postData = hashMapOf(
+                        "username" to username,
+                        "userid" to currentUser.uid,
+                        "image" to imageDownloadUrl, // The artwork image
+                        "imageposter" to userImageUrl, // User's profile image
+                        "caption" to storyTitleTextView.text.toString(), // Using title as caption
+                        "time" to timestamp,
+                        "postid" to postId,
+                        "likes" to 0,
+                        "comments" to 0
+                    )
+
+                    // Save to Posts collection with the same ID as in Images
+                    firestore.collection("Posts").document(postId).set(postData).await()
+                }
 
                 withContext(Dispatchers.Main) {
                     progressDialog.dismiss()
