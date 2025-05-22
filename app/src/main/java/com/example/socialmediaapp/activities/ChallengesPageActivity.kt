@@ -47,13 +47,19 @@ class ChallengesPageActivity : BaseActivity() {
     private val loadedChallengeIds = HashSet<String>()
     private val TAG = "ChallengesPageActivity"
 
+    // User data variables to track followers and following counts
+    private var userFollowersCount: Int = 0
+    private var userFollowingCount: Int = 0
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setToolbarTitle("Challenges")
 
         initializeViews()
         setupTabListeners()
-        loadChallenges()
+
+        // Fetch user data first, then load challenges
+        fetchUserData()
 
         sharedPreferences = getSharedPreferences(PREF_NAME, MODE_PRIVATE)
         val mainLayout = findViewById<ConstraintLayout>(R.id.challenges)
@@ -61,7 +67,6 @@ class ChallengesPageActivity : BaseActivity() {
         if (sharedPreferences.getBoolean(PREF_NAME, false)) {
             mainLayout.setBackgroundColor("#3F51B5".toColorInt())
         }
-
     }
 
     private fun initializeViews() {
@@ -93,6 +98,49 @@ class ChallengesPageActivity : BaseActivity() {
             val intent = Intent(this, AchievementsPageActivity::class.java)
             startActivity(intent)
             overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+        }
+    }
+
+    /**
+     * Fetch current user data from the User collection
+     * including followers and following counts
+     */
+    private fun fetchUserData() {
+        val currentUser = auth.currentUser ?: return
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                Log.d(TAG, "Fetching user data for ID: ${currentUser.uid}")
+
+                // Fetch user document from Users collection
+                val userDoc = firestore.collection("Users")
+                    .document(currentUser.uid)
+                    .get()
+                    .await()
+
+                if (userDoc.exists()) {
+                    // Get followers and following counts
+                    userFollowersCount = userDoc.getLong("followers")?.toInt() ?: 0
+                    userFollowingCount = userDoc.getLong("following")?.toInt() ?: 0
+
+                    Log.d(TAG, "User data fetched: followers=$userFollowersCount, following=$userFollowingCount")
+                } else {
+                    Log.w(TAG, "User document does not exist in Users collection")
+                    userFollowersCount = 0
+                    userFollowingCount = 0
+                }
+
+                // Now load challenges with the updated follower/following data
+                withContext(Dispatchers.Main) {
+                    loadChallenges()
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error fetching user data", e)
+                withContext(Dispatchers.Main) {
+                    // Fallback to loading challenges without updated counts
+                    loadChallenges()
+                }
+            }
         }
     }
 
@@ -147,13 +195,19 @@ class ChallengesPageActivity : BaseActivity() {
                             val constraint = doc.getLong("constraints")?.toInt() ?:
                             doc.getLong("constraint")?.toInt() ?: 0
 
-                            // Handle process/progress field
-                            val progress = doc.getLong("process")?.toInt() ?:
+                            // Handle process/progress field - this is where we'll use the updated user data
+                            var progress = doc.getLong("progress")?.toInt() ?:
                             doc.getLong("progress")?.toInt() ?: 0
 
                             val points = doc.getLong("points")?.toInt() ?: 0
 
                             val type = doc.getString("type") ?: ""
+
+                            // Update progress based on user data for followers and following type challenges
+                            when (type.lowercase()) {
+                                "followers" -> progress = userFollowersCount
+                                "following" -> progress = userFollowingCount
+                            }
 
                             // Get and validate expiration date
                             val expirationValue = doc.get("expiration")
@@ -206,6 +260,11 @@ class ChallengesPageActivity : BaseActivity() {
                                 docId
                             )
 
+                            // Update challenge progress in Firestore if it's followers or following type
+                            if (type.lowercase() == "followers" || type.lowercase() == "following") {
+                                updateChallengeProgress(docId, progress)
+                            }
+
                             challengesContainer.addView(challengeCard)
                             loadedChallengeIds.add(docId)
                             hasValidChallenges = true
@@ -225,6 +284,48 @@ class ChallengesPageActivity : BaseActivity() {
                     emptyView.visibility = View.VISIBLE
                     emptyView.text = "Failed to load challenges: ${e.message}"
                 }
+            }
+        }
+    }
+
+    /**
+     * Update challenge progress in Firestore
+     */
+    private fun updateChallengeProgress(challengeId: String, progress: Int) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                // Update the challenge document with new progress
+                firestore.collection("UserChallanges")
+                    .document(challengeId)
+                    .update(
+                        mapOf(
+                            "progress" to progress  // Update both field names for compatibility
+                        )
+                    )
+                    .await()
+
+                Log.d(TAG, "Updated challenge $challengeId progress to $progress")
+
+                // Check if challenge is now complete
+                val challengeDoc = firestore.collection("UserChallanges")
+                    .document(challengeId)
+                    .get()
+                    .await()
+
+                val constraint = challengeDoc.getLong("constraints")?.toInt() ?:
+                challengeDoc.getLong("constraint")?.toInt() ?: 0
+
+                // If progress meets or exceeds constraint, mark as completed
+                if (progress >= constraint) {
+                    firestore.collection("UserChallanges")
+                        .document(challengeId)
+                        .update("completed", true)
+                        .await()
+
+                    Log.d(TAG, "Marked challenge $challengeId as completed")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error updating challenge progress", e)
             }
         }
     }
@@ -317,8 +418,8 @@ class ChallengesPageActivity : BaseActivity() {
         challengesTab.setBackgroundResource(R.drawable.tab_selected_background)
         achievementsTab.setBackgroundResource(R.drawable.tab_unselected_background)
 
-        // Reload challenges in case data changed while away
-        loadChallenges()
+        // Fetch fresh user data and reload challenges in case data changed while away
+        fetchUserData()
     }
 
     // Override the back button behavior
