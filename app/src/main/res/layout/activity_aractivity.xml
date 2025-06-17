@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activities.ARActivity">
+
+    <fragment
+        android:id="@+id/ar_fragment"
+        android:name="com.google.ar.sceneform.ux.ArFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- Back Button -->
+    <ImageButton
+        android:id="@+id/back_button"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_margin="16dp"
+        android:background="@drawable/circle_button_background"
+        android:src="@drawable/ic_arrow_back"
+        android:contentDescription="Back"
+        android:onClick="onBackPressed" />
+
+    <!-- Info Text -->
+    <TextView
+        android:id="@+id/info_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="80dp"
+        android:background="@drawable/rounded_background"
+        android:padding="12dp"
+        android:text="Tap on a surface to place the image"
+        android:textColor="@android:color/white"
+        android:textSize="16sp"
+        android:alpha="0.9" />
+
+</RelativeLayout>
