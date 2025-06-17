@@ -1,4 +1,3 @@
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -9,12 +8,10 @@ plugins {
     id("kotlin-android")
     id("kotlin-parcelize")
     id("kotlin-kapt")
-    // "kotlin-android" is redundant when using libs.plugins.kotlin.android
 }
 
 android {
     namespace = "com.example.socialmediaapp"
-    // Consider using compileSdk = 34 until Android 15 SDK (35) is officially released
     compileSdk = 35
 
     defaultConfig {
@@ -93,7 +90,7 @@ dependencies {
     kapt("com.github.bumptech.glide:compiler:4.16.0")
     implementation("de.hdodenhof:circleimageview:3.1.0")
 
-    // Coroutines - updated to consistent version
+    // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
 
@@ -105,6 +102,16 @@ dependencies {
     // Networking
     implementation("com.squareup.okhttp3:okhttp:4.11.0")
 
+    // AR Core dependencies
+    implementation("com.google.ar:core:1.41.0")
+    implementation("com.google.ar.sceneform:core:1.17.1")
+    implementation("com.google.ar.sceneform.ux:sceneform-ux:1.17.1")
+    implementation("com.google.ar.sceneform:animation:1.17.1")
+    implementation("com.google.ar.sceneform:rendering:1.17.1")
+
+    // Additional dependencies for AR
+    implementation("androidx.fragment:fragment-ktx:1.6.2")
+
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -114,7 +121,4 @@ dependencies {
 
     implementation("de.hdodenhof:circleimageview:3.1.0")
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
-
-
-
 }

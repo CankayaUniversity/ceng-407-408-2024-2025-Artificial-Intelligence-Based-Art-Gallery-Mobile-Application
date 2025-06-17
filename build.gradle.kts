@@ -12,9 +12,7 @@ buildscript {
         classpath("androidx.navigation:navigation-safe-args-gradle-plugin:2.8.6")
         classpath("com.google.gms:google-services:4.3.15")
     }
-
 }
-
 
 plugins {
     alias(libs.plugins.android.application) apply false
