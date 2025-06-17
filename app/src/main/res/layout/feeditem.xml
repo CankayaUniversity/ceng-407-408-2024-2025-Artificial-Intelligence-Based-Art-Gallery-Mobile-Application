@@ -4,142 +4,258 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="350dp"
-    android:layout_margin="10dp"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="8dp">
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="4dp"
+    android:layout_marginVertical="12dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="6dp"
+    app:cardBackgroundColor="@color/surface_primary"
+    android:stateListAnimator="@null">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="350dp"
-        android:orientation="vertical"
-        android:padding="10dp">
+        android:layout_height="wrap_content"
+        android:background="@color/surface_primary">
 
-        <!-- İlk Satır: Resim -->
-        <ImageView
-            android:id="@+id/feedImage"
+        <!-- User info header with modern styling -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/user_header"
             android:layout_width="match_parent"
-            android:layout_height="201dp"
-            android:foreground="@drawable/border_background"
-            android:scaleType="fitCenter"
-            android:src="@drawable/image_placeholder"
-            android:adjustViewBounds="true"
-            />
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="16dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- İkinci Satır: Kullanıcı Bilgileri -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="150dp"
-            android:orientation="vertical"
-            android:padding="8dp">
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/userimage"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:src="@mipmap/ic_launcher"
+                app:civ_border_color="@color/art_gold"
+                app:civ_border_width="2dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent" />
 
-            <!-- Row 1: Kullanıcı Fotoğrafı ve Kullanıcı Adı (30dp) -->
             <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="30dp"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
-
-                <de.hdodenhof.circleimageview.CircleImageView
-                    android:id="@+id/userimage"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:layout_marginEnd="8dp"
-                    android:src="@mipmap/ic_launcher"
-                    app:civ_border_color="#FF4081"
-                    app:civ_border_width="1dp" />
+                android:id="@+id/user_info_layout"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginStart="16dp"
+                app:layout_constraintStart_toEndOf="@id/userimage"
+                app:layout_constraintEnd_toStartOf="@id/feedtime"
+                app:layout_constraintTop_toTopOf="@id/userimage"
+                app:layout_constraintBottom_toBottomOf="@id/userimage">
 
                 <TextView
                     android:id="@+id/feedtopusername"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="username"
-                    android:textColor="@color/black"
+                    android:text="Artist Name"
+                    android:textColor="@color/text_primary_light"
                     android:textSize="16sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:fontFamily="sans-serif-medium" />
 
                 <TextView
-                    android:id="@+id/feedtime"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="time"
-                    android:textColor="@color/black"
-                    android:textSize="14sp" />
+                    android:text="AI Generated Art"
+                    android:textColor="@color/text_secondary_light"
+                    android:textSize="12sp"
+                    android:layout_marginTop="2dp"
+                    android:fontFamily="sans-serif" />
+
             </LinearLayout>
 
-            <!-- Row 2: Caption (90dp) -->
+            <TextView
+                android:id="@+id/feedtime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="2h"
+                android:textColor="@color/text_tertiary_light"
+                android:textSize="13sp"
+                android:fontFamily="sans-serif"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/userimage"
+                app:layout_constraintBottom_toBottomOf="@id/userimage" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Art image with modern gallery styling -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/image_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/gallery_black"
+            android:paddingVertical="12dp"
+            app:layout_constraintTop_toBottomOf="@id/user_header"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <ImageView
+                android:id="@+id/feedImage"
+                android:layout_width="0dp"
+                android:layout_height="320dp"
+                android:layout_marginHorizontal="16dp"
+                android:scaleType="centerCrop"
+                android:background="@drawable/modern_image_background"
+                android:elevation="4dp"
+                android:src="@drawable/image_placeholder"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Caption section -->
+        <LinearLayout
+            android:id="@+id/caption_section"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="20dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="8dp"
+            app:layout_constraintTop_toBottomOf="@id/image_container"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
             <TextView
                 android:id="@+id/feedusernamecaption"
                 android:layout_width="match_parent"
-                android:layout_height="43dp"
-                android:layout_marginVertical="8dp"
-                android:textColor="@color/black"
-                android:textSize="16sp" />
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_primary_light"
+                android:textSize="15sp"
+                android:lineSpacingExtra="4dp"
+                android:fontFamily="sans-serif"
+                android:text="Beautiful AI generated artwork showcasing creativity and technology..." />
 
-            <!-- Row 3: Like Count, Feed Time and Icons -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="30dp"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/likecount"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="16dp"
-                    android:text="0 Likes"
-                    android:textColor="@color/black"
-                    android:textStyle="bold" />
-
-                <View
-                    android:layout_width="0dp"
-                    android:layout_height="0dp"
-                    android:layout_weight="1" />
-
-                <!-- Like Icon -->
-                <ImageView
-                    android:id="@+id/likeIcon"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/ic_like"
-                    android:contentDescription="Like" />
-
-                <View
-                    android:layout_width="16dp"
-                    android:layout_height="0dp" />
-
-                <ImageView
-                    android:id="@+id/commentIcon"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/ic_comment"
-                    android:contentDescription="Comment" />
-
-                <View
-                    android:layout_width="16dp"
-                    android:layout_height="0dp" />
-
-                <ImageView
-                    android:id="@+id/storyIcon"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/ic_story"
-                    android:contentDescription="Story" />
-
-                <View
-                    android:layout_width="16dp"
-                    android:layout_height="0dp" />
-
-                <!-- AR Icon -->
-                <ImageView
-                    android:id="@+id/arIcon"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/ic_ar"
-                    android:contentDescription="View in AR" />
-            </LinearLayout>
         </LinearLayout>
-    </LinearLayout>
+
+        <!-- Interaction bar with modern icons -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/interaction_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="12dp"
+            app:layout_constraintTop_toBottomOf="@id/caption_section"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <!-- Like count with modern styling -->
+            <TextView
+                android:id="@+id/likecount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="247 likes"
+                android:textColor="@color/text_primary_light"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:fontFamily="sans-serif-medium"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent" />
+
+            <!-- Action icons container -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent">
+
+                <!-- Like icon with modern styling -->
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/modern_icon_background"
+                    android:layout_marginEnd="8dp">
+
+                    <ImageView
+                        android:id="@+id/likeIcon"
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:src="@drawable/ic_like"
+                        android:contentDescription="Like"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <!-- Comment icon -->
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/modern_icon_background"
+                    android:layout_marginEnd="8dp">
+
+                    <ImageView
+                        android:id="@+id/commentIcon"
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:src="@drawable/ic_comment"
+                        android:contentDescription="Comment"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <!-- Story icon -->
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/modern_icon_background"
+                    android:layout_marginEnd="8dp">
+
+                    <ImageView
+                        android:id="@+id/storyIcon"
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:src="@drawable/ic_story"
+                        android:contentDescription="Story"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <!-- AR icon with special highlight -->
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/ar_icon_background">
+
+                    <ImageView
+                        android:id="@+id/arIcon"
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:src="@drawable/ic_ar"
+                        android:contentDescription="View in AR"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
 </androidx.cardview.widget.CardView>

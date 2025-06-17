@@ -18,8 +18,10 @@ import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.Spinner
+import android.widget.TextView
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.ContextCompat
 import androidx.core.graphics.toColorInt
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -68,13 +70,38 @@ class HomeFragment : Fragment(), onLikeClickListener, onUserClickListener, onARC
         observeFeed()
         setupFilterSpinner()
         setupScrollListener()
+
         sharedPreferences = this.requireActivity().getSharedPreferences(PREF_NAME, MODE_PRIVATE)
         val mainLayout = this.activity?.findViewById<ConstraintLayout>(R.id.home)
 
+        // Modern tema uygulaması
         if (sharedPreferences.getBoolean(PREF_NAME, false)) {
+            // Dark mode için modern renkler
             if (mainLayout != null) {
-                mainLayout.setBackgroundColor("#3F51B5".toColorInt())
+                mainLayout.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.gallery_dark_gray))
             }
+
+            // Toolbar container için dark tema
+            val toolbarContainer = view.findViewById<ConstraintLayout>(R.id.toolbar_container)
+            toolbarContainer?.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.surface_dark))
+
+            // Gallery title için dark tema
+           // val galleryTitle = view.findViewById<TextView>(R.id.gallery_title)
+            //galleryTitle?.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_primary_dark))
+
+        } else {
+            // Light mode için modern renkler
+            if (mainLayout != null) {
+                mainLayout.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.gallery_off_white))
+            }
+
+            // Toolbar container için light tema
+            val toolbarContainer = view.findViewById<ConstraintLayout>(R.id.toolbar_container)
+            toolbarContainer?.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.surface_primary))
+
+            // Gallery title için light tema
+           // val galleryTitle = view.findViewById<TextView>(R.id.gallery_title)
+            //galleryTitle?.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_primary_light))
         }
     }
 

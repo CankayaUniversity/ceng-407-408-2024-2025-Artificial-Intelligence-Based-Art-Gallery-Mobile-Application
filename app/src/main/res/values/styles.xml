@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Modern Art Gallery Base Theme -->
+    <style name="AppTheme.ModernGallery" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/modern_purple</item>
+        <item name="colorPrimaryVariant">@color/gallery_dark_gray</item>
+        <item name="colorOnPrimary">@color/gallery_white</item>
+        <item name="colorSecondary">@color/art_gold</item>
+        <item name="colorSecondaryVariant">@color/art_copper</item>
+        <item name="colorOnSecondary">@color/gallery_black</item>
+        <item name="android:colorBackground">@color/gallery_off_white</item>
+        <item name="colorOnBackground">@color/text_primary_light</item>
+        <item name="colorSurface">@color/surface_primary</item>
+        <item name="colorOnSurface">@color/text_primary_light</item>
+        <item name="android:statusBarColor">@color/surface_primary</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:navigationBarColor">@color/surface_primary</item>
+    </style>
+
+    <!-- Modern Gallery Card Style -->
+    <style name="ModernGalleryCard">
+        <item name="android:background">@drawable/modern_card_background</item>
+        <item name="android:elevation">6dp</item>
+        <item name="android:layout_margin">8dp</item>
+    </style>
+
+    <!-- Modern Typography Styles -->
+    <style name="ModernTitle">
+        <item name="android:textSize">24sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/text_primary_light</item>
+        <item name="android:fontFamily">sans-serif-light</item>
+        <item name="android:letterSpacing">0.02</item>
+    </style>
+
+    <style name="ModernHeadline">
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/text_primary_light</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <style name="ModernBody">
+        <item name="android:textSize">15sp</item>
+        <item name="android:textColor">@color/text_primary_light</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:lineSpacingExtra">4dp</item>
+    </style>
+
+    <style name="ModernCaption">
+        <item name="android:textSize">13sp</item>
+        <item name="android:textColor">@color/text_secondary_light</item>
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+
+    <style name="ModernLabel">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/text_tertiary_light</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:letterSpacing">0.1</item>
+    </style>
+
+    <!-- Modern Button Styles -->
+    <style name="ModernButton" parent="Widget.Material3.Button">
+        <item name="android:background">@drawable/modern_button_background</item>
+        <item name="android:textColor">@color/gallery_white</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:paddingHorizontal">24dp</item>
+        <item name="android:elevation">2dp</item>
+    </style>
+
+    <style name="ModernButtonSecondary" parent="ModernButton">
+        <item name="android:backgroundTint">@color/surface_secondary</item>
+        <item name="android:textColor">@color/text_primary_light</item>
+    </style>
+
+    <!-- Modern Icon Styles -->
+    <style name="ModernIcon">
+        <item name="android:layout_width">24dp</item>
+        <item name="android:layout_height">24dp</item>
+        <item name="android:scaleType">centerInside</item>
+        <item name="android:background">@drawable/modern_icon_background</item>
+    </style>
+
+    <style name="ModernIconLarge">
+        <item name="android:layout_width">32dp</item>
+        <item name="android:layout_height">32dp</item>
+        <item name="android:scaleType">centerInside</item>
+        <item name="android:background">@drawable/modern_icon_background</item>
+    </style>
+
+    <!-- Modern Input Styles -->
+    <style name="ModernEditText" parent="Widget.Material3.TextInputEditText.OutlinedBox">
+        <item name="android:textSize">15sp</item>
+        <item name="android:textColor">@color/text_primary_light</item>
+        <item name="android:textColorHint">@color/text_tertiary_light</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:background">@drawable/modern_input_background</item>
+        <item name="android:padding">16dp</item>
+    </style>
+
+    <!-- Modern Spinner Style -->
+    <style name="ModernSpinner" parent="Widget.AppCompat.Spinner">
+        <item name="android:background">@drawable/spinner_background</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/text_primary_light</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <!-- Modern RecyclerView Style -->
+    <style name="ModernRecyclerView">
+        <item name="android:scrollbars">none</item>
+        <item name="android:overScrollMode">never</item>
+        <item name="android:clipToPadding">false</item>
+        <item name="android:padding">8dp</item>
+    </style>
+
+    <!-- Art Gallery Specific Styles -->
+    <style name="ArtistName" parent="ModernHeadline">
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    <style name="ArtworkCaption" parent="ModernBody">
+        <item name="android:maxLines">3</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+
+    <style name="LikeCount" parent="ModernCaption">
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/text_primary_light</item>
+    </style>
+
+    <style name="TimeStamp" parent="ModernCaption">
+        <item name="android:textColor">@color/text_tertiary_light</item>
+    </style>
+
+    <!-- Modern Toolbar Style -->
+    <style name="ModernToolbar">
+        <item name="android:background">@color/surface_primary</item>
+        <item name="android:elevation">8dp</item>
+        <item name="android:paddingHorizontal">20dp</item>
+        <item name="android:paddingVertical">16dp</item>
+    </style>
+
+    <!-- Gallery Image Container Style -->
+    <style name="GalleryImageContainer">
+        <item name="android:background">@color/gallery_black</item>
+        <item name="android:padding">12dp</item>
+    </style>
+
+    <!-- Modern Progress Bar Style -->
+    <style name="ModernProgressBar" parent="Widget.AppCompat.ProgressBar.Horizontal">
+        <item name="android:progressTint">@color/modern_purple</item>
+        <item name="android:progressBackgroundTint">@color/surface_secondary</item>
+        <item name="android:minHeight">4dp</item>
+    </style>
+
+    <!-- Modern Dialog Style -->
+    <style name="ModernDialog" parent="Theme.Material3.DayNight.Dialog">
+        <item name="android:windowBackground">@drawable/modern_dialog_background</item>
+        <item name="android:windowAnimationStyle">@style/ModernDialogAnimation</item>
+    </style>
+
+    <style name="ModernDialogAnimation">
+        <item name="android:windowEnterAnimation">@android:anim/fade_in</item>
+        <item name="android:windowExitAnimation">@android:anim/fade_out</item>
+    </style>
+
+    <!-- Bottom Sheet Modern Style -->
+    <style name="ModernBottomSheet" parent="Theme.Material3.DayNight.BottomSheetDialog">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:colorBackground">@color/surface_primary</item>
+
+    </style>
+
+
+
+</resources>
