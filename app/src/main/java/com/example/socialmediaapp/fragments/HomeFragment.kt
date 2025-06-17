@@ -30,17 +30,19 @@ import com.example.socialmediaapp.MainActivity
 import com.example.socialmediaapp.R
 import com.example.socialmediaapp.Utils
 import com.example.socialmediaapp.activities.BaseActivity
+import com.example.socialmediaapp.activities.ARActivity
 import com.example.socialmediaapp.adapters.MyFeedAdapter
 import com.example.socialmediaapp.adapters.onCommentClickListener
 import com.example.socialmediaapp.adapters.onLikeClickListener
 import com.example.socialmediaapp.adapters.onUserClickListener
+import com.example.socialmediaapp.adapters.onARClickListener
 import com.example.socialmediaapp.databinding.FragmentHomeBinding
 import com.example.socialmediaapp.modal.Feed
 import com.example.socialmediaapp.mvvm.ViewModel
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 
-class HomeFragment : Fragment(), onLikeClickListener, onUserClickListener {
+class HomeFragment : Fragment(), onLikeClickListener, onUserClickListener, onARClickListener {
     private lateinit var vm: ViewModel
     private lateinit var binding: FragmentHomeBinding
     private lateinit var adapter: MyFeedAdapter
@@ -56,7 +58,6 @@ class HomeFragment : Fragment(), onLikeClickListener, onUserClickListener {
     ): View? {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_home, container, false)
         return binding.root
-
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -77,8 +78,6 @@ class HomeFragment : Fragment(), onLikeClickListener, onUserClickListener {
         }
     }
 
-
-
     private fun initViewModel() {
         vm = ViewModelProvider(this).get(ViewModel::class.java)
     }
@@ -87,6 +86,7 @@ class HomeFragment : Fragment(), onLikeClickListener, onUserClickListener {
         adapter = MyFeedAdapter()
         adapter.setLikeListener(this@HomeFragment)
         adapter.setUserClickListener(this@HomeFragment)
+        adapter.setARClickListener(this@HomeFragment) // AR listener eklendi
         adapter.setCommentClickListener(object : onCommentClickListener {
             override fun addComment(postId: String, comment: String) {
                 // Check if comment is not empty and within character limit
@@ -332,6 +332,40 @@ class HomeFragment : Fragment(), onLikeClickListener, onUserClickListener {
 
     override fun onUserClick(userId: String) {
         navigateToUserProfile(userId)
+    }
+
+    // AR Click listener implementation
+    override fun onARClick(feed: Feed) {
+        // AR desteği kontrolü
+        if (!isARSupported()) {
+            showARNotSupportedMessage()
+            return
+        }
+
+        val intent = Intent(requireActivity(), ARActivity::class.java).apply {
+            putExtra("imageUrl", feed.image)
+            putExtra("caption", feed.caption)
+            putExtra("postId", feed.postid)
+        }
+        startActivity(intent)
+    }
+
+    private fun isARSupported(): Boolean {
+        return try {
+            val availability = com.google.ar.core.ArCoreApk.getInstance().checkAvailability(requireContext())
+            availability.isSupported
+        } catch (e: Exception) {
+            Log.e("HomeFragment", "AR not supported: ${e.message}")
+            false
+        }
+    }
+
+    private fun showARNotSupportedMessage() {
+        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle("AR Not Available")
+            .setMessage("AR functionality is not available on this device. Please use a physical device with ARCore support to view images in AR.")
+            .setPositiveButton("OK", null)
+            .show()
     }
 
     private fun navigateToUserProfile(userId: String) {

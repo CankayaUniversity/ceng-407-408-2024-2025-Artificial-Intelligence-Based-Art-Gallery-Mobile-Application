@@ -127,6 +127,18 @@
                     android:layout_height="24dp"
                     android:src="@drawable/ic_story"
                     android:contentDescription="Story" />
+
+                <View
+                    android:layout_width="16dp"
+                    android:layout_height="0dp" />
+
+                <!-- AR Icon -->
+                <ImageView
+                    android:id="@+id/arIcon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_ar"
+                    android:contentDescription="View in AR" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>

@@ -31,6 +31,7 @@ class MyFeedAdapter: RecyclerView.Adapter<FeedHolder>() {
     private var likeListener: onLikeClickListener? = null
     private var userClickListener: onUserClickListener? = null
     private var commentClickListener: onCommentClickListener? = null
+    private var arClickListener: onARClickListener? = null // AR listener eklendi
     private var commentTextWatcher: TextWatcher? = null
 
     // Set maximum comment length to 2000 characters
@@ -97,6 +98,11 @@ class MyFeedAdapter: RecyclerView.Adapter<FeedHolder>() {
         holder.itemView.findViewById<ImageView>(R.id.storyIcon).setOnClickListener {
             // Get the story information from Firebase
             showStoryBottomSheet(holder.itemView.context, feed)
+        }
+
+        // AR icon click listener eklendi
+        holder.arIcon.setOnClickListener {
+            arClickListener?.onARClick(feed)
         }
     }
 
@@ -386,6 +392,11 @@ class MyFeedAdapter: RecyclerView.Adapter<FeedHolder>() {
         this.commentClickListener = listener
     }
 
+    // AR listener setter eklendi
+    fun setARClickListener(listener: onARClickListener) {
+        this.arClickListener = listener
+    }
+
     // Method to set text watcher for comments
     fun setCommentTextWatcher(watcher: TextWatcher) {
         this.commentTextWatcher = watcher
@@ -432,6 +443,7 @@ class FeedHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     val likecount: TextView = itemView.findViewById(R.id.likecount)
     val commentIcon: ImageView = itemView.findViewById(R.id.commentIcon)
     val likeIcon: ImageView = itemView.findViewById(R.id.likeIcon)
+    val arIcon: ImageView = itemView.findViewById(R.id.arIcon) // AR icon eklendi
     val cardView: androidx.cardview.widget.CardView = itemView.findViewById(R.id.cardview)
 }
 
@@ -451,4 +463,9 @@ interface onUserClickListener {
 
 interface onCommentClickListener {
     fun addComment(postId: String, comment: String)
+}
+
+// AR Click listener interface eklendi
+interface onARClickListener {
+    fun onARClick(feed: Feed)
 }

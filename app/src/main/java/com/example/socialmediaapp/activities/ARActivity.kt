@@ -2,13 +2,10 @@ package com.example.socialmediaapp.activities
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.graphics.Color
-import android.graphics.drawable.Drawable
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import android.widget.ImageView
-import android.widget.TextView
+import android.view.MotionEvent
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -20,11 +17,22 @@ import com.example.socialmediaapp.R
 import com.google.ar.core.Anchor
 import com.google.ar.core.HitResult
 import com.google.ar.core.Plane
+import com.google.ar.core.TrackingState
 import com.google.ar.sceneform.AnchorNode
+import com.google.ar.sceneform.Node
 import com.google.ar.sceneform.math.Vector3
+import com.google.ar.sceneform.rendering.ModelRenderable
+import com.google.ar.sceneform.rendering.Renderable
+import com.google.ar.sceneform.rendering.Texture
 import com.google.ar.sceneform.rendering.ViewRenderable
 import com.google.ar.sceneform.ux.ArFragment
 import com.google.ar.sceneform.ux.TransformableNode
+import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
+import android.view.LayoutInflater
+import android.widget.ImageView
+import android.widget.TextView
+import java.util.concurrent.CompletableFuture
 
 class ARActivity : AppCompatActivity() {
 
@@ -32,8 +40,7 @@ class ARActivity : AppCompatActivity() {
     private var imageUrl: String? = null
     private var caption: String? = null
     private var postId: String? = null
-    private var cachedBitmap: Bitmap? = null
-    private var isImageReady = false
+    private var isImageLoaded = false
 
     companion object {
         private const val CAMERA_PERMISSION_CODE = 100
@@ -43,14 +50,15 @@ class ARActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Intent'ten verileri al
+        // Intent'ten verileri al ve debug için log'la
         imageUrl = intent.getStringExtra("imageUrl")
         caption = intent.getStringExtra("caption")
         postId = intent.getStringExtra("postId")
 
-        Log.d(TAG, "=== AR Activity Started ===")
+        Log.d(TAG, "ARActivity started with:")
         Log.d(TAG, "Image URL: $imageUrl")
         Log.d(TAG, "Caption: $caption")
+        Log.d(TAG, "Post ID: $postId")
 
         // AR desteği kontrolü
         if (!isARSupported()) {
@@ -63,54 +71,45 @@ class ARActivity : AppCompatActivity() {
         // Kamera izni kontrolü
         if (checkCameraPermission()) {
             setupARFragment()
-            preloadImage()
         } else {
             requestCameraPermission()
         }
+
+        // Test için resmi önceden yükle
+        preloadImage()
     }
 
     private fun preloadImage() {
         if (imageUrl.isNullOrEmpty()) {
-            Log.e(TAG, "❌ Image URL is empty!")
-            createTextOnlyObject()
+            Log.e(TAG, "Image URL is null or empty!")
+            Toast.makeText(this, "Error: No image URL provided", Toast.LENGTH_LONG).show()
             return
         }
 
-        Log.d(TAG, "🔄 Starting image preload...")
-
+        Log.d(TAG, "Preloading image: $imageUrl")
         Glide.with(this)
             .asBitmap()
             .load(imageUrl)
-            .override(512, 512) // Sabit boyut
             .into(object : CustomTarget<Bitmap>() {
                 override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
-                    Log.d(TAG, "✅ Image loaded successfully! ${resource.width}x${resource.height}")
-                    cachedBitmap = resource
-                    isImageReady = true
+                    Log.d(TAG, "Image loaded successfully! Size: ${resource.width}x${resource.height}")
+                    isImageLoaded = true
                     runOnUiThread {
-                        Toast.makeText(this@ARActivity, "✅ Image ready! Tap on white dots to place", Toast.LENGTH_LONG).show()
+                        Toast.makeText(this@ARActivity, "Image loaded! Tap on a surface to place it", Toast.LENGTH_LONG).show()
                     }
                 }
 
                 override fun onLoadCleared(placeholder: Drawable?) {
-                    Log.w(TAG, "⚠️ Image load cleared")
+                    Log.w(TAG, "Image load cleared")
                 }
 
                 override fun onLoadFailed(errorDrawable: Drawable?) {
-                    Log.e(TAG, "❌ Image load failed for: $imageUrl")
+                    Log.e(TAG, "Failed to load image: $imageUrl")
                     runOnUiThread {
-                        Toast.makeText(this@ARActivity, "❌ Image load failed, showing text", Toast.LENGTH_LONG).show()
+                        Toast.makeText(this@ARActivity, "Failed to load image. Check internet connection.", Toast.LENGTH_LONG).show()
                     }
-                    createTextOnlyObject()
                 }
             })
-    }
-
-    private fun createTextOnlyObject() {
-        isImageReady = true // Text olarak hazır
-        runOnUiThread {
-            Toast.makeText(this, "📝 Text mode ready! Tap on white dots", Toast.LENGTH_LONG).show()
-        }
     }
 
     private fun isARSupported(): Boolean {
@@ -126,30 +125,42 @@ class ARActivity : AppCompatActivity() {
     private fun showARNotSupportedDialog() {
         androidx.appcompat.app.AlertDialog.Builder(this)
             .setTitle("AR Not Supported")
-            .setMessage("This device doesn't support AR functionality.")
-            .setPositiveButton("OK") { _, _ -> finish() }
+            .setMessage("This device doesn't support AR functionality. AR features work only on physical devices with ARCore support.")
+            .setPositiveButton("OK") { _, _ ->
+                finish()
+            }
             .setCancelable(false)
             .show()
     }
 
     private fun checkCameraPermission(): Boolean {
-        return ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+        return ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.CAMERA
+        ) == PackageManager.PERMISSION_GRANTED
     }
 
     private fun requestCameraPermission() {
-        ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), CAMERA_PERMISSION_CODE)
+        ActivityCompat.requestPermissions(
+            this,
+            arrayOf(Manifest.permission.CAMERA),
+            CAMERA_PERMISSION_CODE
+        )
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
         when (requestCode) {
             CAMERA_PERMISSION_CODE -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     setupARFragment()
-                    preloadImage()
                 } else {
-                    Toast.makeText(this, "Camera permission required", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this, "Camera permission is required for AR", Toast.LENGTH_LONG).show()
                     finish()
                 }
             }
@@ -160,222 +171,159 @@ class ARActivity : AppCompatActivity() {
         try {
             arFragment = supportFragmentManager.findFragmentById(R.id.ar_fragment) as ArFragment
 
-            // Plane discovery'yi göster
+            // Plane discovery indicator'ı göster (daha iyi kullanıcı deneyimi için)
             arFragment.planeDiscoveryController.show()
 
-            Log.d(TAG, "🎯 Setting up AR tap listener...")
-
-            // AR tap listener
+            // AR tap listener'ı ayarla
             arFragment.setOnTapArPlaneListener { hitResult, plane, motionEvent ->
-                Log.d(TAG, "🖱️ AR plane tapped!")
-                Log.d(TAG, "Plane type: ${plane.type}")
-                Log.d(TAG, "Plane tracking state: ${plane.trackingState}")
-                Log.d(TAG, "Image ready: $isImageReady")
-
-                if (!isImageReady) {
-                    Toast.makeText(this, "⏳ Please wait, loading...", Toast.LENGTH_SHORT).show()
+                Log.d(TAG, "AR surface tapped")
+                if (!isImageLoaded) {
+                    Toast.makeText(this, "Please wait, image is still loading...", Toast.LENGTH_SHORT).show()
                     return@setOnTapArPlaneListener
                 }
-
-                if (plane.trackingState == com.google.ar.core.TrackingState.TRACKING) {
-                    Log.d(TAG, "🎯 Placing object...")
-                    placeObjectInAR(hitResult)
-                } else {
-                    Toast.makeText(this, "⚠️ Surface not ready, try again", Toast.LENGTH_SHORT).show()
-                }
+                placeImageInAR(hitResult)
             }
 
-            // Alternative tap handler - herhangi bir yere tap için
-            arFragment.arSceneView.setOnTouchListener { _, motionEvent ->
-                if (motionEvent.action == android.view.MotionEvent.ACTION_DOWN) {
-                    Log.d(TAG, "🖱️ Screen tapped at: ${motionEvent.x}, ${motionEvent.y}")
+            Toast.makeText(this, "Look for flat surfaces and tap to place the image", Toast.LENGTH_LONG).show()
+            Log.d(TAG, "AR Fragment setup completed")
 
-                    if (!isImageReady) {
-                        Toast.makeText(this, "⏳ Still loading...", Toast.LENGTH_SHORT).show()
-                        return@setOnTouchListener true
+        } catch (e: Exception) {
+            Log.e(TAG, "Error setting up AR Fragment: ${e.message}")
+            Toast.makeText(this, "Error setting up AR: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun placeImageInAR(hitResult: HitResult) {
+        Log.d(TAG, "Placing image in AR...")
+        val anchor = hitResult.createAnchor()
+
+        // ViewRenderable kullanarak resmi AR'da göster
+        createImageRenderable { renderable ->
+            if (renderable != null) {
+                Log.d(TAG, "Renderable created successfully")
+                addNodeToScene(anchor, renderable)
+            } else {
+                Log.e(TAG, "Failed to create renderable")
+                Toast.makeText(this, "Failed to create AR object", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun createImageRenderable(callback: (ViewRenderable?) -> Unit) {
+        try {
+            Log.d(TAG, "Creating image renderable...")
+
+            // Layout inflate et
+            val view = LayoutInflater.from(this).inflate(R.layout.ar_image_layout, null)
+            val imageView = view.findViewById<ImageView>(R.id.ar_image)
+            val captionText = view.findViewById<TextView>(R.id.ar_caption)
+
+            // Caption'ı ayarla
+            captionText.text = caption ?: "AI Generated Art"
+
+            if (imageUrl.isNullOrEmpty()) {
+                Log.e(TAG, "Image URL is null or empty in createImageRenderable!")
+                callback(null)
+                return
+            }
+
+            Log.d(TAG, "Loading image for renderable: $imageUrl")
+
+            // Resmi yükle
+            Glide.with(this)
+                .asBitmap()
+                .load(imageUrl)
+                .centerCrop()
+                .into(object : CustomTarget<Bitmap>(400, 400) { // Fixed size
+                    override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
+                        Log.d(TAG, "Bitmap ready for renderable: ${resource.width}x${resource.height}")
+                        imageView.setImageBitmap(resource)
+
+                        // ViewRenderable oluştur
+                        ViewRenderable.builder()
+                            .setView(this@ARActivity, view)
+                            .build()
+                            .thenAccept { renderable ->
+                                Log.d(TAG, "ViewRenderable build successful")
+                                callback(renderable)
+                            }
+                            .exceptionally { throwable ->
+                                Log.e(TAG, "Unable to build renderable", throwable)
+                                runOnUiThread {
+                                    Toast.makeText(this@ARActivity, "Error creating AR object: ${throwable.message}", Toast.LENGTH_LONG).show()
+                                }
+                                callback(null)
+                                null
+                            }
                     }
 
-                    // Emergency placement - screen center'a koy
-                    val frame = arFragment.arSceneView.arFrame
-                    if (frame != null) {
-                        val hits = frame.hitTest(motionEvent)
-                        if (hits.isNotEmpty()) {
-                            Log.d(TAG, "🎯 Emergency hit test successful")
-                            placeObjectInAR(hits[0])
-                        } else {
-                            Log.d(TAG, "⚠️ No hits found, creating anchor at camera")
-                            createAnchorAtCamera()
+                    override fun onLoadCleared(placeholder: Drawable?) {
+                        Log.w(TAG, "Image load cleared in renderable")
+                        callback(null)
+                    }
+
+                    override fun onLoadFailed(errorDrawable: Drawable?) {
+                        Log.e(TAG, "Failed to load image for renderable: $imageUrl")
+                        runOnUiThread {
+                            Toast.makeText(this@ARActivity, "Failed to load image for AR", Toast.LENGTH_LONG).show()
                         }
+                        callback(null)
                     }
-                }
-                false
-            }
-
-            Toast.makeText(this, "👀 Look for white dots on flat surfaces", Toast.LENGTH_LONG).show()
-            Log.d(TAG, "✅ AR Fragment setup completed")
-
+                })
         } catch (e: Exception) {
-            Log.e(TAG, "❌ Error setting up AR Fragment: ${e.message}")
-            Toast.makeText(this, "AR setup error: ${e.message}", Toast.LENGTH_LONG).show()
+            Log.e(TAG, "Exception in createImageRenderable: ${e.message}")
+            callback(null)
         }
     }
 
-    private fun createAnchorAtCamera() {
+    private fun addNodeToScene(anchor: Anchor, renderable: ViewRenderable) {
         try {
-            Log.d(TAG, "🎥 Creating anchor at camera position...")
-            val session = arFragment.arSceneView.session
-            val frame = arFragment.arSceneView.arFrame
+            Log.d(TAG, "Adding node to AR scene")
 
-            if (session != null && frame != null) {
-                val camera = frame.camera
-                val pose = camera.pose.compose(com.google.ar.core.Pose.makeTranslation(0f, 0f, -1f))
-                val anchor = session.createAnchor(pose)
-                Log.d(TAG, "🎯 Camera anchor created")
-                addObjectToScene(anchor)
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "❌ Failed to create camera anchor: ${e.message}")
-        }
-    }
-
-    private fun placeObjectInAR(hitResult: HitResult) {
-        try {
-            Log.d(TAG, "🎯 Creating anchor from hit result...")
-            val anchor = hitResult.createAnchor()
-            addObjectToScene(anchor)
-        } catch (e: Exception) {
-            Log.e(TAG, "❌ Failed to place object: ${e.message}")
-            Toast.makeText(this, "Failed to place object: ${e.message}", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private fun addObjectToScene(anchor: Anchor) {
-        Log.d(TAG, "🏗️ Adding object to scene...")
-
-        if (cachedBitmap != null) {
-            Log.d(TAG, "🖼️ Creating image object...")
-            createImageObject(anchor)
-        } else {
-            Log.d(TAG, "📝 Creating text object...")
-            createTextObject(anchor)
-        }
-    }
-
-    private fun createImageObject(anchor: Anchor) {
-        try {
-            Log.d(TAG, "🖼️ Building image renderable...")
-
-            val imageView = ImageView(this).apply {
-                layoutParams = android.view.ViewGroup.LayoutParams(600, 600)
-                scaleType = ImageView.ScaleType.CENTER_CROP
-                setImageBitmap(cachedBitmap)
-                setBackgroundColor(Color.WHITE)
-                setPadding(20, 20, 20, 20)
-            }
-
-            ViewRenderable.builder()
-                .setView(this, imageView)
-                .build()
-                .thenAccept { renderable ->
-                    Log.d(TAG, "✅ Image renderable created!")
-                    runOnUiThread {
-                        addNodeToScene(anchor, renderable, "🖼️ Image placed!")
-                    }
-                }
-                .exceptionally { throwable ->
-                    Log.e(TAG, "❌ Image renderable failed: ${throwable.message}")
-                    runOnUiThread {
-                        createTextObject(anchor) // Fallback
-                    }
-                    null
-                }
-
-        } catch (e: Exception) {
-            Log.e(TAG, "❌ Exception creating image object: ${e.message}")
-            createTextObject(anchor) // Fallback
-        }
-    }
-
-    private fun createTextObject(anchor: Anchor) {
-        try {
-            Log.d(TAG, "📝 Building text renderable...")
-
-            val textView = TextView(this).apply {
-                text = "🎨 AI ART 🎨\n\n${caption ?: "Generated Image"}\n\n(Image failed to load)"
-                textSize = 20f
-                setTextColor(Color.BLACK)
-                setBackgroundColor(Color.WHITE)
-                setPadding(40, 40, 40, 40)
-                gravity = android.view.Gravity.CENTER
-            }
-
-            ViewRenderable.builder()
-                .setView(this, textView)
-                .build()
-                .thenAccept { renderable ->
-                    Log.d(TAG, "✅ Text renderable created!")
-                    runOnUiThread {
-                        addNodeToScene(anchor, renderable, "📝 Text placed!")
-                    }
-                }
-                .exceptionally { throwable ->
-                    Log.e(TAG, "❌ Text renderable failed: ${throwable.message}")
-                    runOnUiThread {
-                        Toast.makeText(this@ARActivity, "❌ AR object creation failed completely", Toast.LENGTH_LONG).show()
-                    }
-                    null
-                }
-
-        } catch (e: Exception) {
-            Log.e(TAG, "❌ Exception creating text object: ${e.message}")
-            Toast.makeText(this, "❌ Complete failure: ${e.message}", Toast.LENGTH_LONG).show()
-        }
-    }
-
-    private fun addNodeToScene(anchor: Anchor, renderable: ViewRenderable, successMessage: String) {
-        try {
-            Log.d(TAG, "🔗 Adding node to scene...")
-
-            val anchorNode = AnchorNode(anchor).apply {
-                setParent(arFragment.arSceneView.scene)
-            }
+            val anchorNode = AnchorNode(anchor)
 
             val transformableNode = TransformableNode(arFragment.transformationSystem).apply {
                 this.renderable = renderable
                 setParent(anchorNode)
-                localScale = Vector3(1.0f, 1.0f, 1.0f) // Normal boyut
-                localPosition = Vector3(0f, 0.2f, 0f) // Biraz yukarı
+
+                // Node'un boyutunu ayarla
+                localScale = Vector3(0.3f, 0.3f, 0.3f) // Daha küçük başlangıç boyutu
             }
 
+            // Sahneye ekle
+            arFragment.arSceneView.scene.addChild(anchorNode)
+
+            // Node'u seç
             transformableNode.select()
 
-            Log.d(TAG, "✅ Node added successfully!")
-            Toast.makeText(this, successMessage, Toast.LENGTH_LONG).show()
-
-            // Plane discovery'yi gizle
-            arFragment.planeDiscoveryController.hide()
+            Log.d(TAG, "AR node added successfully")
+            Toast.makeText(this, "Image placed! Pinch to resize, drag to move", Toast.LENGTH_LONG).show()
 
         } catch (e: Exception) {
-            Log.e(TAG, "❌ Failed to add node: ${e.message}")
-            Toast.makeText(this, "❌ Failed to add AR object: ${e.message}", Toast.LENGTH_LONG).show()
+            Log.e(TAG, "Error adding node to scene: ${e.message}")
+            Toast.makeText(this, "Error placing AR object: ${e.message}", Toast.LENGTH_LONG).show()
         }
     }
 
     override fun onResume() {
         super.onResume()
-        Log.d(TAG, "📱 Activity resumed")
+
+        // AR Core session'ının aktif olup olmadığını kontrol et
+        val session = arFragment.arSceneView.session
+        if (session == null) {
+            Log.e(TAG, "Session is null")
+        } else {
+            Log.d(TAG, "AR Session is active")
+        }
     }
 
     override fun onPause() {
         super.onPause()
         arFragment.arSceneView.pause()
-        Log.d(TAG, "⏸️ Activity paused")
     }
 
     override fun onDestroy() {
         super.onDestroy()
         arFragment.arSceneView.destroy()
-        cachedBitmap?.recycle()
-        Log.d(TAG, "🗑️ Activity destroyed")
     }
 }
