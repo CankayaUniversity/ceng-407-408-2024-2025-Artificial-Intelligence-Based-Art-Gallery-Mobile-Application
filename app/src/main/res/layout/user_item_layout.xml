@@ -1,75 +1,152 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<androidx.cardview.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="10dp"
-    >
+    android:layout_margin="8dp"
+    app:cardBackgroundColor="@color/gallery_white"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="6dp"
+    android:foreground="?android:attr/selectableItemBackground">
 
-    <LinearLayout
-        android:id="@+id/user_item"
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:padding="16dp">
 
-        <de.hdodenhof.circleimageview.CircleImageView
-            android:id="@+id/user_item_image"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:layout_centerHorizontal="true"
-            android:layout_marginLeft="5dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginRight="5dp"
-            android:padding="5dp"
-            android:src="@drawable/profile">
-
-        </de.hdodenhof.circleimageview.CircleImageView>
+        <!-- Subtle gradient overlay for depth -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/glass_black_05"
+            android:layout_marginTop="-16dp"
+            android:layout_marginBottom="-16dp"
+            android:layout_marginStart="-16dp"
+            android:layout_marginEnd="-16dp" />
 
         <LinearLayout
-            android:id="@+id/user_item_mid"
-            android:layout_width="130dp"
+            android:id="@+id/user_item"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginRight="5dp"
-            android:orientation="vertical">
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
-            <TextView
-                android:id="@+id/user_item_search_username"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_above="@id/user_item_search_fullname"
-                android:layout_gravity="center"
-                android:layout_marginTop="5dp"
-                android:text="user name"
-                android:textColor="@android:color/black"
-                android:textSize="20sp"
-                android:textStyle="bold" />
+            <!-- Artist profile image with elegant gallery frame effect -->
+            <FrameLayout
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:background="@drawable/modern_frame_bg"
+                android:padding="4dp">
 
-            <TextView
-                android:id="@+id/user_item_search_fullname"
-                android:layout_width="wrap_content"
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/user_item_image"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/profile"
+                    app:civ_border_width="2dp"
+                    app:civ_border_color="@color/glass_black_30" />
+
+                <!-- Modern shine effect on profile image -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@color/glass_black_05" />
+
+            </FrameLayout>
+
+            <!-- Artist information with elegant modern typography -->
+            <LinearLayout
+                android:id="@+id/user_item_mid"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginTop="4dp"
-                android:padding="5dp"
-                android:text="FullName"
-                android:textColor="@android:color/darker_gray"
-                android:textSize="15sp" />
+                android:layout_weight="1"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="12dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/user_item_search_username"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Artist Name"
+                    android:textColor="@color/gallery_black"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:fontFamily="sans-serif-medium"
+                    android:letterSpacing="0.02"
+                    android:shadowColor="@color/glass_black_20"
+                    android:shadowDx="0"
+                    android:shadowDy="1"
+                    android:shadowRadius="2" />
+
+                <TextView
+                    android:id="@+id/user_item_search_fullname"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Full Name"
+                    android:textColor="@color/glass_black_30"
+                    android:textSize="14sp"
+                    android:fontFamily="sans-serif-light" />
+
+                <!-- Gallery-style metadata with modern accent -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <View
+                        android:layout_width="4dp"
+                        android:layout_height="4dp"
+                        android:background="@color/modern_purple"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Digital Artist"
+                        android:textColor="@color/glass_black_30"
+                        android:textSize="12sp"
+                        android:fontFamily="sans-serif"
+                        android:letterSpacing="0.05" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Modern follow button with enhanced gallery aesthetics -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/user_item_follow"
+                android:layout_width="wrap_content"
+                android:layout_height="42dp"
+                android:minWidth="95dp"
+                android:text="Follow"
+                android:textAllCaps="false"
+                android:textColor="@color/gallery_white"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:fontFamily="sans-serif-medium"
+                android:backgroundTint="@color/modern_purple"
+                app:cornerRadius="21dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/glass_white_20"
+                android:elevation="3dp"
+                app:rippleColor="@color/glass_white_30"
+                android:letterSpacing="0.02" />
+
         </LinearLayout>
 
-        <Button
-            android:id="@+id/user_item_follow"
-            android:layout_width="100dp"
-            android:layout_height="34dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginLeft="20dp"
-            android:layout_toEndOf="@id/user_item"
-            android:padding="1dp"
-            android:text="Follow"
-            android:textAllCaps="false"
-            android:textColor="@android:color/white"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            android:background="@drawable/round_btn"/>
+        <!-- Subtle bottom accent line for modern gallery feel -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_below="@id/user_item"
+            android:layout_marginTop="12dp"
+            android:background="@color/glass_black_10" />
 
-    </LinearLayout>
-</RelativeLayout>
+    </RelativeLayout>
+
+</androidx.cardview.widget.CardView>

@@ -1,7 +1,12 @@
 package com.example.socialmediaapp.fragments
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.animation.ObjectAnimator
 import android.app.Dialog
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.Rect
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.text.Editable
@@ -11,6 +16,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
+import android.view.WindowManager
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
@@ -24,12 +30,13 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.bumptech.glide.request.RequestOptions
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.example.socialmediaapp.MainActivity
 import com.example.socialmediaapp.R
 import com.example.socialmediaapp.adapters.PostsAdapter
@@ -87,21 +94,16 @@ class SearchFragment : Fragment(), OnPostClickListener {
         recyclerView?.setHasFixedSize(true)
         recyclerView?.layoutManager = LinearLayoutManager(context)
 
-        // Initialize posts RecyclerViews
+        // Initialize posts RecyclerViews with modern gallery layout
         allPostsRecyclerView = view.findViewById(R.id.recyclerview_all_posts)
         allPostsRecyclerView?.setHasFixedSize(true)
-        allPostsRecyclerView?.layoutManager = GridLayoutManager(context, 3)
 
         // Initialize User-specific Posts RecyclerView
         userPostsRecyclerView = view.findViewById(R.id.recyclerview_user_posts)
         userPostsRecyclerView?.setHasFixedSize(true)
-        userPostsRecyclerView?.layoutManager = GridLayoutManager(context, 3)
 
         // Initialize toggle button
         toggleButton = view.findViewById(R.id.toggle_view_button)
-        toggleButton?.setOnClickListener {
-            toggleView()
-        }
 
         // Initialize user list
         mUser = ArrayList()
@@ -114,6 +116,9 @@ class SearchFragment : Fragment(), OnPostClickListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // Setup modern gallery appearance first
+        setupModernGalleryAppearance()
 
         setupFilterSpinner()
 
@@ -132,20 +137,22 @@ class SearchFragment : Fragment(), OnPostClickListener {
         }
         recyclerView?.adapter = userAdapter
 
-        // Initialize all posts adapter
+        // Initialize all posts adapter with modern dynamic features
         allPostsAdapter = PostsAdapter()
         allPostsAdapter?.setOnPostClickListener(this)
+        allPostsAdapter?.setDynamicHeights(true) // Enable dynamic heights
         allPostsRecyclerView?.adapter = allPostsAdapter
 
-        // Initialize user posts adapter
+        // Initialize user posts adapter with dynamic features
         userPostsAdapter = PostsAdapter()
         userPostsAdapter?.setOnPostClickListener(this)
+        userPostsAdapter?.setDynamicHeights(true) // Enable dynamic heights
         userPostsRecyclerView?.adapter = userPostsAdapter
 
         // Initialize search field
         searchItem = view.findViewById(R.id.searchitem)
 
-        // Set up text change listener for search
+        // Set up text change listener for search with modern animations
         searchItem!!.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
                 // Not needed
@@ -159,21 +166,30 @@ class SearchFragment : Fragment(), OnPostClickListener {
                 val searchText = searchItem!!.text.toString()
 
                 if (searchText.isEmpty()) {
-                    // Show regular feed when search is empty
-                    searchResultsContainer?.visibility = View.GONE
-                    allPostsRecyclerView?.visibility = View.VISIBLE
-                    userPostsRecyclerView?.visibility = View.GONE
+                    // Show regular feed when search is empty with smooth transition
+                    animateViewTransition(
+                        hideView = searchResultsContainer,
+                        showView = allPostsRecyclerView,
+                        hideUserPosts = true
+                    )
                 } else {
-                    // Show search results (both users and their posts)
-                    searchResultsContainer?.visibility = View.VISIBLE
-                    allPostsRecyclerView?.visibility = View.GONE
-                    userPostsRecyclerView?.visibility = View.VISIBLE
+                    // Show search results with smooth transition
+                    animateViewTransition(
+                        hideView = allPostsRecyclerView,
+                        showView = searchResultsContainer,
+                        showUserPosts = true
+                    )
 
                     // Search for users with matching username
                     searchUser(searchText.toLowerCase(Locale.ROOT))
                 }
             }
         })
+
+        // Update toggle button click listener with modern animation
+        toggleButton?.setOnClickListener {
+            toggleViewWithAnimation()
+        }
 
         // Set initial view states
         searchResultsContainer?.visibility = View.GONE
@@ -184,6 +200,185 @@ class SearchFragment : Fragment(), OnPostClickListener {
         vm.getAllPostsExceptCurrentUser().observe(viewLifecycleOwner, Observer { posts ->
             allPostsAdapter?.setPosts(posts)
         })
+    }
+
+    // Modern gallery appearance setup
+    private fun setupModernGalleryAppearance() {
+        // Set up the 2-column grid layout for main posts (big+small pattern)
+        val mainGridLayout = GridLayoutManager(context, 2)
+        mainGridLayout.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+            override fun getSpanSize(position: Int): Int {
+                return allPostsAdapter?.getSpanSize(position, 2) ?: 1
+            }
+        }
+        allPostsRecyclerView?.layoutManager = mainGridLayout
+
+        // User posts with same 2-column pattern
+        val userGridLayout = GridLayoutManager(context, 2)
+        userGridLayout.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+            override fun getSpanSize(position: Int): Int {
+                return userPostsAdapter?.getSpanSize(position, 2) ?: 1
+            }
+        }
+        userPostsRecyclerView?.layoutManager = userGridLayout
+
+        // Add item decoration for clean spacing
+        allPostsRecyclerView?.addItemDecoration(ModernGalleryItemDecoration())
+        userPostsRecyclerView?.addItemDecoration(ModernGalleryItemDecoration())
+
+        // Add smooth animations
+        allPostsRecyclerView?.itemAnimator = DefaultItemAnimator().apply {
+            addDuration = 250
+            removeDuration = 250
+            moveDuration = 250
+            changeDuration = 250
+        }
+
+        userPostsRecyclerView?.itemAnimator = DefaultItemAnimator().apply {
+            addDuration = 250
+            removeDuration = 250
+            moveDuration = 250
+            changeDuration = 250
+        }
+    }
+
+    // Modern Gallery ItemDecoration with optimized spacing
+    inner class ModernGalleryItemDecoration : RecyclerView.ItemDecoration() {
+        private val smallSpacing = 4 // dp - tighter spacing
+        private val mediumSpacing = 6 // dp
+        private val largeSpacing = 8 // dp
+
+        override fun getItemOffsets(
+            outRect: Rect,
+            view: View,
+            parent: RecyclerView,
+            state: RecyclerView.State
+        ) {
+            val position = parent.getChildAdapterPosition(view)
+            val layoutManager = parent.layoutManager as? GridLayoutManager
+            val spanCount = layoutManager?.spanCount ?: 1
+            val spanSize = layoutManager?.spanSizeLookup?.getSpanSize(position) ?: 1
+
+            // Determine spacing based on item size - smaller for tighter grid
+            val spacing = when (spanSize) {
+                3 -> largeSpacing   // Full width items
+                2 -> mediumSpacing  // Double width items
+                else -> smallSpacing // Single items
+            }
+
+            // Calculate column position for proper spacing
+            val totalSpansCovered = (0 until position).sumOf { pos ->
+                layoutManager?.spanSizeLookup?.getSpanSize(pos) ?: 1
+            }
+            val column = totalSpansCovered % spanCount
+
+            // Apply horizontal spacing
+            outRect.left = spacing
+            outRect.right = spacing
+
+            // Apply vertical spacing
+            outRect.top = if (position < spanCount) spacing else spacing / 2
+            outRect.bottom = spacing / 2
+
+            // Reduce spacing for tighter grid feel
+            if (spanSize == 1) {
+                outRect.left = spacing / 2
+                outRect.right = spacing / 2
+            }
+        }
+    }
+
+    // Smooth view transition animation with modern gallery effects
+    private fun animateViewTransition(
+        hideView: View?,
+        showView: View?,
+        hideUserPosts: Boolean = false,
+        showUserPosts: Boolean = false
+    ) {
+        hideView?.let { hide ->
+            val fadeOut = ObjectAnimator.ofFloat(hide, "alpha", 1f, 0f).apply {
+                duration = 250
+            }
+
+            fadeOut.addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    hide.visibility = View.GONE
+
+                    if (hideUserPosts) {
+                        userPostsRecyclerView?.visibility = View.GONE
+                    }
+                    if (showUserPosts) {
+                        userPostsRecyclerView?.visibility = View.VISIBLE
+                    }
+
+                    showView?.let { show ->
+                        show.visibility = View.VISIBLE
+                        show.alpha = 0f
+                        show.scaleX = 0.95f
+                        show.scaleY = 0.95f
+
+                        val fadeIn = ObjectAnimator.ofFloat(show, "alpha", 0f, 1f).apply {
+                            duration = 300
+                        }
+                        val scaleXIn = ObjectAnimator.ofFloat(show, "scaleX", 0.95f, 1f).apply {
+                            duration = 300
+                        }
+                        val scaleYIn = ObjectAnimator.ofFloat(show, "scaleY", 0.95f, 1f).apply {
+                            duration = 300
+                        }
+
+                        fadeIn.start()
+                        scaleXIn.start()
+                        scaleYIn.start()
+                    }
+                }
+            })
+            fadeOut.start()
+        }
+    }
+
+    // Enhanced toggle functionality with smooth animations
+    private fun toggleViewWithAnimation() {
+        if (searchItem!!.text.toString().isEmpty()) {
+            isShowingUsers = !isShowingUsers
+
+            if (isShowingUsers) {
+                // Show all users with smooth transition
+                animateViewTransition(
+                    hideView = allPostsRecyclerView,
+                    showView = searchResultsContainer,
+                    hideUserPosts = true
+                )
+                toggleButton?.setImageResource(R.drawable.ic_home_active)
+                retrieveAllUsers()
+            } else {
+                // Show all posts with smooth transition
+                animateViewTransition(
+                    hideView = searchResultsContainer,
+                    showView = allPostsRecyclerView,
+                    hideUserPosts = true
+                )
+                toggleButton?.setImageResource(R.drawable.search)
+            }
+        }
+    }
+
+    // Enhanced method for smooth grid transitions
+    private fun smoothGridTransition(targetView: RecyclerView?, animate: Boolean = true) {
+        targetView?.let { recyclerView ->
+            if (animate) {
+                recyclerView.alpha = 0f
+                recyclerView.visibility = View.VISIBLE
+                recyclerView.animate()
+                    .alpha(1f)
+                    .setDuration(300)
+                    .setInterpolator(androidx.interpolator.view.animation.FastOutSlowInInterpolator())
+                    .start()
+            } else {
+                recyclerView.visibility = View.VISIBLE
+                recyclerView.alpha = 1f
+            }
+        }
     }
 
     // Safe navigation method
@@ -207,27 +402,6 @@ class SearchFragment : Fragment(), OnPostClickListener {
                 "Navigation error: ${e.message}",
                 Toast.LENGTH_LONG
             ).show()
-        }
-    }
-
-    private fun toggleView() {
-        if (searchItem!!.text.toString().isEmpty()) {
-            // Only toggle view when search is empty
-            isShowingUsers = !isShowingUsers
-            if (isShowingUsers) {
-                // Show all users
-                searchResultsContainer?.visibility = View.VISIBLE
-                allPostsRecyclerView?.visibility = View.GONE
-                userPostsRecyclerView?.visibility = View.GONE
-                toggleButton?.setImageResource(R.drawable.ic_home_active)
-                retrieveAllUsers()
-            } else {
-                // Show all posts
-                searchResultsContainer?.visibility = View.GONE
-                allPostsRecyclerView?.visibility = View.VISIBLE
-                userPostsRecyclerView?.visibility = View.GONE
-                toggleButton?.setImageResource(R.drawable.search)
-            }
         }
     }
 
@@ -265,7 +439,7 @@ class SearchFragment : Fragment(), OnPostClickListener {
             // Update UI based on search results
             if (mUser?.isEmpty() == true) {
                 // No users found
-                searchResultsTitle?.text = "No users found"
+                searchResultsTitle?.text = "No artists found"
                 userPostsRecyclerView?.visibility = View.GONE
             }
         }
@@ -288,11 +462,11 @@ class SearchFragment : Fragment(), OnPostClickListener {
                     }
                 }
 
-                // Display the user's artwork
+                // Display the user's artwork with modern adapter
                 userPostsAdapter?.setPosts(postsList)
 
                 // Update the title to show whose artwork we're displaying
-                searchResultsTitle?.text = "$username's Artwork"
+                searchResultsTitle?.text = "$username's Modern Gallery"
 
                 // Update UI based on search results
                 if (postsList.isEmpty()) {
@@ -333,7 +507,7 @@ class SearchFragment : Fragment(), OnPostClickListener {
         // Get post ID
         val postId = post.postid ?: return
 
-        // Fetch additional artwork details and show dialog
+        // Fetch additional artwork details and show modern dialog
         fetchArtworkDetailsAndShowDialog(postId, post)
     }
 
@@ -341,7 +515,7 @@ class SearchFragment : Fragment(), OnPostClickListener {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val imageUrl = post.image ?: ""
-                var title = post.caption ?: "Untitled"
+                var title = post.caption ?: "Untitled Artwork"
                 var story = ""
                 val likes = post.likes ?: 0
                 val comments = post.comments ?: 0
@@ -381,7 +555,7 @@ class SearchFragment : Fragment(), OnPostClickListener {
                 }
 
                 withContext(Dispatchers.Main) {
-                    showArtworkDetailsDialog(imageUrl, title, story, likes, comments, postId, userId, userName, userImageUrl)
+                    showModernArtworkDetailsDialog(imageUrl, title, story, likes, comments, postId, userId, userName, userImageUrl)
                 }
             } catch (e: Exception) {
                 Log.e("SearchFragment", "Error fetching artwork details", e)
@@ -396,7 +570,8 @@ class SearchFragment : Fragment(), OnPostClickListener {
         }
     }
 
-    private fun showArtworkDetailsDialog(
+    // Enhanced artwork details dialog with modern gallery aesthetics
+    private fun showModernArtworkDetailsDialog(
         imageUrl: String,
         title: String,
         story: String,
@@ -407,14 +582,25 @@ class SearchFragment : Fragment(), OnPostClickListener {
         userName: String,
         userImageUrl: String
     ) {
-        // Make sure we're still attached to a context
         val currentContext = context ?: return
 
         val dialog = Dialog(currentContext)
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
         dialog.setCancelable(true)
         dialog.setContentView(R.layout.dialog_artwork_details)
-        dialog.window?.setBackgroundDrawable(ColorDrawable(ContextCompat.getColor(currentContext, R.color.semi_transparent)))
+
+        // Enhanced window properties for modern gallery feel
+        dialog.window?.apply {
+            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            setLayout(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            attributes = attributes.apply {
+                dimAmount = 0.85f
+                flags = flags or WindowManager.LayoutParams.FLAG_DIM_BEHIND
+            }
+        }
 
         // Initialize dialog views
         val detailImageView = dialog.findViewById<ImageView>(R.id.detailImageView)
@@ -432,33 +618,35 @@ class SearchFragment : Fragment(), OnPostClickListener {
         // Show artist information section
         artistInfoContainer.visibility = View.VISIBLE
 
-        // Load main artwork image
+        // Load main artwork image with enhanced Glide options
         Glide.with(currentContext)
             .load(imageUrl)
-            .fitCenter()
+            .centerCrop()
             .placeholder(R.drawable.placeholder_image2)
             .error(R.drawable.error_image)
+            .transition(DrawableTransitionOptions.withCrossFade(300))
             .into(detailImageView)
 
-        // Set text data
+        // Set text data with gallery styling
         detailTitleTextView.text = title
-        detailStoryTextView.text = if (story.isNotEmpty()) story else "No story available for this artwork."
-        detailLikesTextView.text = "$likes likes"
-        detailCommentsTextView.text = "$comments comments"
+        detailStoryTextView.text = if (story.isNotEmpty()) story else "This artwork speaks for itself..."
+        detailLikesTextView.text = "$likes admirers"
+        detailCommentsTextView.text = "$comments thoughts"
 
         // Set artist information
         artistNameTextView.text = userName
 
-        // Fixed implementation for artist profile image loading
+        // Enhanced artist profile image loading
         if (userImageUrl.isNotEmpty()) {
             Log.d("ArtworkDetails", "Loading artist image from URL: $userImageUrl")
 
-            // Use a simpler Glide implementation with the view's context
-            Glide.with(artistImageView)  // Use the view's context directly
+            Glide.with(artistImageView)
                 .load(userImageUrl)
+                .circleCrop()
                 .placeholder(R.drawable.ic_profile)
                 .error(R.drawable.ic_profile)
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .transition(DrawableTransitionOptions.withCrossFade(200))
                 .into(artistImageView)
         } else {
             Log.d("ArtworkDetails", "No artist image URL available, using default")
@@ -473,12 +661,35 @@ class SearchFragment : Fragment(), OnPostClickListener {
             }
         }
 
-        // Set close button listener
+        // Enhanced close button with smooth exit animation
         closeButton.setOnClickListener {
-            dialog.dismiss()
+            val dialogView = dialog.findViewById<View>(android.R.id.content)
+            dialogView.animate()
+                .alpha(0f)
+                .scaleX(0.8f)
+                .scaleY(0.8f)
+                .setDuration(200)
+                .withEndAction {
+                    dialog.dismiss()
+                }
+                .start()
         }
 
+        // Show dialog with entrance animation
         dialog.show()
+
+        val dialogView = dialog.findViewById<View>(android.R.id.content)
+        dialogView.alpha = 0f
+        dialogView.scaleX = 0.8f
+        dialogView.scaleY = 0.8f
+
+        dialogView.animate()
+            .alpha(1f)
+            .scaleX(1f)
+            .scaleY(1f)
+            .setDuration(250)
+            .setInterpolator(androidx.interpolator.view.animation.FastOutSlowInInterpolator())
+            .start()
     }
 
     private fun setupFilterSpinner() {
@@ -496,7 +707,7 @@ class SearchFragment : Fragment(), OnPostClickListener {
         spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
                 val selectedOption = parent.getItemAtPosition(position).toString()
-                Toast.makeText(requireContext(), "Filtered by $selectedOption", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Modern Gallery filtered by $selectedOption", Toast.LENGTH_SHORT).show()
 
                 when (selectedOption) {
                     "Newest" -> vm.sortFeedDescendingDateSearch()

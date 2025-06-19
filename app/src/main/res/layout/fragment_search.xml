@@ -4,134 +4,243 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#1C2541"
+    android:background="@color/gallery_white"
     tools:context=".fragments.SearchFragment">
+
+    <!-- Modern gradient overlay for depth -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:background="@color/glass_black_10" />
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#1C2541"
+        android:background="@android:color/transparent"
+        android:elevation="0dp"
         android:id="@+id/app_bar_layout_search">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/search_toolbar"
-            android:layout_height="50dp"
+            android:layout_height="70dp"
             android:layout_width="match_parent"
-            android:layout_marginTop="2dp"
-            android:background="#1C2541">
+            android:layout_marginTop="8dp"
+            android:background="@android:color/transparent"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp">
 
             <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="match_parent">
 
+                <!-- Modern search icon with gallery aesthetics -->
                 <ImageView
                     android:id="@+id/searchfragment_icon"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:layout_alignParentLeft="true"
-                    android:layout_marginTop="10dp"
-                    android:tint="#FFFFFF"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true"
+                    android:tint="@color/gallery_black"
+                    android:alpha="0.9"
                     android:src="@drawable/search" />
 
-                <EditText
-                    android:id="@+id/searchitem"
+                <!-- Gallery-style search container -->
+                <LinearLayout
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="48dp"
                     android:layout_toEndOf="@id/searchfragment_icon"
                     android:layout_toStartOf="@+id/filter_spinner"
                     android:layout_centerVertical="true"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginEnd="8dp"
-                    android:textColor="#FFFFFF"
-                    android:textColorHint="#80FFFFFF"
-                    android:hint="Search For People"
-                    android:inputType="text"
-                    android:background="@null" />
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:background="@drawable/modern_search_bg"
+                    android:orientation="horizontal"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:elevation="2dp">
 
-                <View
-                    android:id="@+id/divider"
-                    android:layout_width="1dp"
-                    android:layout_height="24dp"
-                    android:layout_toEndOf="@id/searchitem"
-                    android:layout_toStartOf="@id/filter_spinner"
-                    android:layout_centerVertical="true"
-                    android:background="#80FFFFFF" />
+                    <EditText
+                        android:id="@+id/searchitem"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:layout_gravity="center_vertical"
+                        android:textColor="@color/gallery_black"
+                        android:textColorHint="@color/glass_black_30"
+                        android:hint="Discover Artists &amp; Artworks"
+                        android:inputType="text"
+                        android:background="@null"
+                        android:textSize="16sp"
+                        android:fontFamily="sans-serif-light" />
 
+                    <!-- Elegant divider -->
+                    <View
+                        android:id="@+id/divider"
+                        android:layout_width="1dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginStart="12dp"
+                        android:layout_marginEnd="12dp"
+                        android:background="@color/glass_black_20" />
+
+                </LinearLayout>
+
+                <!-- Modern spinner with gallery styling -->
                 <Spinner
                     android:id="@+id/filter_spinner"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="48dp"
                     android:spinnerMode="dropdown"
                     android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true"
-                    android:layout_marginLeft="3dp"
-                    />
+                    android:background="@drawable/modern_spinner_bg"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:elevation="2dp" />
 
             </RelativeLayout>
 
-
         </androidx.appcompat.widget.Toolbar>
-
-
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- Container for search mode -->
+    <!-- Modern gallery-style search results container -->
     <LinearLayout
         android:id="@+id/search_results_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@+id/app_bar_layout_search"
         android:orientation="vertical"
-        android:visibility="gone">
+        android:visibility="gone"
+        android:paddingTop="12dp">
 
-        <!-- User Search Results - takes up top portion -->
+        <!-- Artists Section Header with modern typography -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingBottom="8dp"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="FEATURED ARTISTS"
+                android:textColor="@color/gallery_black"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.15"
+                android:alpha="0.9"
+                android:fontFamily="sans-serif-medium" />
+
+            <!-- Modern accent line -->
+            <View
+                android:layout_width="40dp"
+                android:layout_height="2dp"
+                android:background="@color/modern_purple"
+                android:alpha="0.7" />
+
+        </LinearLayout>
+
+        <!-- Artists RecyclerView with gallery card styling -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerview_search"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="80dp"
-            android:maxHeight="150dp" />
+            android:minHeight="100dp"
+            android:maxHeight="160dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:clipToPadding="false" />
 
-        <!-- Divider -->
+        <!-- Elegant section divider with gradient -->
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="#30FFFFFF"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp" />
+            android:background="@color/glass_black_15"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp" />
 
-        <!-- User-specific Posts - takes up remaining space -->
+        <!-- Artworks Section Header with modern styling -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingBottom="12dp"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="GALLERY COLLECTION"
+                android:textColor="@color/gallery_black"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.15"
+                android:alpha="0.9"
+                android:fontFamily="sans-serif-medium" />
+
+            <!-- Modern accent line -->
+            <View
+                android:layout_width="40dp"
+                android:layout_height="2dp"
+                android:background="@color/modern_teal"
+                android:alpha="0.7" />
+
+        </LinearLayout>
+
+        <!-- Dynamic gallery-style artwork grid -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerview_user_posts"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp" />
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="20dp"
+            android:clipToPadding="false"
+            android:scrollbars="none"
+            android:overScrollMode="never" />
+
     </LinearLayout>
 
-    <!-- All Posts From Other Users (default view) -->
+    <!-- Main modern gallery grid with dynamic layout -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerview_all_posts"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@+id/app_bar_layout_search"
         android:visibility="visible"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp" />
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="20dp"
+        android:clipToPadding="false"
+        android:scrollbars="none"
+        android:overScrollMode="never" />
 
-    <!-- Toggle Button for View Mode -->
+    <!-- Modern floating action button with gallery aesthetics -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/toggle_view_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
-        android:layout_margin="16dp"
-        android:backgroundTint="#3A506B"
+        android:layout_margin="20dp"
+        android:backgroundTint="@color/modern_purple"
         android:src="@drawable/search"
         app:fabSize="normal"
-        app:tint="#FFFFFF" />
+        app:tint="@color/gallery_white"
+        app:elevation="8dp"
+        app:borderWidth="0dp"
+        app:rippleColor="@color/glass_white_30" />
 
 </RelativeLayout>

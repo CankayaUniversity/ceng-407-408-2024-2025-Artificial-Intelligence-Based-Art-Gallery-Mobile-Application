@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="6dp"
+    app:cardBackgroundColor="@color/gallery_white"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp"
+    android:foreground="?android:attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <!-- Modern artwork image with refined styling -->
+        <ImageView
+            android:id="@+id/postImage"
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:scaleType="centerCrop"
+            android:background="@color/gallery_off_white"
+            android:contentDescription="Artwork Image" />
+
+        <!-- Subtle gradient overlay for text readability -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_alignBottom="@id/postImage"
+            android:background="@drawable/modern_gradient_overlay" />
+
+        <!-- Modern artwork info overlay -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@id/postImage"
+            android:orientation="horizontal"
+            android:padding="12dp"
+            android:gravity="center_vertical">
+
+            <!-- AI Generated indicator -->
+            <View
+                android:layout_width="6dp"
+                android:layout_height="6dp"
+                android:background="@color/modern_purple"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="AI Artwork"
+                android:textColor="@color/gallery_white"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:fontFamily="sans-serif-medium"
+                android:letterSpacing="0.05"
+                android:alpha="0.9" />
+
+            <!-- Modern like indicator -->
+            <View
+                android:layout_width="4dp"
+                android:layout_height="4dp"
+                android:background="@color/gallery_white"
+                android:alpha="0.6" />
+
+        </LinearLayout>
+
+        <!-- Subtle shine effect for premium look -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_alignTop="@id/postImage"
+            android:background="@color/glass_white_20"
+            android:alpha="0.3" />
+
+    </RelativeLayout>
+
+</androidx.cardview.widget.CardView>
