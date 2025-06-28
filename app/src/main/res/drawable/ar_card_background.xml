@@ -1,9 +1,68 @@
-<!-- ar_card_background.xml - AR Card Background -->
-<shape xmlns:android="http://schemas.android.com/apk/res/android"
-    android:shape="rectangle">
-    <solid android:color="#FFFFFF" />
-    <corners android:radius="12dp" />
-    <stroke
-        android:width="2dp"
-        android:color="#E0E0E0" />
-</shape>
+<!-- ar_card_background.xml - Modern Art Style AR Card Background -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Ana gradient arka plan -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="linear"
+                android:angle="135"
+                android:startColor="#667eea"
+                android:centerColor="#764ba2"
+                android:endColor="#f093fb" />
+            <corners android:radius="20dp" />
+        </shape>
+    </item>
+
+    <!-- Geometrik overlay -->
+    <item android:top="40dp" android:left="20dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#40FFFFFF" />
+            <corners android:radius="8dp" />
+        </shape>
+    </item>
+
+    <!-- Dekoratif çizgiler -->
+    <item android:top="10dp" android:right="10dp">
+        <shape android:shape="line">
+            <stroke
+                android:width="3dp"
+                android:color="#80FFFFFF" />
+        </shape>
+    </item>
+
+    <!-- Minimalist daire -->
+    <item android:bottom="30dp" android:right="30dp"
+        android:width="60dp" android:height="60dp">
+        <shape android:shape="oval">
+            <stroke
+                android:width="2dp"
+                android:color="#60FFFFFF" />
+        </shape>
+    </item>
+
+    <!-- Üst overlay gradient -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="radial"
+                android:gradientRadius="300dp"
+                android:centerX="0.3"
+                android:centerY="0.2"
+                android:startColor="#20FFFFFF"
+                android:endColor="#00FFFFFF" />
+            <corners android:radius="20dp" />
+        </shape>
+    </item>
+
+    <!-- Modern border -->
+    <item>
+        <shape android:shape="rectangle">
+            <stroke
+                android:width="1dp"
+                android:color="#30FFFFFF" />
+            <corners android:radius="20dp" />
+        </shape>
+    </item>
+
+</layer-list>

@@ -2,17 +2,30 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- İnternet ve Kamera İzinleri -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.CAMERA" /> <!-- For Android 9 and below -->
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- Storage İzinleri (Android 9 ve altı için) -->
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
     <uses-permission
         android:name="android.permission.READ_EXTERNAL_STORAGE"
-        android:maxSdkVersion="32" /> <!-- AR Core requirements -->
+        android:maxSdkVersion="32" />
+
+    <!-- AR Core requirements -->
     <uses-feature
         android:name="android.hardware.camera.ar"
         android:required="true" />
+
+    <!-- Kamera donanımı gereksinimi -->
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="true" />
+    <uses-feature
+        android:name="android.hardware.camera.autofocus"
+        android:required="false" />
 
     <application
         android:name=".MyApplication"
@@ -24,17 +37,22 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
+        android:requestLegacyExternalStorage="true"
         tools:targetApi="31">
+
+        <!-- AR Activity -->
         <activity
             android:name=".activities.ARActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme" />
+
         <!-- AR Core meta-data -->
         <meta-data
             android:name="com.google.ar.core"
             android:value="required" />
 
+        <!-- FileProvider for sharing files -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -45,6 +63,7 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
+        <!-- Diğer Activity'ler -->
         <activity
             android:name=".activities.ForgotPasswordAc"
             android:exported="false" />
@@ -57,7 +76,6 @@
             android:theme="@style/AppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

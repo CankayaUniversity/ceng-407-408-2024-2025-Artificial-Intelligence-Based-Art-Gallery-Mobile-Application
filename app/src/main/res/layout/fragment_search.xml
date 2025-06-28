@@ -40,19 +40,19 @@
                     android:layout_height="24dp"
                     android:layout_alignParentStart="true"
                     android:layout_centerVertical="true"
-                    android:tint="@color/gallery_black"
                     android:alpha="0.9"
-                    android:src="@drawable/search" />
+                    android:src="@drawable/search"
+                    app:tint="@color/black" />
 
                 <!-- Gallery-style search container -->
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="48dp"
                     android:layout_toEndOf="@id/searchfragment_icon"
-                    android:layout_toStartOf="@+id/filter_spinner"
+                    android:layout_toStartOf="@+id/filter_container"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="16dp"
-                    android:layout_marginEnd="16dp"
+                    android:layout_marginEnd="12dp"
                     android:background="@drawable/modern_search_bg"
                     android:orientation="horizontal"
                     android:paddingStart="16dp"
@@ -85,18 +85,50 @@
 
                 </LinearLayout>
 
-                <!-- Modern spinner with gallery styling -->
-                <Spinner
-                    android:id="@+id/filter_spinner"
+                <!-- Modern filter container with rounded background -->
+                <LinearLayout
+                    android:id="@+id/filter_container"
                     android:layout_width="wrap_content"
                     android:layout_height="48dp"
-                    android:spinnerMode="dropdown"
                     android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true"
                     android:background="@drawable/modern_spinner_bg"
-                    android:paddingStart="12dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingStart="16dp"
                     android:paddingEnd="12dp"
-                    android:elevation="2dp" />
+                    android:elevation="2dp"
+                    android:minWidth="100dp">
+
+                    <!-- Filter icon -->
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:src="@drawable/ic_filter"
+                        android:tint="@color/art_platinum"
+                        android:alpha="0.7"
+                        android:layout_marginEnd="8dp" />
+
+                    <!-- Modern spinner with transparent background -->
+                    <Spinner
+                        android:id="@+id/filter_spinner"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:spinnerMode="dropdown"
+                        android:background="@android:color/transparent"
+                        android:dropDownWidth="180dp" />
+
+                    <!-- Dropdown arrow -->
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:src="@drawable/ic_arrow_drop_down"
+                        android:alpha="0.6"
+                        android:layout_marginStart="4dp"
+                        app:tint="@color/gallery_black" />
+
+                </LinearLayout>
 
             </RelativeLayout>
 

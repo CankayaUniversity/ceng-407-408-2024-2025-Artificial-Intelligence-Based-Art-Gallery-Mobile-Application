@@ -22,7 +22,7 @@
         android:background="@drawable/circle_button_background"
         android:src="@drawable/ic_arrow_back"
         android:contentDescription="Back"
-        android:onClick="onBackPressed" />
+        android:elevation="8dp" />
 
     <!-- Info Text -->
     <TextView
@@ -37,6 +37,67 @@
         android:text="Tap on a surface to place the image"
         android:textColor="@android:color/white"
         android:textSize="16sp"
-        android:alpha="0.9" />
+        android:alpha="0.9"
+        android:elevation="8dp" />
+
+    <!-- Camera Controls Container -->
+    <LinearLayout
+        android:id="@+id/camera_controls"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="32dp"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:elevation="8dp">
+
+        <!-- Gallery Button -->
+        <ImageButton
+            android:id="@+id/gallery_button"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_marginEnd="24dp"
+            android:background="@drawable/circle_button_background"
+            android:src="@drawable/ic_gallery"
+            android:contentDescription="Open Gallery"
+            android:scaleType="centerInside"
+            android:visibility="gone" />
+
+        <!-- Capture Button -->
+        <ImageButton
+            android:id="@+id/capture_button"
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:background="@drawable/capture_button_background"
+            android:src="@drawable/ic_camera"
+            android:contentDescription="Capture Photo"
+            android:scaleType="centerInside"
+            android:visibility="gone" />
+
+        <!-- Switch Camera Button (disabled for AR) -->
+        <ImageButton
+            android:id="@+id/switch_camera_button"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_marginStart="24dp"
+            android:background="@drawable/circle_button_background"
+            android:src="@drawable/ic_switch_camera"
+            android:contentDescription="Switch Camera"
+            android:scaleType="centerInside"
+            android:visibility="gone"
+            android:alpha="0.5"
+            android:enabled="false" />
+
+    </LinearLayout>
+
+    <!-- Progress Indicator for capturing -->
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:visibility="gone"
+        android:indeterminateTint="@android:color/white" />
 
 </RelativeLayout>
